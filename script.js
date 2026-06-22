@@ -31,6 +31,21 @@ function isAdminLoggedIn() {
   }
 }
 
+const clubBadgeMap = [
+  { key: 'dragons', label: 'DK', className: 'club-dragons', names: ['dragons', 'kraków', 'krakow'] },
+  { key: 'neon', label: 'NW', className: 'club-neon', names: ['neon', 'wrocław', 'wroclaw'] },
+  { key: 'orion', label: 'OP', className: 'club-orion', names: ['orion', 'poznań', 'poznan'] },
+  { key: 'volup', label: 'VW', className: 'club-volup', names: ['volup', 'warszawa'] },
+  { key: 'unicorns', label: 'UL', className: 'club-unicorns', names: ['unicorns', 'łódź', 'lodz'] }
+];
+
+function getClubBadge(value) {
+  const normalized = String(value || '').toLowerCase();
+  const club = clubBadgeMap.find(item => item.names.some(name => normalized.includes(name)));
+  if (!club) return '<span class="club-badge">?</span>';
+  return `<span class="club-badge ${club.className}" title="${value}">${club.label}</span>`;
+}
+
 function initNavigation() {
   const navs = document.querySelectorAll('.main-nav');
   if (!navs.length) return;
@@ -216,11 +231,11 @@ function renderResults() {
   }
 
   const table = document.createElement('table');
-  table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>';
+  table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Klub</th><th>Wynik</th><th>Klub</th><th>Drużyna 2</th></tr></thead>';
   const body = document.createElement('tbody');
   sport.results.slice(0, 8).forEach(match => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td><strong>${match.score}</strong></td><td>${match.away}</td>`;
+    row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td>${getClubBadge(match.home)}</td><td><strong>${match.score}</strong></td><td>${getClubBadge(match.away)}</td><td>${match.away}</td>`;
     body.appendChild(row);
   });
   table.appendChild(body);
@@ -245,11 +260,11 @@ function renderMvp() {
   }
 
   const table = document.createElement('table');
-  table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>';
+  table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Klub</th><th>Punkty</th></tr></thead>';
   const body = document.createElement('tbody');
   sport.mvp.slice().sort((a, b) => b.points - a.points).forEach((player, index) => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td><strong>${player.points}</strong></td>`;
+    row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td>${getClubBadge(player.team)}</td><td><strong>${player.points}</strong></td>`;
     body.appendChild(row);
   });
   table.appendChild(body);

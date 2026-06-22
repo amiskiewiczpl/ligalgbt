@@ -477,7 +477,7 @@ strong {
 
 .rankings-container,
 .sport-details {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
 }
 
 .button,
@@ -595,6 +595,10 @@ button:hover,
 .section-grid > article:hover {
   border-color: var(--border-strong);
   background: var(--surface-strong);
+}
+
+.ranking-view {
+  overflow: hidden;
 }
 
 .feature-card {
@@ -745,6 +749,72 @@ button:hover,
   text-transform: uppercase;
 }
 
+.club-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.legend-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 1.2rem 0 2rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.legend-strip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted-strong);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.club-badge {
+  width: 2rem;
+  height: 2rem;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  color: #07111f;
+  font-size: 0.72rem;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.club-badge:not(.club-orion):not(.club-neon):not(.club-volup):not(.club-dragons):not(.club-unicorns) {
+  background: linear-gradient(135deg, #d8e3f7, #89c8ff);
+}
+
+.club-orion {
+  background: linear-gradient(135deg, #86c8ff, #5d8cff);
+}
+
+.club-neon {
+  background: linear-gradient(135deg, #a5ffce, #77d7c8);
+}
+
+.club-volup {
+  background: linear-gradient(135deg, #ff9fbf, #ff6f9f);
+}
+
+.club-dragons {
+  background: linear-gradient(135deg, #ffd36e, #ff9f5a);
+}
+
+.club-unicorns {
+  background: linear-gradient(135deg, #d7c1ff, #b49cff);
+}
+
 .club-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -811,30 +881,52 @@ button:hover,
 }
 
 table {
+  display: block;
   width: 100%;
+  max-width: 100%;
   margin-top: 1rem;
   border-collapse: separate;
   border-spacing: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.04);
+  table-layout: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(137, 200, 255, 0.36) rgba(255, 255, 255, 0.05);
 }
 
 th,
 td {
-  padding: 0.9rem 1rem;
+  padding: 0.78rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+td:nth-child(2),
+th:nth-child(2) {
+  min-width: 9rem;
 }
 
 th {
   background: rgba(255, 255, 255, 0.08);
   color: var(--muted-strong);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+td {
+  color: var(--muted-strong);
+}
+
+td:first-child,
+th:first-child {
+  width: 1%;
+  white-space: nowrap;
 }
 
 tr:last-child td {

@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Klasyfikacje | Liga LGBT</title>
+  <title>Wyniki | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="brand">
       <p class="eyebrow">Liga LGBT</p>
-      <h1>Klasyfikacje i statystyki</h1>
-      <p>Aktualne tabele, rankingi zawodników i ogólna punktacja klubów w jednym miejscu.</p>
+      <h1>Wyniki i klasyfikacje</h1>
+      <p>Kluby mogą wystawiać wiele drużyn i zawodników w różnych ligach, poziomach i zawodach.</p>
     </div>
     <nav class="main-nav" aria-label="Główna nawigacja">
       <a class="nav-link" href="index.html">Start</a>
@@ -49,33 +49,41 @@
 
   <main class="container">
     <section class="page-intro">
-      <span class="eyebrow">Klasyfikacje</span>
-      <h2>Rankingi drużyn i zawodników</h2>
-      <p>Tabele są zaprojektowane do szybkiego skanowania: pozycja, drużyna, liczba meczów, zwycięstwa i punkty.</p>
+      <span class="eyebrow">Wyniki</span>
+      <h2>Klub to organizacja, drużyna to zgłoszenie do rozgrywek</h2>
+      <p>Jeden klub może wystawić kilka drużyn w siatkówce, pary w badmintonie, zawodników w squashu i tenisistów w turniejach. Dlatego tabele rozdzielają nazwę drużyny lub zawodnika od małego znaku klubu.</p>
+    </section>
+
+    <section class="legend-strip" aria-label="Legenda klubów">
+      <span><span class="club-badge club-orion">OP</span> Orion Poznań</span>
+      <span><span class="club-badge club-neon">NW</span> Neon Wrocław</span>
+      <span><span class="club-badge club-volup">VW</span> Volup Warszawa</span>
+      <span><span class="club-badge club-dragons">DK</span> Dragons Kraków</span>
+      <span><span class="club-badge club-unicorns">UL</span> Unicorns Łódź</span>
     </section>
 
     <section class="rankings-section">
-      <h2>Ranking siatkówki</h2>
+      <h2>Siatkówka</h2>
       <div class="rankings-container">
         <div class="ranking-view">
           <h3>Grupa B</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Drużyna</th><th>Mecze</th><th>Zwycięstwa</th><th>Porażki</th><th>Punkty</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Drużyna</th><th>Klub</th><th>Mecze</th><th>Zwycięstwa</th><th>Porażki</th><th>Punkty</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Dragons Kraków</td><td>12</td><td>10</td><td>2</td><td><strong>22</strong></td></tr>
-              <tr><td>2.</td><td>Neon Wrocław</td><td>12</td><td>8</td><td>4</td><td><strong>18</strong></td></tr>
-              <tr><td>3.</td><td>Orion Poznań</td><td>12</td><td>6</td><td>6</td><td><strong>14</strong></td></tr>
+              <tr><td>1.</td><td>Dragons Kraków B</td><td><span class="club-badge club-dragons">DK</span></td><td>12</td><td>10</td><td>2</td><td><strong>22</strong></td></tr>
+              <tr><td>2.</td><td>Neon Wrocław B</td><td><span class="club-badge club-neon">NW</span></td><td>12</td><td>8</td><td>4</td><td><strong>18</strong></td></tr>
+              <tr><td>3.</td><td>Orion Poznań B</td><td><span class="club-badge club-orion">OP</span></td><td>12</td><td>6</td><td>6</td><td><strong>14</strong></td></tr>
             </tbody>
           </table>
         </div>
         <div class="ranking-view">
           <h3>MVP siatkówki</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Drużyna</th><th>Klub</th><th>Punkty</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Michał Wojakowski</td><td>Dragons Kraków</td><td><strong>245</strong></td></tr>
-              <tr><td>2.</td><td>Piotr Lewandowski</td><td>Neon Wrocław</td><td><strong>218</strong></td></tr>
-              <tr><td>3.</td><td>Jakub Kamiński</td><td>Orion Poznań</td><td><strong>195</strong></td></tr>
+              <tr><td>1.</td><td>Michał Wojakowski</td><td>Dragons Kraków B</td><td><span class="club-badge club-dragons">DK</span></td><td><strong>245</strong></td></tr>
+              <tr><td>2.</td><td>Piotr Lewandowski</td><td>Neon Wrocław B</td><td><span class="club-badge club-neon">NW</span></td><td><strong>218</strong></td></tr>
+              <tr><td>3.</td><td>Jakub Kamiński</td><td>Orion Poznań B</td><td><span class="club-badge club-orion">OP</span></td><td><strong>195</strong></td></tr>
             </tbody>
           </table>
         </div>
@@ -83,27 +91,27 @@
     </section>
 
     <section class="rankings-section">
-      <h2>Ranking badmintona</h2>
+      <h2>Badminton</h2>
       <div class="rankings-container">
         <div class="ranking-view">
           <h3>Single</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Drużyna</th><th>Mecze</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Klub</th><th>Mecze</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Anna Wójcik</td><td>Neon Wrocław</td><td>15</td><td>13</td><td><strong>130</strong></td></tr>
-              <tr><td>2.</td><td>Tomasz Król</td><td>Volup Warszawa</td><td>14</td><td>11</td><td><strong>110</strong></td></tr>
-              <tr><td>3.</td><td>Magdalena Nowak</td><td>Orion Poznań</td><td>13</td><td>10</td><td><strong>100</strong></td></tr>
+              <tr><td>1.</td><td>Anna Wójcik</td><td><span class="club-badge club-neon">NW</span></td><td>15</td><td>13</td><td><strong>130</strong></td></tr>
+              <tr><td>2.</td><td>Tomasz Król</td><td><span class="club-badge club-volup">VW</span></td><td>14</td><td>11</td><td><strong>110</strong></td></tr>
+              <tr><td>3.</td><td>Magdalena Nowak</td><td><span class="club-badge club-orion">OP</span></td><td>13</td><td>10</td><td><strong>100</strong></td></tr>
             </tbody>
           </table>
         </div>
         <div class="ranking-view">
           <h3>Deble</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Para</th><th>Drużyna</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Para</th><th>Klub</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Nowak / Kowalski</td><td>Dragons Kraków</td><td>9</td><td><strong>90</strong></td></tr>
-              <tr><td>2.</td><td>Lewandowski / Wójcik</td><td>Neon Wrocław</td><td>8</td><td><strong>80</strong></td></tr>
-              <tr><td>3.</td><td>Kamiński / Szulc</td><td>Orion Poznań</td><td>7</td><td><strong>70</strong></td></tr>
+              <tr><td>1.</td><td>Nowak / Kowalski</td><td><span class="club-badge club-dragons">DK</span></td><td>9</td><td><strong>90</strong></td></tr>
+              <tr><td>2.</td><td>Lewandowski / Wójcik</td><td><span class="club-badge club-neon">NW</span></td><td>8</td><td><strong>80</strong></td></tr>
+              <tr><td>3.</td><td>Kamiński / Szulc</td><td><span class="club-badge club-orion">OP</span></td><td>7</td><td><strong>70</strong></td></tr>
             </tbody>
           </table>
         </div>
@@ -111,42 +119,42 @@
     </section>
 
     <section class="rankings-section">
-      <h2>Ranking squasha</h2>
+      <h2>Squash</h2>
       <div class="ranking-view">
         <h3>Ranking ogólny</h3>
         <table>
-          <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Drużyna</th><th>Mecze</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
+          <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Klub</th><th>Mecze</th><th>Zwycięstwa</th><th>Punkty</th></tr></thead>
           <tbody>
-            <tr><td>1.</td><td>Łukasz Nowak</td><td>Volup Warszawa</td><td>18</td><td>16</td><td><strong>160</strong></td></tr>
-            <tr><td>2.</td><td>Bartosz Kwiatkowski</td><td>Dragons Kraków</td><td>17</td><td>14</td><td><strong>140</strong></td></tr>
-            <tr><td>3.</td><td>Marcin Gajewski</td><td>Neon Wrocław</td><td>16</td><td>12</td><td><strong>120</strong></td></tr>
+            <tr><td>1.</td><td>Łukasz Nowak</td><td><span class="club-badge club-volup">VW</span></td><td>18</td><td>16</td><td><strong>160</strong></td></tr>
+            <tr><td>2.</td><td>Bartosz Kwiatkowski</td><td><span class="club-badge club-dragons">DK</span></td><td>17</td><td>14</td><td><strong>140</strong></td></tr>
+            <tr><td>3.</td><td>Marcin Gajewski</td><td><span class="club-badge club-neon">NW</span></td><td>16</td><td>12</td><td><strong>120</strong></td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
     <section class="rankings-section">
-      <h2>Ranking tenisa</h2>
+      <h2>Tenis</h2>
       <div class="rankings-container">
         <div class="ranking-view">
           <h3>Single</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Drużyna</th><th>Ocena</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Zawodnik</th><th>Klub</th><th>Ocena</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Dariusz Karpuk</td><td>Unicorns Łódź</td><td><strong>3.2</strong></td></tr>
-              <tr><td>2.</td><td>Sebastian Górski</td><td>Volup Warszawa</td><td><strong>3.8</strong></td></tr>
-              <tr><td>3.</td><td>Krzysztof Sobanowski</td><td>Dragons Kraków</td><td><strong>4.1</strong></td></tr>
+              <tr><td>1.</td><td>Dariusz Karpuk</td><td><span class="club-badge club-unicorns">UL</span></td><td><strong>3.2</strong></td></tr>
+              <tr><td>2.</td><td>Sebastian Górski</td><td><span class="club-badge club-volup">VW</span></td><td><strong>3.8</strong></td></tr>
+              <tr><td>3.</td><td>Krzysztof Sobanowski</td><td><span class="club-badge club-dragons">DK</span></td><td><strong>4.1</strong></td></tr>
             </tbody>
           </table>
         </div>
         <div class="ranking-view">
           <h3>Deble</h3>
           <table>
-            <thead><tr><th>Pozycja</th><th>Para</th><th>Drużyna</th><th>Zwycięstwa</th></tr></thead>
+            <thead><tr><th>Pozycja</th><th>Para</th><th>Kluby</th><th>Zwycięstwa</th></tr></thead>
             <tbody>
-              <tr><td>1.</td><td>Górski / Sobanowski</td><td>Volup / Dragons</td><td><strong>11</strong></td></tr>
-              <tr><td>2.</td><td>Karpuk / Miłosz</td><td>Unicorns Łódź</td><td><strong>9</strong></td></tr>
-              <tr><td>3.</td><td>Lewandowski / Nowak</td><td>Dragons / Orion</td><td><strong>8</strong></td></tr>
+              <tr><td>1.</td><td>Górski / Sobanowski</td><td><span class="club-badge club-volup">VW</span> <span class="club-badge club-dragons">DK</span></td><td><strong>11</strong></td></tr>
+              <tr><td>2.</td><td>Karpuk / Miłosz</td><td><span class="club-badge club-unicorns">UL</span></td><td><strong>9</strong></td></tr>
+              <tr><td>3.</td><td>Lewandowski / Nowak</td><td><span class="club-badge club-dragons">DK</span> <span class="club-badge club-orion">OP</span></td><td><strong>8</strong></td></tr>
             </tbody>
           </table>
         </div>
@@ -157,16 +165,16 @@
       <div class="section-lead">
         <span class="eyebrow">Kluby</span>
         <h2>Ranking ogólny klubów</h2>
-        <p>Łączna klasyfikacja na podstawie wyników w każdej dyscyplinie.</p>
+        <p>Łączna klasyfikacja klubów obejmuje punkty zdobyte przez wszystkie drużyny i zawodników wystawionych przez dany klub.</p>
       </div>
       <table>
-        <thead><tr><th>Pozycja</th><th>Klub</th><th>Siatkówka</th><th>Badminton</th><th>Squash</th><th>Tenis</th><th>Łącznie</th></tr></thead>
+        <thead><tr><th>Pozycja</th><th>Klub</th><th>Logo</th><th>Siatkówka</th><th>Badminton</th><th>Squash</th><th>Tenis</th><th>Łącznie</th></tr></thead>
         <tbody>
-          <tr><td>1.</td><td>Dragons Kraków</td><td>22</td><td>18</td><td>25</td><td>20</td><td><strong>85</strong></td></tr>
-          <tr><td>2.</td><td>Volup Warszawa</td><td>14</td><td>16</td><td>30</td><td>22</td><td><strong>82</strong></td></tr>
-          <tr><td>3.</td><td>Neon Wrocław</td><td>18</td><td>20</td><td>18</td><td>19</td><td><strong>75</strong></td></tr>
-          <tr><td>4.</td><td>Orion Poznań</td><td>14</td><td>14</td><td>12</td><td>15</td><td><strong>55</strong></td></tr>
-          <tr><td>5.</td><td>Unicorns Łódź</td><td>8</td><td>10</td><td>9</td><td>24</td><td><strong>51</strong></td></tr>
+          <tr><td>1.</td><td>Dragons Kraków</td><td><span class="club-badge club-dragons">DK</span></td><td>22</td><td>18</td><td>25</td><td>20</td><td><strong>85</strong></td></tr>
+          <tr><td>2.</td><td>Volup Warszawa</td><td><span class="club-badge club-volup">VW</span></td><td>14</td><td>16</td><td>30</td><td>22</td><td><strong>82</strong></td></tr>
+          <tr><td>3.</td><td>Neon Wrocław</td><td><span class="club-badge club-neon">NW</span></td><td>18</td><td>20</td><td>18</td><td>19</td><td><strong>75</strong></td></tr>
+          <tr><td>4.</td><td>Orion Poznań</td><td><span class="club-badge club-orion">OP</span></td><td>14</td><td>14</td><td>12</td><td>15</td><td><strong>55</strong></td></tr>
+          <tr><td>5.</td><td>Unicorns Łódź</td><td><span class="club-badge club-unicorns">UL</span></td><td>8</td><td>10</td><td>9</td><td>24</td><td><strong>51</strong></td></tr>
         </tbody>
       </table>
     </section>
