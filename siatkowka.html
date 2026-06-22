@@ -24,33 +24,65 @@
 
   <main class="container">
     <section class="sport-hero">
-      <h2>Poziomy i reguły</h2>
-      <p>W siatkówce rywalizujemy w czterech poziomach: B, B-, C i D. Dzięki temu mniej doświadczeni zawodnicy mogą grać z podobnymi przeciwnikami.</p>
-    </section>
-
-    <section class="sport-details">
-      <div class="sport-summary">
-        <h3>Jak działa strona</h3>
-        <p>Znajdziesz tutaj drużyny, aktualne wyniki i ranking MVP. Administrator wprowadza dane za pośrednictwem osobnego panelu.</p>
+      <div class="hero-copy">
+        <span class="eyebrow">Siatkówka</span>
+        <h2>Przejrzysta liga siatkarska dla drużyn LGBT</h2>
+        <p>Działamy w czterech poziomach: B, B-, C i D. Każdy poziom daje równą rywalizację i dobrą zabawę na boisku.</p>
       </div>
-      <div class="sport-summary">
-        <h3>Wyniki</h3>
-        <p>Wyniki są pokazywane w tabeli, a maksymalnie 8 najnowszych spotkań jest widocznych dla każdej dyscypliny.</p>
+      <div class="hero-actions">
+        <a class="button" href="#levels">Poziomy</a>
+        <a class="button" href="#teams">Drużyny</a>
+        <a class="button" href="#results">Wyniki</a>
+        <a class="button" href="#mvp">Ranking MVP</a>
       </div>
     </section>
 
-    <section id="team-section">
-      <h2>Drużyny</h2>
+    <section id="levels" class="section-overview">
+      <div class="section-lead">
+        <h2>Poziomy ligi</h2>
+        <p>W siatkówce każdy znajdzie miejsce – od zaawansowanych zespołów po te, które dopiero wchodzą w rozgrywki.</p>
+      </div>
+      <div class="section-grid">
+        <article class="sport-summary">
+          <h3>Grupa B</h3>
+          <p>Najwyższy poziom, najbardziej doświadczone drużyny i walka o tytuły.</p>
+        </article>
+        <article class="sport-summary">
+          <h3>Grupa B-</h3>
+          <p>Poziom dla zespołów w rozwoju, gdzie liczy się strategia i stabilny postęp.</p>
+        </article>
+        <article class="sport-summary">
+          <h3>Grupa C</h3>
+          <p>Solidne rozgrywki i rywalizacja dla zespołów z umiarkowanym doświadczeniem.</p>
+        </article>
+        <article class="sport-summary">
+          <h3>Grupa D</h3>
+          <p>Poziom debiutantów i integracyjnych drużyn, idealny do nauki i zabawy.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="teams" class="section-overview">
+      <div class="section-lead">
+        <h2>Drużyny</h2>
+        <p>Lista drużyn startowych i ich opisy. Dane mogą być aktualizowane przez administratora.</p>
+      </div>
       <div class="team-grid" id="sport-teams"></div>
     </section>
 
-    <section id="results-section">
-      <h2>Wyniki</h2>
+    <section id="results" class="section-overview">
+      <div class="section-lead">
+        <h2>Wyniki</h2>
+        <p>Wyniki są aktualizowane przez panel administratora. Pokazujemy maksymalnie 8 ostatnich meczów.</p>
+      </div>
       <div id="sport-results"></div>
     </section>
 
-    <section id="mvp-section">
-      <h2>Ranking MVP</h2>
+    <section id="mvp" class="section-overview">
+      <div class="section-lead">
+        <h2>Ranking MVP</h2>
+        <p>Najlepsi zawodnicy wyróżniani są na podstawie punktów i występów w meczach.</p>
+      </div>
       <div id="sport-mvp"></div>
     </section>
   </main>
