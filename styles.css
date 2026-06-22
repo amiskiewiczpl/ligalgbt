@@ -237,6 +237,7 @@ strong {
 
 .nav-group {
   position: relative;
+  z-index: 35;
 }
 
 .nav-group::after {
@@ -252,7 +253,7 @@ strong {
   position: absolute;
   top: calc(100% + 0.7rem);
   right: 0;
-  z-index: 30;
+  z-index: 60;
   width: min(285px, calc(100vw - 2rem));
   display: grid;
   gap: 0.35rem;

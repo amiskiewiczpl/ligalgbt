@@ -91,10 +91,6 @@ function initNavigation() {
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       nav.querySelectorAll('.nav-group').forEach(group => {
         group.addEventListener('mouseenter', () => openGroup(group));
-        group.addEventListener('mouseleave', () => {
-          clearCloseTimer(group);
-          closeTimers.set(group, window.setTimeout(() => closeGroup(group), 180));
-        });
       });
     }
 
