@@ -31,6 +31,58 @@ function isAdminLoggedIn() {
   }
 }
 
+function initNavigation() {
+  const navs = document.querySelectorAll('.main-nav');
+  if (!navs.length) return;
+
+  function closeGroup(group) {
+    const trigger = group.querySelector('.nav-trigger');
+    const menu = group.querySelector('.nav-menu');
+    if (!trigger) return;
+    trigger.setAttribute('aria-expanded', 'false');
+    group.classList.remove('is-open');
+    if (menu) menu.hidden = true;
+  }
+
+  function closeAll(except = null) {
+    document.querySelectorAll('.nav-group.is-open').forEach(group => {
+      if (group !== except) closeGroup(group);
+    });
+  }
+
+  navs.forEach(nav => {
+    nav.querySelectorAll('.nav-menu').forEach(menu => {
+      menu.hidden = true;
+    });
+
+    nav.querySelectorAll('.nav-trigger').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const group = trigger.closest('.nav-group');
+        if (!group) return;
+        const menu = group.querySelector('.nav-menu');
+        const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+        closeAll(group);
+        trigger.setAttribute('aria-expanded', String(!isOpen));
+        group.classList.toggle('is-open', !isOpen);
+        if (menu) menu.hidden = isOpen;
+      });
+    });
+
+    nav.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      const openGroup = nav.querySelector('.nav-group.is-open');
+      if (!openGroup) return;
+      closeGroup(openGroup);
+      openGroup.querySelector('.nav-trigger')?.focus();
+    });
+  });
+
+  document.addEventListener('click', event => {
+    if (event.target.closest('.main-nav')) return;
+    closeAll();
+  });
+}
+
 function initLoginPage() {
   if (isAdminLoggedIn()) {
     window.location.href = 'admin.html';
@@ -473,3 +525,4 @@ function initPage() {
 }
 
 window.addEventListener('DOMContentLoaded', initPage);
+window.addEventListener('DOMContentLoaded', initNavigation);

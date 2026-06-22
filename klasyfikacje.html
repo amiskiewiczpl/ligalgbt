@@ -14,15 +14,26 @@
       <p>Aktualne tabele, rankingi zawodników i ogólna punktacja klubów w jednym miejscu.</p>
     </div>
     <nav class="main-nav" aria-label="Główna nawigacja">
-      <a href="index.html">Home</a>
-      <a href="kluby.html">Kluby</a>
-      <a href="zasady.html">Zasady</a>
-      <a href="partnerzy.html">Partnerzy</a>
-      <a href="klasyfikacje.html" aria-current="page">Klasyfikacje</a>
-      <a href="siatkowka.html">Siatkówka</a>
-      <a href="badminton.html">Badminton</a>
-      <a href="squash.html">Squash</a>
-      <a href="tenis.html">Tenis</a>
+      <a class="nav-link" href="index.html">Start</a>
+      <div class="nav-group">
+        <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-sports">Sporty</button>
+        <div class="nav-menu" id="nav-sports">
+          <a href="siatkowka.html">Siatkówka <span>poziomy B-D</span></a>
+          <a href="badminton.html">Badminton <span>single i deble</span></a>
+          <a href="squash.html">Squash <span>intensywne mecze</span></a>
+          <a href="tenis.html">Tenis <span>turnieje i rankingi</span></a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-league">Liga</button>
+        <div class="nav-menu" id="nav-league">
+          <a href="kluby.html">Kluby <span>drużyny i miasta</span></a>
+          <a href="zasady.html">Zasady <span>fair play i bezpieczeństwo</span></a>
+          <a href="partnerzy.html">Partnerzy <span>wsparcie i współpraca</span></a>
+        </div>
+      </div>
+      <a class="nav-link" href="klasyfikacje.html" aria-current="page">Klasyfikacje</a>
+      <a class="nav-cta" href="index.html#newsletter">Dołącz</a>
     </nav>
   </header>
 
