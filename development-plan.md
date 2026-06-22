@@ -28,6 +28,7 @@
 - Wszystkie 20 kroków zostało zrealizowane.
 - Strona ma odświeżony, spójny layout z poprawioną typografią, kontrastem, responsywnością i czytelnymi tabelami.
 - Usunięto uszkodzone kodowanie tekstu oraz ograniczono typowe błędy projektów generowanych automatycznie: nadmiar dekoracji, losowe gradienty, niestabilne siatki, nieczytelne przyciski i przeładowane karty.
-- Nawigacja została uporządkowana do pięciu decyzji użytkownika: Start, Sporty, Liga, Klasyfikacje i Dołącz. Sporty oraz Liga są sekcjami rozwijanymi, aby nie przeciążać paska linkami.
+- Nawigacja została uporządkowana do głównych ścieżek użytkownika: Start, Sporty, Liga, Wyniki, Media, Kontakt i Dołącz. Sporty, Liga oraz Media są sekcjami rozwijanymi, aby nie przeciążać paska linkami.
+- Header kurczy się po przewinięciu strony i zostawia subtelny tęczowy detal jako sygnał marki LGBT+ bez zasłaniania treści.
 
 Projekt jest gotowy do publikacji jako statyczna strona.

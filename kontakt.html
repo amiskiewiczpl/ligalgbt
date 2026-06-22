@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" data-page="contact">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Squash | Liga LGBT</title>
+  <title>Kontakt | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="sport" data-sport="squash">
+<body>
   <header class="site-header">
     <div class="brand">
       <p class="eyebrow">Liga LGBT</p>
-      <h1>Squash</h1>
-      <p>Intensywne mecze, szybkie wymiany i dyscyplina, w której liczy się kondycja oraz taktyka.</p>
+      <h1>Kontakt</h1>
+      <p>Zgłoś klub, zapytaj o treningi albo napisz w sprawie partnerstwa.</p>
     </div>
     <nav class="main-nav" aria-label="Główna nawigacja">
       <a class="nav-link" href="index.html">Start</a>
-      <div class="nav-group is-current">
+      <div class="nav-group">
         <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-sports">Sporty</button>
         <div class="nav-menu" id="nav-sports">
           <a href="siatkowka.html">Siatkówka <span>Poziomy B-D</span></a>
           <a href="badminton.html">Badminton <span>Single i deble</span></a>
-          <a href="squash.html" aria-current="page">Squash <span>Mecze indywidualne</span></a>
+          <a href="squash.html">Squash <span>Mecze indywidualne</span></a>
           <a href="tenis.html">Tenis <span>Turnieje</span></a>
         </div>
       </div>
@@ -42,34 +42,53 @@
           <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
         </div>
       </div>
-      <a class="nav-link" href="kontakt.html">Kontakt</a>
+      <a class="nav-link" href="kontakt.html" aria-current="page">Kontakt</a>
       <a class="nav-cta" href="index.html#newsletter">Dołącz</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="sport-hero sport-hero-squash">
-      <span class="eyebrow">Dyscyplina</span>
-      <h2>Squash dla osób lubiących intensywność</h2>
-      <p>Krótki dystans, szybka reakcja i czytelne reguły bezpieczeństwa są tu równie ważne jak wynik.</p>
-      <div class="sport-links">
-        <a class="button" href="#wyniki">Wyniki</a>
-        <a class="button button-alt" href="#mvp">Ranking MVP</a>
-        <a class="button button-alt" href="#druzyny">Drużyny</a>
-      </div>
+    <section class="page-intro">
+      <span class="eyebrow">Kontakt</span>
+      <h2>Napisz do organizatorów</h2>
+      <p>Najlepiej od razu napisz, czy chodzi o dołączenie jako zawodnik, zgłoszenie klubu, partnerstwo czy wolontariat.</p>
     </section>
 
-    <section class="sport-details">
-      <article class="sport-summary"><h3>Format</h3><p>Mecze singlowe prowadzone w formule turniejowej lub ligowej.</p></article>
-      <article class="sport-summary"><h3>Bezpieczeństwo</h3><p>Najważniejsze są kontrola ruchu, komunikacja i świadome unikanie ryzyka.</p></article>
-    </section>
+    <section class="contact-layout">
+      <article class="contact-card">
+        <h3>Szybki kontakt</h3>
+        <p>Email: <a href="mailto:kontakt@ligalgbt.pl">kontakt@ligalgbt.pl</a></p>
+        <p>Facebook i Instagram znajdziesz w sekcji Media.</p>
+        <p>Odpowiadamy w sprawach klubów, terminarza, współpracy i zgłoszeń zawodników.</p>
+      </article>
 
-    <section id="wyniki" class="section-overview"><div class="section-lead"><h2>Ostatnie wyniki</h2><p>Najświeższe mecze zapisane w systemie.</p></div><div id="sport-results"></div></section>
-    <section id="mvp" class="section-overview"><div class="section-lead"><h2>Ranking MVP</h2><p>Zawodnicy z najwyższą liczbą punktów.</p></div><div id="sport-mvp"></div></section>
-    <section id="druzyny" class="team-list"><div class="section-lead"><h2>Drużyny</h2><p>Kluby występujące w rozgrywkach ligowych.</p></div><div class="team-grid" id="sport-teams"></div></section>
+      <form class="contact-form">
+        <label>Imię lub klub
+          <input type="text" name="name" placeholder="np. Orion Poznań" />
+        </label>
+        <label>Email
+          <input type="email" name="email" placeholder="twoj@email.pl" />
+        </label>
+        <label>Temat
+          <select name="topic">
+            <option>Chcę dołączyć</option>
+            <option>Zgłaszam klub</option>
+            <option>Partnerstwo</option>
+            <option>Media lub zdjęcia</option>
+          </select>
+        </label>
+        <label>Wiadomość
+          <textarea name="message" placeholder="Napisz krótko, czego potrzebujesz."></textarea>
+        </label>
+        <button type="submit">Wyślij wiadomość</button>
+      </form>
+    </section>
   </main>
 
-  <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
+  <footer class="site-footer">
+    <p>&copy; 2026 Liga LGBT. Polska liga sportowa dla społeczności LGBTQ+. <a href="admin.html">Admin</a></p>
+  </footer>
+
   <script src="data.js"></script>
   <script src="script.js"></script>
 </body>

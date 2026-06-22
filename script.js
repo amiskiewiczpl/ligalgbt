@@ -50,6 +50,16 @@ function initNavigation() {
     });
   }
 
+  function openGroup(group) {
+    const trigger = group.querySelector('.nav-trigger');
+    const menu = group.querySelector('.nav-menu');
+    if (!trigger) return;
+    closeAll(group);
+    trigger.setAttribute('aria-expanded', 'true');
+    group.classList.add('is-open');
+    if (menu) menu.hidden = false;
+  }
+
   navs.forEach(nav => {
     nav.querySelectorAll('.nav-menu').forEach(menu => {
       menu.hidden = true;
@@ -59,14 +69,21 @@ function initNavigation() {
       trigger.addEventListener('click', () => {
         const group = trigger.closest('.nav-group');
         if (!group) return;
-        const menu = group.querySelector('.nav-menu');
         const isOpen = trigger.getAttribute('aria-expanded') === 'true';
-        closeAll(group);
-        trigger.setAttribute('aria-expanded', String(!isOpen));
-        group.classList.toggle('is-open', !isOpen);
-        if (menu) menu.hidden = isOpen;
+        if (isOpen) {
+          closeGroup(group);
+        } else {
+          openGroup(group);
+        }
       });
     });
+
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      nav.querySelectorAll('.nav-group').forEach(group => {
+        group.addEventListener('mouseenter', () => openGroup(group));
+        group.addEventListener('mouseleave', () => closeGroup(group));
+      });
+    }
 
     nav.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
@@ -80,6 +97,34 @@ function initNavigation() {
   document.addEventListener('click', event => {
     if (event.target.closest('.main-nav')) return;
     closeAll();
+  });
+}
+
+function initHeaderScrollState() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+
+  let ticking = false;
+
+  function update() {
+    header.classList.toggle('is-condensed', window.scrollY > 80);
+    ticking = false;
+  }
+
+  update();
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(update);
+  }, { passive: true });
+}
+
+function initStaticForms() {
+  document.querySelectorAll('.newsletter-form, .contact-form').forEach(form => {
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      showToast('Dziękujemy. Formularz jest gotowy wizualnie, ale wymaga podpięcia obsługi wysyłki.', 'info');
+    });
   });
 }
 
@@ -526,3 +571,5 @@ function initPage() {
 
 window.addEventListener('DOMContentLoaded', initPage);
 window.addEventListener('DOMContentLoaded', initNavigation);
+window.addEventListener('DOMContentLoaded', initHeaderScrollState);
+window.addEventListener('DOMContentLoaded', initStaticForms);
