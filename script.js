@@ -34,8 +34,17 @@ function isAdminLoggedIn() {
 function initNavigation() {
   const navs = document.querySelectorAll('.main-nav');
   if (!navs.length) return;
+  const closeTimers = new WeakMap();
+
+  function clearCloseTimer(group) {
+    const timer = closeTimers.get(group);
+    if (!timer) return;
+    window.clearTimeout(timer);
+    closeTimers.delete(group);
+  }
 
   function closeGroup(group) {
+    clearCloseTimer(group);
     const trigger = group.querySelector('.nav-trigger');
     const menu = group.querySelector('.nav-menu');
     if (!trigger) return;
@@ -51,6 +60,7 @@ function initNavigation() {
   }
 
   function openGroup(group) {
+    clearCloseTimer(group);
     const trigger = group.querySelector('.nav-trigger');
     const menu = group.querySelector('.nav-menu');
     if (!trigger) return;
@@ -81,7 +91,10 @@ function initNavigation() {
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       nav.querySelectorAll('.nav-group').forEach(group => {
         group.addEventListener('mouseenter', () => openGroup(group));
-        group.addEventListener('mouseleave', () => closeGroup(group));
+        group.addEventListener('mouseleave', () => {
+          clearCloseTimer(group);
+          closeTimers.set(group, window.setTimeout(() => closeGroup(group), 180));
+        });
       });
     }
 
