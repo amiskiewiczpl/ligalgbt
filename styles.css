@@ -1,20 +1,22 @@
 ﻿:root {
   color-scheme: dark;
   font-family: Inter, "Segoe UI", system-ui, sans-serif;
-  background: #050916;
-  color: #edf3ff;
+  background: #08101f;
+  color: #eef2ff;
   line-height: 1.6;
-  --bg: #050916;
-  --panel: rgba(18, 28, 52, 0.94);
-  --panel-soft: rgba(22, 34, 66, 0.90);
-  --panel-strong: rgba(12, 18, 34, 0.97);
-  --border: rgba(255, 255, 255, 0.12);
-  --text: #edf3ff;
-  --muted: #8ea8d0;
-  --accent: #7c8cff;
-  --accent-2: #45e0c3;
-  --accent-rainbow: linear-gradient(135deg, #ff3d6d, #ff8a3d, #f4e048, #3dd7c5, #6f6dff);
-  --shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+  --bg: #08101f;
+  --surface: #101d35;
+  --surface-soft: rgba(17, 30, 53, 0.92);
+  --surface-light: rgba(255, 255, 255, 0.05);
+  --surface-strong: rgba(14, 21, 40, 0.98);
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #eef2ff;
+  --muted: #9bb0d2;
+  --accent: #76c7ff;
+  --accent-2: #ff9adb;
+  --accent-warm: #ffb57e;
+  --rainbow: linear-gradient(135deg, #ff5a8c, #f8c657, #72e2d0, #8b7cff);
+  --shadow: 0 24px 50px rgba(0, 0, 0, 0.24);
 }
 
 * {
@@ -28,9 +30,9 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at 15% 12%, rgba(124, 140, 255, 0.16), transparent 22%),
-    radial-gradient(circle at 80% 8%, rgba(61, 215, 197, 0.14), transparent 18%),
-    linear-gradient(180deg, #050916 0%, #0f172c 48%, #0a1120 100%);
+  background: radial-gradient(circle at 20% 10%, rgba(118, 199, 255, 0.14), transparent 16%),
+    radial-gradient(circle at 85% 20%, rgba(255, 157, 126, 0.12), transparent 18%),
+    linear-gradient(180deg, #07101d 0%, #08131f 55%, #0b1b33 100%);
   color: var(--text);
 }
 
@@ -38,9 +40,9 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: repeating-radial-gradient(circle at top right, rgba(124, 140, 255, 0.08) 0, rgba(124, 140, 255, 0.08) 1px, transparent 1px, transparent 16px);
+  background: radial-gradient(circle at 70% 8%, rgba(231, 137, 255, 0.06), transparent 18%),
+    radial-gradient(circle at 15% 80%, rgba(124, 214, 255, 0.06), transparent 20%);
   pointer-events: none;
-  opacity: 0.42;
 }
 
 .site-header {
@@ -50,9 +52,9 @@ body::before {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.6rem 2rem;
-  background: rgba(8, 14, 28, 0.95);
+  background: rgba(11, 18, 34, 0.92);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 26px 48px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(16px);
   position: relative;
 }
@@ -62,11 +64,11 @@ body::before {
   position: absolute;
   left: 2rem;
   right: 2rem;
-  bottom: 0.4rem;
+  bottom: 0.3rem;
   height: 4px;
-  background: var(--accent-rainbow);
+  background: var(--rainbow);
   border-radius: 999px;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .admin-header {
@@ -82,16 +84,16 @@ body::before {
 .brand .eyebrow {
   display: inline-block;
   margin-bottom: 0.75rem;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(173, 199, 255, 0.92);
+  color: rgba(183, 205, 255, 0.92);
   font-size: 0.82rem;
 }
 
 .brand h1 {
   margin: 0 0 0.4rem;
   font-size: clamp(2rem, 3vw, 3.4rem);
-  line-height: 1.04;
+  line-height: 1.02;
   letter-spacing: -0.04em;
 }
 
@@ -122,14 +124,14 @@ body::before {
 
 .main-nav a:hover,
 .main-nav a:focus-visible {
-  background: rgba(124, 140, 255, 0.18);
-  border-color: rgba(124, 140, 255, 0.36);
+  background: rgba(118, 199, 255, 0.18);
+  border-color: rgba(118, 199, 255, 0.35);
   transform: translateY(-1px);
 }
 
 .admin-link {
-  background: linear-gradient(135deg, rgba(255, 61, 109, 0.95), rgba(124, 140, 255, 0.92), rgba(61, 215, 197, 0.92));
-  color: #06101f;
+  background: linear-gradient(135deg, rgba(255, 90, 140, 0.96), rgba(135, 188, 255, 0.92));
+  color: #08101b;
   border-color: transparent;
 }
 
@@ -147,8 +149,8 @@ body::before {
   position: relative;
   padding: 2.2rem;
   margin-bottom: 2.2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1.8rem;
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -159,8 +161,8 @@ body::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(124, 140, 255, 0.12), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(61, 215, 197, 0.1), transparent 26%);
+  background: radial-gradient(circle at top left, rgba(118, 199, 255, 0.14), transparent 20%),
+    radial-gradient(circle at bottom right, rgba(255, 155, 179, 0.1), transparent 24%);
   pointer-events: none;
 }
 
@@ -187,7 +189,7 @@ body::before {
 
 .section-overview .section-lead,
 .page-intro {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .hero-actions,
@@ -211,20 +213,20 @@ body::before {
   justify-content: center;
   padding: 1rem 1.45rem;
   border-radius: 1.4rem;
-  background: linear-gradient(135deg, rgba(255, 61, 109, 0.95), rgba(124, 140, 255, 0.92), rgba(61, 215, 197, 0.92));
-  color: #06101f;
+  background: var(--rainbow);
+  color: #08101b;
   text-decoration: none;
   font-weight: 700;
   letter-spacing: 0.01em;
-  box-shadow: 0 18px 30px rgba(61, 215, 197, 0.18);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .button:hover,
 .sport-box:hover {
   transform: translateY(-3px);
-  box-shadow: 0 26px 42px rgba(61, 215, 197, 0.24);
-  filter: saturate(1.1);
+  box-shadow: 0 28px 42px rgba(0, 0, 0, 0.24);
+  filter: saturate(1.12);
 }
 
 .info-grid,
@@ -245,19 +247,20 @@ body::before {
 .team-card,
 .sport-box,
 .admin-card {
-  background: rgba(18, 28, 56, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 20, 37, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1.6rem;
   border-radius: 1.6rem;
-  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.18);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .team-card:hover,
 .admin-card:hover,
 .sport-box:hover {
   transform: translateY(-4px);
-  border-color: rgba(124, 140, 255, 0.26);
+  border-color: rgba(118, 199, 255, 0.28);
+  background: rgba(20, 34, 59, 0.98);
 }
 
 .team-card h3,
@@ -268,8 +271,8 @@ body::before {
 }
 
 .sport-summary {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1.5rem;
   border-radius: 1.4rem;
   position: relative;
@@ -283,7 +286,7 @@ body::before {
   height: calc(100% - 2.8rem);
   width: 6px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ff3d6d, #ff8a3d, #f4e048, #3dd7c5, #6f6dff);
+  background: var(--rainbow);
 }
 
 .login-container {
@@ -312,7 +315,7 @@ body::before {
 }
 
 .login-error {
-  color: #ff9388;
+  color: #ffaca8;
   margin-top: 1rem;
 }
 
@@ -332,14 +335,14 @@ body::before {
   padding: 1.8rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   text-align: center;
-  color: #94a8cf;
+  color: #9fb4d7;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 1.2rem;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -353,7 +356,7 @@ table th,
 }
 
 table th {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   font-weight: 700;
   color: #f7f9ff;
 }
@@ -375,8 +378,8 @@ input:focus,
 select:focus,
 textarea:focus,
 button:focus {
-  border-color: rgba(124, 140, 255, 0.45);
-  box-shadow: 0 0 0 4px rgba(124, 140, 255, 0.14);
+  border-color: rgba(118, 199, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(118, 199, 255, 0.14);
 }
 
 textarea {
@@ -386,15 +389,15 @@ textarea {
 
 button {
   cursor: pointer;
-  background: linear-gradient(135deg, rgba(255, 61, 109, 0.95), rgba(124, 140, 255, 0.92), rgba(61, 215, 197, 0.92));
-  color: #06101f;
+  background: linear-gradient(135deg, rgba(255, 138, 171, 0.96), rgba(118, 199, 255, 0.92));
+  color: #08101b;
   border: none;
   border-radius: 1rem;
   font-weight: 700;
 }
 
 button:hover {
-  background: linear-gradient(135deg, rgba(103, 120, 255, 0.98), rgba(46, 199, 178, 0.96), rgba(255, 99, 134, 0.98));
+  background: linear-gradient(135deg, rgba(182, 230, 255, 0.98), rgba(247, 169, 255, 0.94));
 }
 
 button:disabled {
