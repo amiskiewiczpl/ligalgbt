@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Liga LGBT | Strona główna</title>
+  <title>Liga LGBT | Sportowa społeczność</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -11,10 +11,14 @@
     <div class="brand">
       <p class="eyebrow">Liga LGBT</p>
       <h1>Sportowa liga dla społeczności LGBT</h1>
-      <p>Bezpieczna, przyjazna i konkurencyjna liga, w której każdy zespół ma swoje miejsce.</p>
+      <p>Bezpieczne rozgrywki, czytelne zasady i miejsce dla zawodników na różnych poziomach zaawansowania.</p>
     </div>
-    <nav class="main-nav">
-      <a href="index.html">Home</a>
+    <nav class="main-nav" aria-label="Główna nawigacja">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="kluby.html">Kluby</a>
+      <a href="zasady.html">Zasady</a>
+      <a href="partnerzy.html">Partnerzy</a>
+      <a href="klasyfikacje.html">Klasyfikacje</a>
       <a href="siatkowka.html">Siatkówka</a>
       <a href="badminton.html">Badminton</a>
       <a href="squash.html">Squash</a>
@@ -23,65 +27,76 @@
   </header>
 
   <main class="container">
-    <section class="hero">
+    <section class="hero hero-main">
       <div class="hero-copy">
         <span class="eyebrow">Liga LGBT</span>
-        <h2>Przejrzysta, nowoczesna liga sportowa dla społeczności LGBT</h2>
-        <p>Łączymy drużyny i zawodników w czterech dyscyplinach. To liga, w której sport, bezpieczeństwo i szacunek idą w parze.</p>
+        <h2>Graj. Rywalizuj. Należysz tutaj.</h2>
+        <p>Organizujemy rozgrywki w czterech dyscyplinach: siatkówce, badmintonie, squashu i tenisie. Każda z nich ma jasne zasady, poziomy gry i aktualne klasyfikacje.</p>
+        <p class="hero-note"><strong>85+</strong> zawodników i zespołów tworzy społeczność opartą na fair play, szacunku i dobrej organizacji.</p>
       </div>
       <div class="hero-actions">
-        <a class="button" href="siatkowka.html">Siatkówka</a>
-        <a class="button" href="badminton.html">Badminton</a>
-        <a class="button" href="squash.html">Squash</a>
-        <a class="button" href="tenis.html">Tenis</a>
+        <a class="button" href="#dyscypliny">Zobacz dyscypliny</a>
+        <a class="button button-alt" href="#wartosci">Poznaj wartości</a>
       </div>
     </section>
 
-    <section class="section-overview">
+    <section class="value-section" id="wartosci" aria-labelledby="wartosci-title">
       <div class="section-lead">
-        <h2>Jak działa ta liga?</h2>
-        <p>To miejsce, w którym kluby sportowe LGBT mogą rywalizować w przyjaznym i sprawiedliwym środowisku. Wyniki, rankingi i opisy są dostępne dla wszystkich, a administracja działa oddzielnie.</p>
+        <span class="eyebrow">Wartości</span>
+        <h2 id="wartosci-title">Sport bez chaosu i bez wykluczenia</h2>
+        <p>Strona ma pomagać szybko znaleźć klub, zasady, wyniki i klasyfikacje. Treść jest konkretna, a interfejs nie konkuruje z informacją.</p>
       </div>
-      <div class="section-grid">
-        <article>
-          <h3>Wyraźna struktura</h3>
-          <p>Dyscypliny i poziomy są jasne. W siatkówce działamy w grupach B, B-, C i D, żeby każda drużyna grała z równymi rywalami.</p>
-        </article>
-        <article>
-          <h3>Aktualne wyniki</h3>
-          <p>Każda podstrona dyscypliny pokazuje najnowsze wyniki i maksymalnie osiem spotkań dla czytelności.</p>
-        </article>
-        <article>
-          <h3>Ranking MVP</h3>
-          <p>Na listach MVP widać najlepszych zawodników. Administrator może dodawać opinie i statystyki na bieżąco.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section-overview">
-      <div class="section-lead">
-        <h2>Nasze wartości</h2>
-        <p>Liga jest oparta na inkluzji, fair play i wspólnym rozwoju. Tutaj sport łączy, zamiast dzielić.</p>
-      </div>
-      <div class="section-grid">
-        <article>
+      <div class="value-grid">
+        <article class="value-item">
           <h3>Inkluzywność</h3>
-          <p>Witamy wszystkie zespoły i zawodników, którzy chcą grać uczciwie i z szacunkiem.</p>
+          <p>Nowi zawodnicy są mile widziani niezależnie od doświadczenia i poziomu sportowego.</p>
         </article>
-        <article>
+        <article class="value-item">
+          <h3>Równa rywalizacja</h3>
+          <p>Poziomy gry pomagają dobrać przeciwników tak, aby mecze były wymagające i uczciwe.</p>
+        </article>
+        <article class="value-item">
           <h3>Bezpieczeństwo</h3>
-          <p>Rozgrywki odbywają się w atmosferze wsparcia, z jasnymi zasadami i etykietą.</p>
+          <p>Nie ma miejsca na dyskryminację, agresję ani zachowania naruszające komfort zawodników.</p>
         </article>
-        <article>
-          <h3>Wspólnota</h3>
-          <p>Liga to także okazja do budowania relacji między zawodnikami i klubami.</p>
+        <article class="value-item">
+          <h3>Społeczność</h3>
+          <p>Liga łączy sport, regularne spotkania i relacje wykraczające poza sam wynik.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-overview">
+      <div class="section-lead">
+        <span class="eyebrow">Organizacja</span>
+        <h2>Co znajdziesz na stronie?</h2>
+        <p>Najważniejsze informacje są podzielone na proste sekcje: kluby, zasady, partnerów, klasyfikacje i podstrony dyscyplin.</p>
+      </div>
+      <div class="section-grid">
+        <article class="feature-card">
+          <div class="feature-icon">01</div>
+          <h3>Wyniki i tabele</h3>
+          <p>Każda dyscyplina ma miejsce na najnowsze mecze, punkty oraz ranking MVP.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">02</div>
+          <h3>Kluby</h3>
+          <p>Krótka prezentacja drużyn, miast i skali zaangażowania w lidze.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">03</div>
+          <h3>Fair play</h3>
+          <p>Zasady są widoczne przed grą, aby każdy wiedział, czego się spodziewać.</p>
         </article>
       </div>
     </section>
 
     <section class="team-list">
-      <h2>Drużyny startowe</h2>
-      <p>Na początek rozgrywek występuje pięć klubów, które rozwijają się i rywalizują w lidze.</p>
+      <div class="section-lead">
+        <span class="eyebrow">Kluby</span>
+        <h2>Zespoły w lidze</h2>
+        <p>Poznaj drużyny, które budują ligę w różnych miastach Polski.</p>
+      </div>
       <div class="team-grid">
         <article class="team-card">
           <h3>Orion Poznań</h3>
@@ -89,48 +104,63 @@
         </article>
         <article class="team-card">
           <h3>Neon Wrocław</h3>
-          <p>Barwna ekipa z Wrocławia, gotowa na sportowe wyzwania.</p>
+          <p>Barwna ekipa z Wrocławia, gotowa na sportowe wyzwania i nowe przyjaźnie.</p>
         </article>
         <article class="team-card">
           <h3>Volup Warszawa</h3>
-          <p>Warszawski team z ambicjami i energią, która napędza grę.</p>
+          <p>Warszawski team z ambicją, energią i konsekwencją w treningach.</p>
         </article>
         <article class="team-card">
           <h3>Dragons Kraków</h3>
-          <p>Dumni gracze z Krakowa, którzy łączą dyscypliny i społeczność.</p>
+          <p>Drużyna z Krakowa łącząca sportową pasję, dyscyplinę i społeczność.</p>
         </article>
         <article class="team-card">
           <h3>Unicorns Łódź</h3>
-          <p>Kreatywna drużyna z Łodzi z sercem do sportu i zespołowej zabawy.</p>
+          <p>Kreatywna drużyna z Łodzi z sercem do sportu i zespołowej gry.</p>
         </article>
       </div>
     </section>
 
-    <section class="sport-links">
-      <h2>Dyscypliny</h2>
+    <section id="dyscypliny" class="section-overview">
+      <div class="section-lead">
+        <span class="eyebrow">Dyscypliny</span>
+        <h2>Wybierz swoją kategorię gry</h2>
+        <p>Każda dyscyplina ma własną podstronę z opisem, wynikami i rankingiem MVP.</p>
+      </div>
       <div class="sport-grid">
         <a class="sport-box" href="siatkowka.html">
           <h3>Siatkówka</h3>
-          <p>Poziomy B, B-, C i D. Sprawdź wyniki, tabelę i ranking MVP.</p>
+          <p>Poziomy B, B-, C i D. Gra zespołowa, współpraca i dynamiczne mecze.</p>
         </a>
         <a class="sport-box" href="badminton.html">
           <h3>Badminton</h3>
-          <p>Szybkie mecze, refleks i zręczność. Idealne dla energicznych zawodników.</p>
+          <p>Szybkie mecze singlowe i deblowe, refleks oraz precyzja.</p>
         </a>
         <a class="sport-box" href="squash.html">
           <h3>Squash</h3>
-          <p>Intensywne spotkania na małym korcie i szybka gra dla ambitnych.</p>
+          <p>Intensywne spotkania, taktyka i szybka reakcja na małym korcie.</p>
         </a>
         <a class="sport-box" href="tenis.html">
           <h3>Tenis</h3>
-          <p>Turnieje singlowe i deblowe, gdzie liczy się taktyka i precyzja.</p>
+          <p>Turnieje singlowe i deblowe, technika oraz cierpliwa strategia.</p>
         </a>
+      </div>
+    </section>
+
+    <section class="newsletter-section">
+      <div class="newsletter-content">
+        <h2>Dołącz do społeczności</h2>
+        <p>Zapisz się, aby otrzymywać informacje o nowych terminach, wynikach i wydarzeniach ligowych.</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Twój email" aria-label="Adres email" required />
+          <button type="submit">Zapisz mnie</button>
+        </form>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>Projekt strony prezentuje strukturę ligi LGBT — dostęp administracyjny jest ukryty i wymaga logowania.</p>
+    <p>&copy; 2026 Liga LGBT. Polska liga sportowa dla społeczności LGBTQ+. <a href="admin.html">Admin</a></p>
   </footer>
 
   <script src="data.js"></script>

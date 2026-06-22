@@ -1,91 +1,47 @@
 <!DOCTYPE html>
-<html lang="pl" data-page="sport">
+<html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Squash | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-page="sport" data-sport="squash">
   <header class="site-header">
     <div class="brand">
-      <p class="eyebrow">Squash</p>
-      <h1>Squash w Lidze LGBT</h1>
-      <p>Gry szybkie, dynamiczne i wymagające pełnej koncentracji.</p>
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Squash</h1>
+      <p>Intensywne mecze, szybkie wymiany i dyscyplina, w której liczy się kondycja oraz taktyka.</p>
     </div>
-    <nav class="main-nav">
-      <a href="index.html">Home</a>
-      <a href="siatkowka.html">Siatkówka</a>
-      <a href="badminton.html">Badminton</a>
-      <a href="squash.html">Squash</a>
-      <a href="tenis.html">Tenis</a>
+    <nav class="main-nav" aria-label="Główna nawigacja">
+      <a href="index.html">Home</a><a href="kluby.html">Kluby</a><a href="zasady.html">Zasady</a><a href="partnerzy.html">Partnerzy</a><a href="klasyfikacje.html">Klasyfikacje</a><a href="siatkowka.html">Siatkówka</a><a href="badminton.html">Badminton</a><a href="squash.html" aria-current="page">Squash</a><a href="tenis.html">Tenis</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="sport-hero sport-hero-squash">
-      <div class="hero-copy">
-        <span class="eyebrow">Squash</span>
-        <h2>Squash w Lidze LGBT — tempo i precyzja</h2>
-        <p>Squash to intensywna gra, która wymaga refleksu, szybkości i koncentracji na każdej piłce.</p>
-      </div>
-      <div class="hero-actions">
-        <a class="button" href="#teams">Drużyny</a>
-        <a class="button" href="#results">Wyniki</a>
-        <a class="button" href="#mvp">Ranking MVP</a>
+      <span class="eyebrow">Dyscyplina</span>
+      <h2>Squash dla osób lubiących intensywność</h2>
+      <p>Krótki dystans, szybka reakcja i czytelne reguły bezpieczeństwa są tu równie ważne jak wynik.</p>
+      <div class="sport-links">
+        <a class="button" href="#wyniki">Wyniki</a>
+        <a class="button button-alt" href="#mvp">Ranking MVP</a>
+        <a class="button button-alt" href="#druzyny">Drużyny</a>
       </div>
     </section>
 
-    <section class="section-overview">
-      <div class="section-lead">
-        <h2>Energia i rywalizacja</h2>
-        <p>Squash łączy szybką akcję z taktyką. Rozgrywki w noseń powinny przyciągać zawodników szukających dużej intensywności.</p>
-      </div>
-      <div class="section-grid">
-        <article class="sport-summary">
-          <h3>Intensywne mecze</h3>
-          <p>Każdy punkt to walka o przewagę, a mecze w lidze pokazują największą szybkość i wytrzymałość.</p>
-        </article>
-        <article class="sport-summary">
-          <h3>Fair play</h3>
-          <p>Siła i zaangażowanie idą w parze z szacunkiem, tak jak w każdej dyscyplinie LGBT sportu.</p>
-        </article>
-      </div>
+    <section class="sport-details">
+      <article class="sport-summary"><h3>Format</h3><p>Mecze singlowe prowadzone w formule turniejowej lub ligowej.</p></article>
+      <article class="sport-summary"><h3>Bezpieczeństwo</h3><p>Najważniejsze są kontrola ruchu, komunikacja i świadome unikanie ryzyka.</p></article>
     </section>
 
-    <section id="teams" class="section-overview">
-      <div class="section-lead">
-        <h2>Drużyny</h2>
-        <p>Sprawdź skład drużyn squashowych. Administrator może łatwo dodawać nowe zespoły i aktualizować ich opisy.</p>
-      </div>
-      <div class="team-grid" id="sport-teams"></div>
-    </section>
-
-    <section id="results" class="section-overview">
-      <div class="section-lead">
-        <h2>Wyniki</h2>
-        <p>Wyświetlamy maksymalnie 8 ostatnich gier, aby strona była czytelna i aktualna.</p>
-      </div>
-      <div id="sport-results"></div>
-    </section>
-
-    <section id="mvp" class="section-overview">
-      <div class="section-lead">
-        <h2>Ranking MVP</h2>
-        <p>Najlepsi gracze squashowi zdobywają punkty i trafiają do rankingu MVP na podstawie wyników.</p>
-      </div>
-      <div id="sport-mvp"></div>
-    </section>
+    <section id="wyniki" class="section-overview"><div class="section-lead"><h2>Ostatnie wyniki</h2><p>Najświeższe mecze zapisane w systemie.</p></div><div id="sport-results"></div></section>
+    <section id="mvp" class="section-overview"><div class="section-lead"><h2>Ranking MVP</h2><p>Zawodnicy z najwyższą liczbą punktów.</p></div><div id="sport-mvp"></div></section>
+    <section id="druzyny" class="team-list"><div class="section-lead"><h2>Drużyny</h2><p>Kluby występujące w rozgrywkach ligowych.</p></div><div class="team-grid" id="sport-teams"></div></section>
   </main>
 
-  <footer class="site-footer">
-    <p>Liga LGBT 2026 — squash dla zawodników lubiących intensywność.</p>
-  </footer>
-
+  <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
   <script src="data.js"></script>
   <script src="script.js"></script>
-  <script>
-    document.body.dataset.sport = 'squash';
-  </script>
 </body>
 </html>

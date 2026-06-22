@@ -1,6 +1,5 @@
 function getSportKey() {
-  const sport = document.body.dataset.sport;
-  return sport || null;
+  return document.body.dataset.sport || document.documentElement.dataset.sport || null;
 }
 
 function showToast(message, type = 'info', duration = 4000) {
@@ -47,22 +46,22 @@ function initLoginPage() {
     event.preventDefault();
     const formData = new FormData(form);
     const password = formData.get('password').toString().trim();
-    
+
     if (!password) {
-      showToast('⚠️ Proszę wpisać hasło', 'warning');
+      showToast('Wpisz hasło administratora.', 'warning');
       return;
     }
 
     if (password === leagueData.admin.password) {
       localStorage.setItem('ligaLgbtAdmin', JSON.stringify({ loggedIn: true }));
-      showToast('✅ Zalogowano! Przekierowanie...', 'success', 2000);
+      showToast('Zalogowano. Przekierowuję do panelu.', 'success', 2000);
       setTimeout(() => {
         window.location.href = 'admin.html';
       }, 800);
       return;
     }
 
-    showToast('❌ Nieprawidłowe hasło. Spróbuj ponownie.', 'error');
+    showToast('Nieprawidłowe hasło. Spróbuj ponownie.', 'error');
     if (passwordInput) {
       passwordInput.value = '';
       passwordInput.focus();
@@ -72,7 +71,7 @@ function initLoginPage() {
 
 function requireAdminAuth() {
   if (!isAdminLoggedIn()) {
-    showToast('⚠️ Brak dostępu. Zaloguj się jako admin.', 'warning', 3000);
+    showToast('Brak dostępu. Zaloguj się jako administrator.', 'warning', 3000);
     setTimeout(() => {
       window.location.href = 'login.html';
     }, 500);
@@ -83,6 +82,7 @@ function renderTeams() {
   const sportKey = getSportKey();
   const section = document.getElementById('sport-teams');
   if (!section || !sportKey) return;
+
   section.innerHTML = '';
   leagueData.teams.forEach(team => {
     const card = document.createElement('article');
@@ -96,23 +96,25 @@ function renderResults() {
   const sportKey = getSportKey();
   const section = document.getElementById('sport-results');
   if (!section || !sportKey) return;
+
   const sport = leagueData.sports[sportKey];
   if (!sport) {
     section.innerHTML = '<p>Brak danych dla tej dyscypliny.</p>';
     return;
   }
+
   section.innerHTML = '';
   if (!sport.results.length) {
-    section.innerHTML = '<p>Brak aktualnych wyników.</p>';
+    section.innerHTML = '<p class="empty-state">Brak aktualnych wyników.</p>';
     return;
   }
 
   const table = document.createElement('table');
-  table.innerHTML = `<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>`;
+  table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>';
   const body = document.createElement('tbody');
   sport.results.slice(0, 8).forEach(match => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td>${match.score}</td><td>${match.away}</td>`;
+    row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td><strong>${match.score}</strong></td><td>${match.away}</td>`;
     body.appendChild(row);
   });
   table.appendChild(body);
@@ -123,26 +125,39 @@ function renderMvp() {
   const sportKey = getSportKey();
   const section = document.getElementById('sport-mvp');
   if (!section || !sportKey) return;
+
   const sport = leagueData.sports[sportKey];
   if (!sport) {
     section.innerHTML = '<p>Brak danych dla tej dyscypliny.</p>';
     return;
   }
+
   section.innerHTML = '';
   if (!sport.mvp.length) {
-    section.innerHTML = '<p>Brak rankingu MVP.</p>';
+    section.innerHTML = '<p class="empty-state">Brak rankingu MVP.</p>';
     return;
   }
+
   const table = document.createElement('table');
-  table.innerHTML = `<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>`;
+  table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>';
   const body = document.createElement('tbody');
-  sport.mvp.sort((a, b) => b.points - a.points).forEach((player, index) => {
+  sport.mvp.slice().sort((a, b) => b.points - a.points).forEach((player, index) => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td>${player.points}</td>`;
+    row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td><strong>${player.points}</strong></td>`;
     body.appendChild(row);
   });
   table.appendChild(body);
   section.appendChild(table);
+}
+
+function buildSportOptions(select) {
+  select.innerHTML = '';
+  Object.keys(leagueData.sports).forEach(key => {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = leagueData.sports[key].name;
+    select.appendChild(option);
+  });
 }
 
 function initAdminPanel() {
@@ -153,7 +168,7 @@ function initAdminPanel() {
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       localStorage.removeItem('ligaLgbtAdmin');
-      showToast('👋 Wylogowano pomyślnie!', 'info', 2000);
+      showToast('Wylogowano.', 'info', 2000);
       setTimeout(() => {
         window.location.href = 'login.html';
       }, 800);
@@ -180,11 +195,11 @@ function initAdminPanel() {
   function refreshTeamList() {
     list.innerHTML = '<h4>Aktualne zespoły</h4>';
     const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>Nazwa</th><th>Miasto</th><th>Akcje</th></tr></thead>`;
+    table.innerHTML = '<thead><tr><th>Nazwa</th><th>Miasto</th><th>Akcje</th></tr></thead>';
     const body = document.createElement('tbody');
     leagueData.teams.forEach(team => {
       const row = document.createElement('tr');
-      row.innerHTML = `<td>${team.name}</td><td>${team.city}</td><td><button type="button" data-id="${team.id}" class="edit-team">Edytuj</button></td>`;
+      row.innerHTML = `<td>${team.name}</td><td>${team.city}</td><td><button type="button" data-id="${team.id}" class="edit-team compact-button">Edytuj</button></td>`;
       body.appendChild(row);
     });
     table.appendChild(body);
@@ -201,25 +216,16 @@ function initAdminPanel() {
     const description = formData.get('description').toString().trim();
     const logo = formData.get('logo').toString().trim();
 
-    // Validation
-    if (!name) {
-      showToast('❌ Nazwa zespołu jest wymagana', 'error');
+    if (!name || !city || !description) {
+      showToast('Uzupełnij nazwę, miasto i opis zespołu.', 'error');
       return;
     }
     if (name.length < 3) {
-      showToast('❌ Nazwa powinna mieć co najmniej 3 znaki', 'warning');
-      return;
-    }
-    if (!city) {
-      showToast('❌ Miasto jest wymagane', 'error');
-      return;
-    }
-    if (!description) {
-      showToast('❌ Opis jest wymagany', 'error');
+      showToast('Nazwa zespołu powinna mieć co najmniej 3 znaki.', 'warning');
       return;
     }
     if (description.length < 10) {
-      showToast('❌ Opis powinien być bardziej szczegółowy (min. 10 znaków)', 'warning');
+      showToast('Opis powinien mieć co najmniej 10 znaków.', 'warning');
       return;
     }
 
@@ -228,11 +234,11 @@ function initAdminPanel() {
       existing.city = city;
       existing.description = description;
       existing.logo = logo;
-      showToast(`✅ Zespół "${name}" został zaktualizowany`, 'success');
+      showToast(`Zespół "${name}" został zaktualizowany.`, 'success');
     } else {
       const nextId = Math.max(0, ...leagueData.teams.map(team => team.id)) + 1;
       leagueData.teams.push({ id: nextId, name, city, description, logo });
-      showToast(`✅ Nowy zespół "${name}" został dodany`, 'success');
+      showToast(`Dodano zespół "${name}".`, 'success');
     }
 
     saveLeagueData(leagueData);
@@ -242,15 +248,14 @@ function initAdminPanel() {
   });
 
   list.addEventListener('click', event => {
-    if (event.target.matches('.edit-team')) {
-      const id = Number(event.target.dataset.id);
-      const team = leagueData.teams.find(item => item.id === id);
-      if (!team) return;
-      form.name.value = team.name;
-      form.city.value = team.city;
-      form.description.value = team.description;
-      form.logo.value = team.logo;
-    }
+    if (!event.target.matches('.edit-team')) return;
+    const id = Number(event.target.dataset.id);
+    const team = leagueData.teams.find(item => item.id === id);
+    if (!team) return;
+    form.name.value = team.name;
+    form.city.value = team.city;
+    form.description.value = team.description;
+    form.logo.value = team.logo;
   });
 
   initResultsEditor();
@@ -260,9 +265,10 @@ function initAdminPanel() {
 function initResultsEditor() {
   const editor = document.getElementById('results-editor');
   if (!editor) return;
+
   editor.innerHTML = '';
   const nav = document.createElement('div');
-  nav.className = 'results-nav';
+  nav.className = 'editor-toolbar';
   nav.innerHTML = '<label>Wybierz dyscyplinę<select id="results-sport"></select></label>';
   editor.appendChild(nav);
 
@@ -283,16 +289,6 @@ function initResultsEditor() {
   const list = document.createElement('div');
   editor.appendChild(list);
 
-  function buildSportOptions(select) {
-    select.innerHTML = '';
-    Object.keys(leagueData.sports).forEach(key => {
-      const option = document.createElement('option');
-      option.value = key;
-      option.textContent = leagueData.sports[key].name;
-      select.appendChild(option);
-    });
-  }
-
   const editorSport = form.querySelector('#editor-sport');
   const resultsSport = nav.querySelector('#results-sport');
   if (!editorSport || !resultsSport) return;
@@ -305,7 +301,7 @@ function initResultsEditor() {
     const sport = leagueData.sports[sportKey];
     list.innerHTML = '<h4>Wyniki</h4>';
     const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>`;
+    table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>';
     const body = document.createElement('tbody');
     sport.results.slice(0, 8).forEach(match => {
       const row = document.createElement('tr');
@@ -316,15 +312,15 @@ function initResultsEditor() {
     list.appendChild(table);
   }
 
-  refreshList();
-  resultsSport.addEventListener('change', refreshList);
-
   function fillTeamSelects() {
     const teamOptions = leagueData.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
     form.home.innerHTML = teamOptions;
     form.away.innerHTML = teamOptions;
   }
+
+  refreshList();
   fillTeamSelects();
+  resultsSport.addEventListener('change', refreshList);
 
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -335,54 +331,46 @@ function initResultsEditor() {
     const away = formData.get('away').toString();
     const score = formData.get('score').toString().trim();
 
-    // Validation
-    if (!home) {
-      showToast('❌ Wybierz drużynę domową', 'error');
-      return;
-    }
-    if (!away) {
-      showToast('❌ Wybierz drużynę gościnną', 'error');
+    if (!home || !away || !score) {
+      showToast('Wybierz drużyny i wpisz wynik.', 'error');
       return;
     }
     if (home === away) {
-      showToast('⚠️ Obie drużyny nie mogą być takie same', 'warning');
-      return;
-    }
-    if (!score) {
-      showToast('❌ Podaj wynik (np. 3:1)', 'error');
+      showToast('Drużyny w jednym meczu muszą być różne.', 'warning');
       return;
     }
     if (!/^\d+:\d+$/.test(score)) {
-      showToast('❌ Wynik musi być w formacie "X:Y" (np. 3:1)', 'warning');
+      showToast('Wynik wpisz w formacie X:Y, np. 3:1.', 'warning');
       return;
     }
 
     const sport = leagueData.sports[sportKey];
     if (!sport) {
-      showToast('❌ Dyscyplina nie istnieje', 'error');
+      showToast('Wybrana dyscyplina nie istnieje.', 'error');
       return;
     }
     if (sport.results.length >= 8) {
-      showToast('⚠️ Maksymalnie 8 wyników dla tej dyscypliny', 'warning');
+      showToast('Maksymalnie 8 wyników dla jednej dyscypliny.', 'warning');
       return;
     }
-    
+
     const nextId = Math.max(0, ...sport.results.map(item => item.id)) + 1;
     sport.results.push({ id: nextId, home, away, score, level });
     saveLeagueData(leagueData);
     refreshList();
     renderResults();
     form.reset();
-    showToast(`✅ Wynik ${home} ${score} ${away} został dodany`, 'success');
+    showToast(`Dodano wynik ${home} ${score} ${away}.`, 'success');
   });
 }
 
 function initMvpEditor() {
   const editor = document.getElementById('mvp-editor');
   if (!editor) return;
+
   editor.innerHTML = '';
   const nav = document.createElement('div');
-  nav.className = 'mvp-nav';
+  nav.className = 'editor-toolbar';
   nav.innerHTML = '<label>Wybierz dyscyplinę<select id="mvp-sport"></select></label>';
   editor.appendChild(nav);
 
@@ -406,15 +394,6 @@ function initMvpEditor() {
   const mvpSport = nav.querySelector('#mvp-sport');
   if (!sportSelect || !mvpSport) return;
 
-  function buildSportOptions(select) {
-    select.innerHTML = '';
-    Object.keys(leagueData.sports).forEach(key => {
-      const option = document.createElement('option');
-      option.value = key;
-      option.textContent = leagueData.sports[key].name;
-      select.appendChild(option);
-    });
-  }
   buildSportOptions(sportSelect);
   buildSportOptions(mvpSport);
 
@@ -423,7 +402,7 @@ function initMvpEditor() {
     const sport = leagueData.sports[sportKey];
     list.innerHTML = '<h4>Ranking MVP</h4>';
     const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>`;
+    table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>';
     const body = document.createElement('tbody');
     sport.mvp.slice().sort((a, b) => b.points - a.points).forEach((player, index) => {
       const row = document.createElement('tr');
@@ -445,31 +424,22 @@ function initMvpEditor() {
     const team = formData.get('team').toString().trim();
     const points = Number(formData.get('points'));
 
-    // Validation
-    if (!player) {
-      showToast('❌ Imię zawodnika jest wymagane', 'error');
+    if (!player || !team || Number.isNaN(points) || points < 0) {
+      showToast('Uzupełnij zawodnika, drużynę i poprawną liczbę punktów.', 'error');
       return;
     }
     if (player.length < 3) {
-      showToast('❌ Imię powinno mieć co najmniej 3 znaki', 'warning');
-      return;
-    }
-    if (!team) {
-      showToast('❌ Nazwa drużyny jest wymagana', 'error');
-      return;
-    }
-    if (isNaN(points) || points < 0) {
-      showToast('❌ Punkty muszą być liczbą dodatnią', 'error');
+      showToast('Imię lub nazwa zawodnika powinna mieć co najmniej 3 znaki.', 'warning');
       return;
     }
     if (points > 999) {
-      showToast('⚠️ Punkty są zbyt wysokie (max 999)', 'warning');
+      showToast('Punkty są zbyt wysokie. Maksymalna wartość to 999.', 'warning');
       return;
     }
 
     const sport = leagueData.sports[sportKey];
     if (!sport) {
-      showToast('❌ Dyscyplina nie istnieje', 'error');
+      showToast('Wybrana dyscyplina nie istnieje.', 'error');
       return;
     }
 
@@ -479,12 +449,12 @@ function initMvpEditor() {
     refreshList();
     renderMvp();
     form.reset();
-    showToast(`✅ Zawodnik "${player}" dodany do rankingu MVP`, 'success');
+    showToast(`Dodano zawodnika "${player}" do rankingu MVP.`, 'success');
   });
 }
 
 function initPage() {
-  const page = document.body.dataset.page;
+  const page = document.body.dataset.page || document.documentElement.dataset.page;
   if (page === 'home') return;
   if (page === 'login') {
     initLoginPage();

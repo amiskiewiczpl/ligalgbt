@@ -1,6 +1,10 @@
 # ligalgbt
 
-Prosta statyczna strona dla ligi LGBT z podstronami sportowymi i panelem administratora.
+Prosta statyczna strona dla Ligi LGBT z podstronami sportowymi, rankingami i panelem administratora.
+
+## Uruchomienie lokalne
+
+Otwórz `index.html` w przeglądarce albo uruchom prosty serwer statyczny w katalogu projektu.
 
 ## Uruchomienie na GitHub Pages
 
@@ -16,4 +20,5 @@ Po każdym pushu do gałęzi `main` GitHub Actions uruchomi workflow `.github/wo
 ## Uwaga
 
 - Strona jest statyczna, więc wystarczy wypchnąć wszystkie pliki.
-- Panel administratora działa w przeglądarce lokalnie przy pomocy `localStorage`.
+- Panel administratora działa lokalnie w przeglądarce przy pomocy `localStorage`.
+- Dane zapisane w panelu nie trafiają automatycznie do repozytorium ani na serwer.

@@ -6,95 +6,42 @@
   <title>Siatkówka | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-page="sport" data-sport="siatkowka">
   <header class="site-header">
     <div class="brand">
-      <p class="eyebrow">Siatkówka</p>
-      <h1>Siatkówka w Lidze LGBT</h1>
-      <p>Rozgrywki podzielone na poziomy B, B-, C i D, aby każdy mógł rywalizować w swoim tempie.</p>
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Siatkówka</h1>
+      <p>Gra zespołowa z poziomami B, B-, C i D, nastawiona na równe mecze i dobrą komunikację.</p>
     </div>
-    <nav class="main-nav">
-      <a href="index.html">Home</a>
-      <a href="siatkowka.html">Siatkówka</a>
-      <a href="badminton.html">Badminton</a>
-      <a href="squash.html">Squash</a>
-      <a href="tenis.html">Tenis</a>
+    <nav class="main-nav" aria-label="Główna nawigacja">
+      <a href="index.html">Home</a><a href="kluby.html">Kluby</a><a href="zasady.html">Zasady</a><a href="partnerzy.html">Partnerzy</a><a href="klasyfikacje.html">Klasyfikacje</a><a href="siatkowka.html" aria-current="page">Siatkówka</a><a href="badminton.html">Badminton</a><a href="squash.html">Squash</a><a href="tenis.html">Tenis</a>
     </nav>
   </header>
 
   <main class="container">
     <section class="sport-hero sport-hero-volleyball">
-      <div class="hero-copy">
-        <span class="eyebrow">Siatkówka</span>
-        <h2>Przejrzysta liga siatkarska dla drużyn LGBT</h2>
-        <p>Działamy w czterech poziomach: B, B-, C i D. Każdy poziom daje równą rywalizację i dobrą zabawę na boisku.</p>
-      </div>
-      <div class="hero-actions">
-        <a class="button" href="#levels">Poziomy</a>
-        <a class="button" href="#teams">Drużyny</a>
-        <a class="button" href="#results">Wyniki</a>
-        <a class="button" href="#mvp">Ranking MVP</a>
+      <span class="eyebrow">Dyscyplina</span>
+      <h2>Siatkówka dla różnych poziomów gry</h2>
+      <p>Rozgrywki są podzielone na poziomy, aby drużyny mogły rywalizować z przeciwnikami o podobnym doświadczeniu.</p>
+      <div class="sport-links">
+        <a class="button" href="#wyniki">Wyniki</a>
+        <a class="button button-alt" href="#mvp">Ranking MVP</a>
+        <a class="button button-alt" href="#druzyny">Drużyny</a>
       </div>
     </section>
 
-    <section id="levels" class="section-overview">
-      <div class="section-lead">
-        <h2>Poziomy ligi</h2>
-        <p>W siatkówce każdy znajdzie miejsce – od zaawansowanych zespołów po te, które dopiero wchodzą w rozgrywki.</p>
-      </div>
-      <div class="section-grid">
-        <article class="sport-summary">
-          <h3>Grupa B</h3>
-          <p>Najwyższy poziom, najbardziej doświadczone drużyny i walka o tytuły.</p>
-        </article>
-        <article class="sport-summary">
-          <h3>Grupa B-</h3>
-          <p>Poziom dla zespołów w rozwoju, gdzie liczy się strategia i stabilny postęp.</p>
-        </article>
-        <article class="sport-summary">
-          <h3>Grupa C</h3>
-          <p>Solidne rozgrywki i rywalizacja dla zespołów z umiarkowanym doświadczeniem.</p>
-        </article>
-        <article class="sport-summary">
-          <h3>Grupa D</h3>
-          <p>Poziom debiutantów i integracyjnych drużyn, idealny do nauki i zabawy.</p>
-        </article>
-      </div>
+    <section class="sport-details">
+      <article class="sport-summary"><h3>Poziomy</h3><p>B, B-, C i D pozwalają dopasować tempo gry do doświadczenia drużyny.</p></article>
+      <article class="sport-summary"><h3>Format</h3><p>Mecze zespołowe, rotacje i punktacja zgodna z ustalonym regulaminem ligi.</p></article>
     </section>
 
-    <section id="teams" class="section-overview">
-      <div class="section-lead">
-        <h2>Drużyny</h2>
-        <p>Lista drużyn startowych i ich opisy. Dane mogą być aktualizowane przez administratora.</p>
-      </div>
-      <div class="team-grid" id="sport-teams"></div>
-    </section>
-
-    <section id="results" class="section-overview">
-      <div class="section-lead">
-        <h2>Wyniki</h2>
-        <p>Wyniki są aktualizowane przez panel administratora. Pokazujemy maksymalnie 8 ostatnich meczów.</p>
-      </div>
-      <div id="sport-results"></div>
-    </section>
-
-    <section id="mvp" class="section-overview">
-      <div class="section-lead">
-        <h2>Ranking MVP</h2>
-        <p>Najlepsi zawodnicy wyróżniani są na podstawie punktów i występów w meczach.</p>
-      </div>
-      <div id="sport-mvp"></div>
-    </section>
+    <section id="wyniki" class="section-overview"><div class="section-lead"><h2>Ostatnie wyniki</h2><p>Najświeższe mecze zapisane w systemie.</p></div><div id="sport-results"></div></section>
+    <section id="mvp" class="section-overview"><div class="section-lead"><h2>Ranking MVP</h2><p>Zawodnicy z najwyższą liczbą punktów.</p></div><div id="sport-mvp"></div></section>
+    <section id="druzyny" class="team-list"><div class="section-lead"><h2>Drużyny</h2><p>Kluby występujące w rozgrywkach ligowych.</p></div><div class="team-grid" id="sport-teams"></div></section>
   </main>
 
-  <footer class="site-footer">
-    <p>Liga LGBT 2026 — siatkówka dla klubów i zawodników w czterech grupach.</p>
-  </footer>
-
+  <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
   <script src="data.js"></script>
   <script src="script.js"></script>
-  <script>
-    document.body.dataset.sport = 'siatkowka';
-  </script>
 </body>
 </html>

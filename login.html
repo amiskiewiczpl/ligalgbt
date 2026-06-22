@@ -7,23 +7,22 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container login-container">
+  <main class="login-container">
     <section class="login-card">
       <span class="eyebrow">Logowanie</span>
-      <h1>Panel Administracyjny</h1>
-      <p>Wprowadź hasło administratora, aby uzyskać dostęp do panelu.</p>
+      <h1>Panel administratora</h1>
+      <p>Wpisz hasło administratora, aby zarządzać drużynami, wynikami i rankingiem MVP.</p>
       <form id="login-form">
-        <label>Hasło<input type="password" name="password" required placeholder="Hasło administratora" /></label>
-        <button type="submit" class="button">Zaloguj się</button>
+        <label>Hasło
+          <input type="password" name="password" required placeholder="Hasło administratora" autocomplete="current-password" />
+        </label>
+        <button type="submit">Zaloguj się</button>
       </form>
-      <p class="login-note">Panel admina jest dostępny tylko po poprawnym logowaniu.</p>
+      <p class="login-note">Dostęp do panelu jest przeznaczony wyłącznie dla organizatorów ligi.</p>
     </section>
   </main>
 
   <script src="data.js"></script>
   <script src="script.js"></script>
-  <script>
-    document.body.dataset.page = 'login';
-  </script>
 </body>
 </html>

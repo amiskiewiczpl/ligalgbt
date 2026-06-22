@@ -3,44 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Administratora | Liga LGBT</title>
+  <title>Panel administratora | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header admin-header">
     <div class="brand">
-      <p class="eyebrow">Panel Administratora</p>
-      <h1>Administrowanie ligą</h1>
-      <p>Dodawaj drużyny, aktualizuj wyniki i zarządzaj rankingiem MVP.</p>
+      <p class="eyebrow">Panel administratora</p>
+      <h1>Zarządzanie ligą</h1>
+      <p>Dodawaj drużyny, aktualizuj wyniki i prowadź ranking MVP bez edycji kodu strony.</p>
     </div>
-    <nav class="main-nav admin-nav">
-      <a href="index.html">Strona główna</a>
-      <button id="admin-logout" class="button button-secondary">Wyloguj</button>
+    <nav class="main-nav admin-nav" aria-label="Nawigacja administratora">
+      <a href="index.html">Home</a>
+      <a href="kluby.html">Kluby</a>
+      <a href="zasady.html">Zasady</a>
+      <a href="partnerzy.html">Partnerzy</a>
+      <a href="klasyfikacje.html">Klasyfikacje</a>
+      <button id="admin-logout" class="button-secondary compact-button" type="button">Wyloguj</button>
     </nav>
   </header>
 
   <main class="container admin-container">
     <section class="page-intro">
-      <h2>Panel jest chroniony</h2>
-      <p>Jeśli nie jesteś zalogowany, zostaniesz przekierowany do strony logowania.</p>
+      <span class="eyebrow">Dostęp chroniony</span>
+      <h2>Panel jest widoczny tylko po zalogowaniu</h2>
+      <p>Zmiany są zapisywane lokalnie w przeglądarce, dlatego sprawdzają się jako prosty panel demonstracyjny dla statycznej strony.</p>
     </section>
 
     <section class="admin-panel" id="admin-content">
-      <div class="admin-card">
+      <article class="admin-card">
         <h3>Zespoły</h3>
-        <p>Na początek: Orion Poznań, Neon Wrocław, Volup Warszawa, Dragons Kraków, Unicorns Łódź.</p>
+        <p>Edytuj nazwę, miasto i opis klubów występujących w lidze.</p>
         <div id="team-editor"></div>
-      </div>
+      </article>
 
-      <div class="admin-card">
+      <article class="admin-card">
         <h3>Wyniki</h3>
+        <p>Dodawaj wyniki dla wybranej dyscypliny i poziomu rozgrywek.</p>
         <div id="results-editor"></div>
-      </div>
+      </article>
 
-      <div class="admin-card">
+      <article class="admin-card">
         <h3>Ranking MVP</h3>
+        <p>Aktualizuj listę wyróżniających się zawodników.</p>
         <div id="mvp-editor"></div>
-      </div>
+      </article>
     </section>
   </main>
 
@@ -50,8 +57,5 @@
 
   <script src="data.js"></script>
   <script src="script.js"></script>
-  <script>
-    document.body.dataset.page = 'admin';
-  </script>
 </body>
 </html>
