@@ -105,13 +105,31 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.hero-actions,
+..hero-actions,
 .sport-links,
 .section-grid,
 .sport-grid {
   display: grid;
   gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.hero-copy {
+  display: grid;
+  gap: .8rem;
+  max-width: 650px;
+}
+
+.sport-summary,
+.section-lead {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+.sport-summary h3 {
+  margin-top: 0;
 }
 
 .button,

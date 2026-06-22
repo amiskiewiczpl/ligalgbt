@@ -24,33 +24,56 @@
 
   <main class="container">
     <section class="sport-hero">
-      <h2>O badmintonie</h2>
-      <p>Badminton to szybkie pojedynki, w których liczy się refleks i precyzja. Mecze rozgrywane są w systemie ligowym.</p>
-    </section>
-
-    <section class="sport-details">
-      <div class="sport-summary">
-        <h3>Co zobaczysz</h3>
-        <p>Aktualne wyniki, lista grających drużyn oraz ranking najlepszych zawodników.</p>
+      <div class="hero-copy">
+        <span class="eyebrow">Badminton</span>
+        <h2>Szybkie mecze rakietowe w Lidze LGBT</h2>
+        <p>Badminton to dynamiczny sport, w którym liczy się refleks, taktyka i dobra atmosfera w drużynie.</p>
       </div>
-      <div class="sport-summary">
-        <h3>Rozgrywki</h3>
-        <p>Każdy mecz jest oceniany pod kątem wyniku i kreuje ranking najlepszego gracza.</p>
+      <div class="hero-actions">
+        <a class="button" href="#teams">Drużyny</a>
+        <a class="button" href="#results">Wyniki</a>
+        <a class="button" href="#mvp">Ranking MVP</a>
       </div>
     </section>
 
-    <section id="team-section">
-      <h2>Drużyny</h2>
+    <section class="section-overview">
+      <div class="section-lead">
+        <h2>Co oferujemy</h2>
+        <p>Rozgrywki ligowe dla różnych poziomów i zawodników, którzy chcą grać szybko i w duchu fair play.</p>
+      </div>
+      <div class="section-grid">
+        <article class="sport-summary">
+          <h3>Rozgrywki ligowe</h3>
+          <p>Turnieje odbywają się w systemie spotkań, a tabela jest aktualizowana po każdej kolejce.</p>
+        </article>
+        <article class="sport-summary">
+          <h3>Tempo i precyzja</h3>
+          <p>Service, wymiany i szybkie zmiany kierunku – badminton to sport dla aktywnych i skupionych.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="teams" class="section-overview">
+      <div class="section-lead">
+        <h2>Drużyny</h2>
+        <p>Sprawdź zespoły startujące w badmintonie. Administrator może łatwo dodać nowe drużyny lub aktualizować ich dane.</p>
+      </div>
       <div class="team-grid" id="sport-teams"></div>
     </section>
 
-    <section id="results-section">
-      <h2>Wyniki</h2>
+    <section id="results" class="section-overview">
+      <div class="section-lead">
+        <h2>Wyniki</h2>
+        <p>Pokazujemy maksymalnie 8 ostatnich pojedynków, aby zawsze dawać szybki wgląd w aktualną formę zespołów.</p>
+      </div>
       <div id="sport-results"></div>
     </section>
 
-    <section id="mvp-section">
-      <h2>Ranking MVP</h2>
+    <section id="mvp" class="section-overview">
+      <div class="section-lead">
+        <h2>Ranking MVP</h2>
+        <p>Najlepsi zawodnicy badmintonowi są wyróżniani na podstawie wyników i oceny meczowej.</p>
+      </div>
       <div id="sport-mvp"></div>
     </section>
   </main>

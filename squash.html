@@ -24,33 +24,56 @@
 
   <main class="container">
     <section class="sport-hero">
-      <h2>O squashu</h2>
-      <p>Squash to jedna z najintensywniejszych dyscyplin w lidze, idealna dla zawodników lubiących szybkie tempo.</p>
-    </section>
-
-    <section class="sport-details">
-      <div class="sport-summary">
-        <h3>Jak działa</h3>
-        <p>Na tej stronie zobaczysz aktualne wyniki, listę drużyn i ranking najlepszych zawodników.</p>
+      <div class="hero-copy">
+        <span class="eyebrow">Squash</span>
+        <h2>Squash w Lidze LGBT — tempo i precyzja</h2>
+        <p>Squash to intensywna gra, która wymaga refleksu, szybkości i koncentracji na każdej piłce.</p>
       </div>
-      <div class="sport-summary">
-        <h3>Grupowanie</h3>
-        <p>Drużyny rywalizują w systemie ligowym, a administrator aktualizuje tabelę na bieżąco.</p>
+      <div class="hero-actions">
+        <a class="button" href="#teams">Drużyny</a>
+        <a class="button" href="#results">Wyniki</a>
+        <a class="button" href="#mvp">Ranking MVP</a>
       </div>
     </section>
 
-    <section id="team-section">
-      <h2>Drużyny</h2>
+    <section class="section-overview">
+      <div class="section-lead">
+        <h2>Energia i rywalizacja</h2>
+        <p>Squash łączy szybką akcję z taktyką. Rozgrywki w noseń powinny przyciągać zawodników szukających dużej intensywności.</p>
+      </div>
+      <div class="section-grid">
+        <article class="sport-summary">
+          <h3>Intensywne mecze</h3>
+          <p>Każdy punkt to walka o przewagę, a mecze w lidze pokazują największą szybkość i wytrzymałość.</p>
+        </article>
+        <article class="sport-summary">
+          <h3>Fair play</h3>
+          <p>Siła i zaangażowanie idą w parze z szacunkiem, tak jak w każdej dyscyplinie LGBT sportu.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="teams" class="section-overview">
+      <div class="section-lead">
+        <h2>Drużyny</h2>
+        <p>Sprawdź skład drużyn squashowych. Administrator może łatwo dodawać nowe zespoły i aktualizować ich opisy.</p>
+      </div>
       <div class="team-grid" id="sport-teams"></div>
     </section>
 
-    <section id="results-section">
-      <h2>Wyniki</h2>
+    <section id="results" class="section-overview">
+      <div class="section-lead">
+        <h2>Wyniki</h2>
+        <p>Wyświetlamy maksymalnie 8 ostatnich gier, aby strona była czytelna i aktualna.</p>
+      </div>
       <div id="sport-results"></div>
     </section>
 
-    <section id="mvp-section">
-      <h2>Ranking MVP</h2>
+    <section id="mvp" class="section-overview">
+      <div class="section-lead">
+        <h2>Ranking MVP</h2>
+        <p>Najlepsi gracze squashowi zdobywają punkty i trafiają do rankingu MVP na podstawie wyników.</p>
+      </div>
       <div id="sport-mvp"></div>
     </section>
   </main>
