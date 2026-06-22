@@ -21,6 +21,16 @@ function showToast(message, type = 'info', duration = 4000) {
   }, duration);
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
 function isAdminLoggedIn() {
   const auth = localStorage.getItem('ligaLgbtAdmin');
   if (!auth) return false;
@@ -39,27 +49,49 @@ const clubBadgeMap = [
   { key: 'unicorns', label: 'UL', className: 'club-unicorns', names: ['unicorns', 'łódź', 'lodz'] }
 ];
 
+function getTeamByName(name) {
+  return leagueData.teams.find(team => team.name === name) || null;
+}
+
 function getClubBadge(value) {
   const normalized = String(value || '').toLowerCase();
-  const club = clubBadgeMap.find(item => item.names.some(name => normalized.includes(name)));
-  if (!club) return '<span class="club-badge">?</span>';
-  return `<span class="club-badge ${club.className}" title="${value}">${club.label}</span>`;
+  const team = getTeamByName(value);
+  const club = clubBadgeMap.find(item => item.names.some(name => normalized.includes(name))) || null;
+  const label = club?.label || String(value || '?').slice(0, 2).toUpperCase();
+  const className = club?.className || '';
+  const title = team?.name || value || 'Klub';
+  return `<span class="club-badge ${className}" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
+function renderLogo(value) {
+  const team = getTeamByName(value);
+  if (team?.logo) {
+    return `<img class="club-logo" src="${escapeHtml(team.logo)}" alt="${escapeHtml(team.name)}" />`;
+  }
+  return getClubBadge(value);
+}
+
+function getSportName(key) {
+  return leagueData.sports[key]?.name || key;
+}
+
+function getTeamOptions(selected = '') {
+  return leagueData.teams
+    .map(team => `<option value="${escapeHtml(team.name)}" ${team.name === selected ? 'selected' : ''}>${escapeHtml(team.name)}</option>`)
+    .join('');
+}
+
+function getSportOptions(selected = '') {
+  return Object.keys(leagueData.sports)
+    .map(key => `<option value="${key}" ${key === selected ? 'selected' : ''}>${escapeHtml(getSportName(key))}</option>`)
+    .join('');
 }
 
 function initNavigation() {
   const navs = document.querySelectorAll('.main-nav');
   if (!navs.length) return;
-  const closeTimers = new WeakMap();
-
-  function clearCloseTimer(group) {
-    const timer = closeTimers.get(group);
-    if (!timer) return;
-    window.clearTimeout(timer);
-    closeTimers.delete(group);
-  }
 
   function closeGroup(group) {
-    clearCloseTimer(group);
     const trigger = group.querySelector('.nav-trigger');
     const menu = group.querySelector('.nav-menu');
     if (!trigger) return;
@@ -75,7 +107,6 @@ function initNavigation() {
   }
 
   function openGroup(group) {
-    clearCloseTimer(group);
     const trigger = group.querySelector('.nav-trigger');
     const menu = group.querySelector('.nav-menu');
     if (!trigger) return;
@@ -95,11 +126,7 @@ function initNavigation() {
         const group = trigger.closest('.nav-group');
         if (!group) return;
         const isOpen = trigger.getAttribute('aria-expanded') === 'true';
-        if (isOpen) {
-          closeGroup(group);
-        } else {
-          openGroup(group);
-        }
+        isOpen ? closeGroup(group) : openGroup(group);
       });
     });
 
@@ -111,10 +138,10 @@ function initNavigation() {
 
     nav.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
-      const openGroup = nav.querySelector('.nav-group.is-open');
-      if (!openGroup) return;
-      closeGroup(openGroup);
-      openGroup.querySelector('.nav-trigger')?.focus();
+      const open = nav.querySelector('.nav-group.is-open');
+      if (!open) return;
+      closeGroup(open);
+      open.querySelector('.nav-trigger')?.focus();
     });
   });
 
@@ -129,7 +156,6 @@ function initHeaderScrollState() {
   if (!header) return;
 
   let ticking = false;
-
   function update() {
     header.classList.toggle('is-condensed', window.scrollY > 80);
     ticking = false;
@@ -160,13 +186,11 @@ function initLoginPage() {
 
   const form = document.getElementById('login-form');
   if (!form) return;
-
   const passwordInput = form.querySelector('input[name="password"]');
 
   form.addEventListener('submit', event => {
     event.preventDefault();
-    const formData = new FormData(form);
-    const password = formData.get('password').toString().trim();
+    const password = new FormData(form).get('password').toString().trim();
 
     if (!password) {
       showToast('Wpisz hasło administratora.', 'warning');
@@ -208,7 +232,7 @@ function renderTeams() {
   leagueData.teams.forEach(team => {
     const card = document.createElement('article');
     card.className = 'team-card';
-    card.innerHTML = `<h3>${team.name}</h3><p>${team.description}</p>`;
+    card.innerHTML = `<h3>${renderLogo(team.name)} ${escapeHtml(team.name)}</h3><p>${escapeHtml(team.description)}</p>`;
     section.appendChild(card);
   });
 }
@@ -224,22 +248,27 @@ function renderResults() {
     return;
   }
 
-  section.innerHTML = '';
   if (!sport.results.length) {
     section.innerHTML = '<p class="empty-state">Brak aktualnych wyników.</p>';
     return;
   }
 
-  const table = document.createElement('table');
-  table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Klub</th><th>Wynik</th><th>Klub</th><th>Drużyna 2</th></tr></thead>';
-  const body = document.createElement('tbody');
-  sport.results.slice(0, 8).forEach(match => {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td>${getClubBadge(match.home)}</td><td><strong>${match.score}</strong></td><td>${getClubBadge(match.away)}</td><td>${match.away}</td>`;
-    body.appendChild(row);
-  });
-  table.appendChild(body);
-  section.appendChild(table);
+  const rows = sport.results.slice(0, 8).map(match => `
+    <tr>
+      <td>${escapeHtml(match.level || '-')}</td>
+      <td>${escapeHtml(match.home)}</td>
+      <td>${renderLogo(match.home)}</td>
+      <td><strong>${escapeHtml(match.score)}</strong></td>
+      <td>${renderLogo(match.away)}</td>
+      <td>${escapeHtml(match.away)}</td>
+    </tr>
+  `).join('');
+  section.innerHTML = `
+    <table>
+      <thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Logo</th><th>Wynik</th><th>Logo</th><th>Drużyna 2</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
 }
 
 function renderMvp() {
@@ -253,37 +282,325 @@ function renderMvp() {
     return;
   }
 
-  section.innerHTML = '';
   if (!sport.mvp.length) {
     section.innerHTML = '<p class="empty-state">Brak rankingu MVP.</p>';
     return;
   }
 
-  const table = document.createElement('table');
-  table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Klub</th><th>Punkty</th></tr></thead>';
-  const body = document.createElement('tbody');
-  sport.mvp.slice().sort((a, b) => b.points - a.points).forEach((player, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td>${getClubBadge(player.team)}</td><td><strong>${player.points}</strong></td>`;
-    body.appendChild(row);
-  });
-  table.appendChild(body);
-  section.appendChild(table);
+  const rows = sport.mvp.slice().sort((a, b) => b.points - a.points).map((player, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${escapeHtml(player.player)}</td>
+      <td>${escapeHtml(player.team)}</td>
+      <td>${renderLogo(player.team)}</td>
+      <td><strong>${player.points}</strong></td>
+    </tr>
+  `).join('');
+  section.innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna / klub</th><th>Logo</th><th>Punkty</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
 }
 
-function buildSportOptions(select) {
-  select.innerHTML = '';
-  Object.keys(leagueData.sports).forEach(key => {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = leagueData.sports[key].name;
-    select.appendChild(option);
+function saveAndRefreshAdmin(message) {
+  saveLeagueData(leagueData);
+  renderAdminDashboard();
+  renderAdminStandings();
+  renderAdminTeams();
+  renderAdminResults();
+  renderAdminPlayers();
+  if (message) showToast(message, 'success');
+}
+
+function renderAdminDashboard() {
+  const resultsCount = Object.values(leagueData.sports).reduce((sum, sport) => sum + sport.results.length, 0);
+  const playersCount = Object.values(leagueData.sports).reduce((sum, sport) => sum + sport.mvp.length, 0);
+  const teamsCount = document.getElementById('admin-teams-count');
+  const results = document.getElementById('admin-results-count');
+  const players = document.getElementById('admin-players-count');
+  const sports = document.getElementById('admin-sports-count');
+  if (teamsCount) teamsCount.textContent = leagueData.teams.length;
+  if (results) results.textContent = resultsCount;
+  if (players) players.textContent = playersCount;
+  if (sports) sports.textContent = Object.keys(leagueData.sports).length;
+}
+
+function renderAdminStandings() {
+  const container = document.getElementById('admin-standings-preview');
+  if (!container) return;
+
+  container.innerHTML = Object.keys(leagueData.sports).map(key => {
+    const sport = leagueData.sports[key];
+    const rows = sport.results.length
+      ? sport.results.map(match => `
+          <tr><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(match.score)}</strong></td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td></tr>
+        `).join('')
+      : '<tr><td colspan="6">Brak wyników dla tej dyscypliny.</td></tr>';
+    return `
+      <div class="admin-table-block">
+        <h4>${escapeHtml(sport.name)}</h4>
+        <table><thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Logo</th><th>Wynik</th><th>Logo</th><th>Drużyna 2</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAdminTeams() {
+  const editor = document.getElementById('team-editor');
+  if (!editor) return;
+
+  editor.innerHTML = `
+    <form id="team-form" class="admin-form">
+      <input type="hidden" name="id" />
+      <fieldset>
+        <legend>Dodaj lub edytuj klub</legend>
+        <div class="admin-form-grid">
+          <label>Nazwa klubu<input type="text" name="name" required /></label>
+          <label>Miasto<input type="text" name="city" required /></label>
+          <label>Logo URL<input type="url" name="logo" placeholder="https://" /></label>
+        </div>
+        <label>Opis<textarea name="description" required></textarea></label>
+        <div class="admin-actions"><button type="submit">Zapisz klub</button><button type="reset" class="button-secondary">Wyczyść</button></div>
+      </fieldset>
+    </form>
+    <div class="admin-table-block">
+      <h4>Kluby</h4>
+      <table>
+        <thead><tr><th>Logo</th><th>Nazwa</th><th>Miasto</th><th>Opis</th><th>Akcje</th></tr></thead>
+        <tbody>
+          ${leagueData.teams.map(team => `
+            <tr>
+              <td>${renderLogo(team.name)}</td>
+              <td>${escapeHtml(team.name)}</td>
+              <td>${escapeHtml(team.city)}</td>
+              <td>${escapeHtml(team.description)}</td>
+              <td><div class="table-actions"><button type="button" class="compact-button edit-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-team" data-id="${team.id}">Usuń</button></div></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  const form = editor.querySelector('#team-form');
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const id = Number(formData.get('id'));
+    const name = formData.get('name').toString().trim();
+    const city = formData.get('city').toString().trim();
+    const logo = formData.get('logo').toString().trim();
+    const description = formData.get('description').toString().trim();
+
+    if (!name || !city || !description) {
+      showToast('Uzupełnij nazwę, miasto i opis klubu.', 'error');
+      return;
+    }
+
+    const existing = leagueData.teams.find(team => team.id === id);
+    if (existing) {
+      existing.name = name;
+      existing.city = city;
+      existing.logo = logo;
+      existing.description = description;
+      saveAndRefreshAdmin('Klub został zaktualizowany.');
+    } else {
+      const nextId = Math.max(0, ...leagueData.teams.map(team => team.id)) + 1;
+      leagueData.teams.push({ id: nextId, name, city, logo, description });
+      saveAndRefreshAdmin('Dodano klub.');
+    }
+  });
+
+  editor.querySelectorAll('.edit-team').forEach(button => {
+    button.addEventListener('click', () => {
+      const team = leagueData.teams.find(item => item.id === Number(button.dataset.id));
+      if (!team) return;
+      form.id.value = team.id;
+      form.name.value = team.name;
+      form.city.value = team.city;
+      form.logo.value = team.logo || '';
+      form.description.value = team.description;
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  editor.querySelectorAll('.delete-team').forEach(button => {
+    button.addEventListener('click', () => {
+      leagueData.teams = leagueData.teams.filter(team => team.id !== Number(button.dataset.id));
+      saveAndRefreshAdmin('Klub został usunięty.');
+    });
+  });
+}
+
+function renderAdminResults() {
+  const editor = document.getElementById('results-editor');
+  if (!editor) return;
+
+  editor.innerHTML = `
+    <form id="result-form" class="admin-form">
+      <input type="hidden" name="id" />
+      <fieldset>
+        <legend>Dodaj lub edytuj wynik</legend>
+        <div class="admin-form-grid">
+          <label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label>
+          <label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label>
+          <label>Drużyna 1<select name="home" required>${getTeamOptions()}</select></label>
+          <label>Wynik<input type="text" name="score" required placeholder="3:1" /></label>
+          <label>Drużyna 2<select name="away" required>${getTeamOptions()}</select></label>
+        </div>
+        <div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div>
+      </fieldset>
+    </form>
+    ${Object.keys(leagueData.sports).map(key => {
+      const sport = leagueData.sports[key];
+      const rows = sport.results.length
+        ? sport.results.map(match => `
+            <tr><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(match.score)}</strong></td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td><td><div class="table-actions"><button type="button" class="compact-button edit-result" data-sport="${key}" data-id="${match.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-result" data-sport="${key}" data-id="${match.id}">Usuń</button></div></td></tr>
+          `).join('')
+        : `<tr><td colspan="8">Brak wyników: ${escapeHtml(sport.name)}</td></tr>`;
+      return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>Dyscyplina</th><th>Poziom</th><th>Drużyna 1</th><th>Logo</th><th>Wynik</th><th>Logo</th><th>Drużyna 2</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }).join('')}
+  `;
+
+  const form = editor.querySelector('#result-form');
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const sportKey = formData.get('sport').toString();
+    const id = Number(formData.get('id'));
+    const level = formData.get('level').toString().trim();
+    const home = formData.get('home').toString();
+    const away = formData.get('away').toString();
+    const score = formData.get('score').toString().trim();
+
+    if (home === away) {
+      showToast('Drużyny w jednym meczu muszą być różne.', 'warning');
+      return;
+    }
+    if (!/^\d+:\d+$/.test(score)) {
+      showToast('Wynik wpisz w formacie X:Y, np. 3:1.', 'warning');
+      return;
+    }
+
+    const sport = leagueData.sports[sportKey];
+    const existing = sport.results.find(result => result.id === id);
+    if (existing) {
+      Object.assign(existing, { level, home, away, score });
+      saveAndRefreshAdmin('Wynik został zaktualizowany.');
+    } else {
+      const nextId = Math.max(0, ...sport.results.map(item => item.id)) + 1;
+      sport.results.push({ id: nextId, level, home, away, score });
+      saveAndRefreshAdmin('Dodano wynik.');
+    }
+  });
+
+  editor.querySelectorAll('.edit-result').forEach(button => {
+    button.addEventListener('click', () => {
+      const sportKey = button.dataset.sport;
+      const match = leagueData.sports[sportKey].results.find(item => item.id === Number(button.dataset.id));
+      if (!match) return;
+      form.id.value = match.id;
+      form.sport.value = sportKey;
+      form.level.value = match.level || '';
+      form.home.value = match.home;
+      form.score.value = match.score;
+      form.away.value = match.away;
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  editor.querySelectorAll('.delete-result').forEach(button => {
+    button.addEventListener('click', () => {
+      const sportKey = button.dataset.sport;
+      leagueData.sports[sportKey].results = leagueData.sports[sportKey].results.filter(match => match.id !== Number(button.dataset.id));
+      saveAndRefreshAdmin('Wynik został usunięty.');
+    });
+  });
+}
+
+function renderAdminPlayers() {
+  const editor = document.getElementById('players-editor');
+  if (!editor) return;
+
+  editor.innerHTML = `
+    <form id="player-form" class="admin-form">
+      <input type="hidden" name="id" />
+      <fieldset>
+        <legend>Dodaj lub edytuj zawodnika</legend>
+        <div class="admin-form-grid">
+          <label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label>
+          <label>Zawodnik<input type="text" name="player" required /></label>
+          <label>Drużyna / klub<select name="team" required>${getTeamOptions()}</select></label>
+          <label>Punkty<input type="number" name="points" required min="0" /></label>
+        </div>
+        <div class="admin-actions"><button type="submit">Zapisz zawodnika</button><button type="reset" class="button-secondary">Wyczyść</button></div>
+      </fieldset>
+    </form>
+    ${Object.keys(leagueData.sports).map(key => {
+      const sport = leagueData.sports[key];
+      const rows = sport.mvp.length
+        ? sport.mvp.slice().sort((a, b) => b.points - a.points).map((player, index) => `
+            <tr><td>${index + 1}</td><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(player.player)}</td><td>${escapeHtml(player.team)}</td><td>${renderLogo(player.team)}</td><td><strong>${player.points}</strong></td><td><div class="table-actions"><button type="button" class="compact-button edit-player" data-sport="${key}" data-id="${player.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-player" data-sport="${key}" data-id="${player.id}">Usuń</button></div></td></tr>
+          `).join('')
+        : `<tr><td colspan="7">Brak zawodników: ${escapeHtml(sport.name)}</td></tr>`;
+      return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>#</th><th>Dyscyplina</th><th>Zawodnik</th><th>Drużyna / klub</th><th>Logo</th><th>Punkty</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }).join('')}
+  `;
+
+  const form = editor.querySelector('#player-form');
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const sportKey = formData.get('sport').toString();
+    const id = Number(formData.get('id'));
+    const player = formData.get('player').toString().trim();
+    const team = formData.get('team').toString();
+    const points = Number(formData.get('points'));
+
+    if (!player || Number.isNaN(points) || points < 0) {
+      showToast('Uzupełnij zawodnika i poprawną liczbę punktów.', 'error');
+      return;
+    }
+
+    const sport = leagueData.sports[sportKey];
+    const existing = sport.mvp.find(item => item.id === id);
+    if (existing) {
+      Object.assign(existing, { player, team, points });
+      saveAndRefreshAdmin('Zawodnik został zaktualizowany.');
+    } else {
+      const nextId = Math.max(0, ...sport.mvp.map(item => item.id)) + 1;
+      sport.mvp.push({ id: nextId, player, team, points });
+      saveAndRefreshAdmin('Dodano zawodnika.');
+    }
+  });
+
+  editor.querySelectorAll('.edit-player').forEach(button => {
+    button.addEventListener('click', () => {
+      const sportKey = button.dataset.sport;
+      const player = leagueData.sports[sportKey].mvp.find(item => item.id === Number(button.dataset.id));
+      if (!player) return;
+      form.id.value = player.id;
+      form.sport.value = sportKey;
+      form.player.value = player.player;
+      form.team.value = player.team;
+      form.points.value = player.points;
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  editor.querySelectorAll('.delete-player').forEach(button => {
+    button.addEventListener('click', () => {
+      const sportKey = button.dataset.sport;
+      leagueData.sports[sportKey].mvp = leagueData.sports[sportKey].mvp.filter(player => player.id !== Number(button.dataset.id));
+      saveAndRefreshAdmin('Zawodnik został usunięty.');
+    });
   });
 }
 
 function initAdminPanel() {
-  const editor = document.getElementById('team-editor');
-  if (!editor) return;
+  if (!document.getElementById('admin-content')) return;
 
   const logoutButton = document.getElementById('admin-logout');
   if (logoutButton) {
@@ -296,287 +613,11 @@ function initAdminPanel() {
     });
   }
 
-  editor.innerHTML = '';
-  const form = document.createElement('form');
-  form.innerHTML = `
-    <fieldset>
-      <legend>Dodaj lub edytuj zespół</legend>
-      <label>Nazwa zespołu<input type="text" name="name" required /></label>
-      <label>Miasto<input type="text" name="city" required /></label>
-      <label>Opis<textarea name="description" required></textarea></label>
-      <label>Logo (URL)<input type="url" name="logo" placeholder="https://" /></label>
-      <button type="submit">Zapisz zespół</button>
-    </fieldset>
-  `;
-  editor.appendChild(form);
-
-  const list = document.createElement('div');
-  editor.appendChild(list);
-
-  function refreshTeamList() {
-    list.innerHTML = '<h4>Aktualne zespoły</h4>';
-    const table = document.createElement('table');
-    table.innerHTML = '<thead><tr><th>Nazwa</th><th>Miasto</th><th>Akcje</th></tr></thead>';
-    const body = document.createElement('tbody');
-    leagueData.teams.forEach(team => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${team.name}</td><td>${team.city}</td><td><button type="button" data-id="${team.id}" class="edit-team compact-button">Edytuj</button></td>`;
-      body.appendChild(row);
-    });
-    table.appendChild(body);
-    list.appendChild(table);
-  }
-
-  refreshTeamList();
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const name = formData.get('name').toString().trim();
-    const city = formData.get('city').toString().trim();
-    const description = formData.get('description').toString().trim();
-    const logo = formData.get('logo').toString().trim();
-
-    if (!name || !city || !description) {
-      showToast('Uzupełnij nazwę, miasto i opis zespołu.', 'error');
-      return;
-    }
-    if (name.length < 3) {
-      showToast('Nazwa zespołu powinna mieć co najmniej 3 znaki.', 'warning');
-      return;
-    }
-    if (description.length < 10) {
-      showToast('Opis powinien mieć co najmniej 10 znaków.', 'warning');
-      return;
-    }
-
-    const existing = leagueData.teams.find(team => team.name.toLowerCase() === name.toLowerCase());
-    if (existing) {
-      existing.city = city;
-      existing.description = description;
-      existing.logo = logo;
-      showToast(`Zespół "${name}" został zaktualizowany.`, 'success');
-    } else {
-      const nextId = Math.max(0, ...leagueData.teams.map(team => team.id)) + 1;
-      leagueData.teams.push({ id: nextId, name, city, description, logo });
-      showToast(`Dodano zespół "${name}".`, 'success');
-    }
-
-    saveLeagueData(leagueData);
-    refreshTeamList();
-    form.reset();
-    renderTeams();
-  });
-
-  list.addEventListener('click', event => {
-    if (!event.target.matches('.edit-team')) return;
-    const id = Number(event.target.dataset.id);
-    const team = leagueData.teams.find(item => item.id === id);
-    if (!team) return;
-    form.name.value = team.name;
-    form.city.value = team.city;
-    form.description.value = team.description;
-    form.logo.value = team.logo;
-  });
-
-  initResultsEditor();
-  initMvpEditor();
-}
-
-function initResultsEditor() {
-  const editor = document.getElementById('results-editor');
-  if (!editor) return;
-
-  editor.innerHTML = '';
-  const nav = document.createElement('div');
-  nav.className = 'editor-toolbar';
-  nav.innerHTML = '<label>Wybierz dyscyplinę<select id="results-sport"></select></label>';
-  editor.appendChild(nav);
-
-  const form = document.createElement('form');
-  form.innerHTML = `
-    <fieldset>
-      <legend>Dodaj wynik</legend>
-      <label>Dyscyplina<select name="sport" id="editor-sport" required></select></label>
-      <label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label>
-      <label>Drużyna 1<select name="home" required></select></label>
-      <label>Wynik<input type="text" name="score" required placeholder="3:1" /></label>
-      <label>Drużyna 2<select name="away" required></select></label>
-      <button type="submit">Dodaj wynik</button>
-    </fieldset>
-  `;
-  editor.appendChild(form);
-
-  const list = document.createElement('div');
-  editor.appendChild(list);
-
-  const editorSport = form.querySelector('#editor-sport');
-  const resultsSport = nav.querySelector('#results-sport');
-  if (!editorSport || !resultsSport) return;
-
-  buildSportOptions(editorSport);
-  buildSportOptions(resultsSport);
-
-  function refreshList() {
-    const sportKey = resultsSport.value;
-    const sport = leagueData.sports[sportKey];
-    list.innerHTML = '<h4>Wyniki</h4>';
-    const table = document.createElement('table');
-    table.innerHTML = '<thead><tr><th>Poziom</th><th>Drużyna 1</th><th>Wynik</th><th>Drużyna 2</th></tr></thead>';
-    const body = document.createElement('tbody');
-    sport.results.slice(0, 8).forEach(match => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${match.level || '-'}</td><td>${match.home}</td><td>${match.score}</td><td>${match.away}</td>`;
-      body.appendChild(row);
-    });
-    table.appendChild(body);
-    list.appendChild(table);
-  }
-
-  function fillTeamSelects() {
-    const teamOptions = leagueData.teams.map(team => `<option value="${team.name}">${team.name}</option>`).join('');
-    form.home.innerHTML = teamOptions;
-    form.away.innerHTML = teamOptions;
-  }
-
-  refreshList();
-  fillTeamSelects();
-  resultsSport.addEventListener('change', refreshList);
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const sportKey = formData.get('sport').toString();
-    const level = formData.get('level').toString().trim();
-    const home = formData.get('home').toString();
-    const away = formData.get('away').toString();
-    const score = formData.get('score').toString().trim();
-
-    if (!home || !away || !score) {
-      showToast('Wybierz drużyny i wpisz wynik.', 'error');
-      return;
-    }
-    if (home === away) {
-      showToast('Drużyny w jednym meczu muszą być różne.', 'warning');
-      return;
-    }
-    if (!/^\d+:\d+$/.test(score)) {
-      showToast('Wynik wpisz w formacie X:Y, np. 3:1.', 'warning');
-      return;
-    }
-
-    const sport = leagueData.sports[sportKey];
-    if (!sport) {
-      showToast('Wybrana dyscyplina nie istnieje.', 'error');
-      return;
-    }
-    if (sport.results.length >= 8) {
-      showToast('Maksymalnie 8 wyników dla jednej dyscypliny.', 'warning');
-      return;
-    }
-
-    const nextId = Math.max(0, ...sport.results.map(item => item.id)) + 1;
-    sport.results.push({ id: nextId, home, away, score, level });
-    saveLeagueData(leagueData);
-    refreshList();
-    renderResults();
-    form.reset();
-    showToast(`Dodano wynik ${home} ${score} ${away}.`, 'success');
-  });
-}
-
-function initMvpEditor() {
-  const editor = document.getElementById('mvp-editor');
-  if (!editor) return;
-
-  editor.innerHTML = '';
-  const nav = document.createElement('div');
-  nav.className = 'editor-toolbar';
-  nav.innerHTML = '<label>Wybierz dyscyplinę<select id="mvp-sport"></select></label>';
-  editor.appendChild(nav);
-
-  const form = document.createElement('form');
-  form.innerHTML = `
-    <fieldset>
-      <legend>Dodaj zawodnika MVP</legend>
-      <label>Dyscyplina<select name="sport" id="editor-mvp-sport" required></select></label>
-      <label>Zawodnik<input type="text" name="player" required /></label>
-      <label>Drużyna<input type="text" name="team" required /></label>
-      <label>Punkty<input type="number" name="points" required min="0" /></label>
-      <button type="submit">Dodaj MVP</button>
-    </fieldset>
-  `;
-  editor.appendChild(form);
-
-  const list = document.createElement('div');
-  editor.appendChild(list);
-
-  const sportSelect = form.querySelector('#editor-mvp-sport');
-  const mvpSport = nav.querySelector('#mvp-sport');
-  if (!sportSelect || !mvpSport) return;
-
-  buildSportOptions(sportSelect);
-  buildSportOptions(mvpSport);
-
-  function refreshList() {
-    const sportKey = mvpSport.value;
-    const sport = leagueData.sports[sportKey];
-    list.innerHTML = '<h4>Ranking MVP</h4>';
-    const table = document.createElement('table');
-    table.innerHTML = '<thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna</th><th>Punkty</th></tr></thead>';
-    const body = document.createElement('tbody');
-    sport.mvp.slice().sort((a, b) => b.points - a.points).forEach((player, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${index + 1}</td><td>${player.player}</td><td>${player.team}</td><td>${player.points}</td>`;
-      body.appendChild(row);
-    });
-    table.appendChild(body);
-    list.appendChild(table);
-  }
-
-  refreshList();
-  mvpSport.addEventListener('change', refreshList);
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const sportKey = formData.get('sport').toString();
-    const player = formData.get('player').toString().trim();
-    const team = formData.get('team').toString().trim();
-    const points = Number(formData.get('points'));
-
-    if (!player || !team || Number.isNaN(points) || points < 0) {
-      showToast('Uzupełnij zawodnika, drużynę i poprawną liczbę punktów.', 'error');
-      return;
-    }
-    if (player.length < 3) {
-      showToast('Imię lub nazwa zawodnika powinna mieć co najmniej 3 znaki.', 'warning');
-      return;
-    }
-    if (points > 999) {
-      showToast('Punkty są zbyt wysokie. Maksymalna wartość to 999.', 'warning');
-      return;
-    }
-
-    const sport = leagueData.sports[sportKey];
-    if (!sport) {
-      showToast('Wybrana dyscyplina nie istnieje.', 'error');
-      return;
-    }
-
-    const nextId = Math.max(0, ...sport.mvp.map(item => item.id)) + 1;
-    sport.mvp.push({ id: nextId, player, team, points });
-    saveLeagueData(leagueData);
-    refreshList();
-    renderMvp();
-    form.reset();
-    showToast(`Dodano zawodnika "${player}" do rankingu MVP.`, 'success');
-  });
+  saveAndRefreshAdmin();
 }
 
 function initPage() {
   const page = document.body.dataset.page || document.documentElement.dataset.page;
-  if (page === 'home') return;
   if (page === 'login') {
     initLoginPage();
     return;

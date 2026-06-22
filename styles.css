@@ -475,7 +475,10 @@ strong {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
 }
 
-.rankings-container,
+.rankings-container {
+  grid-template-columns: 1fr;
+}
+
 .sport-details {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
 }
@@ -599,6 +602,96 @@ button:hover,
 
 .ranking-view {
   overflow: hidden;
+}
+
+.admin-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.admin-stat {
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+}
+
+.admin-stat span {
+  display: block;
+  color: var(--text);
+  font-size: 2.2rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.admin-stat p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.admin-card-wide {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-card-header p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.admin-form {
+  margin-bottom: 1.4rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.8rem;
+}
+
+.admin-actions,
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.admin-actions {
+  margin-top: 0.9rem;
+}
+
+.admin-actions button,
+.table-actions button {
+  width: auto;
+}
+
+.admin-table-block {
+  margin-top: 1.4rem;
+}
+
+.admin-table-block h4 {
+  margin: 0 0 0.35rem;
+}
+
+.danger-button {
+  background: rgba(255, 111, 111, 0.12);
+  border-color: rgba(255, 111, 111, 0.3);
+  color: #ffd8d8;
+}
+
+.danger-button:hover {
+  background: rgba(255, 111, 111, 0.2);
 }
 
 .feature-card {
@@ -793,6 +886,17 @@ button:hover,
 
 .club-badge:not(.club-orion):not(.club-neon):not(.club-volup):not(.club-dragons):not(.club-unicorns) {
   background: linear-gradient(135deg, #d8e3f7, #89c8ff);
+}
+
+.club-logo {
+  width: 2rem;
+  height: 2rem;
+  display: inline-block;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
 
 .club-orion {

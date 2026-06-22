@@ -11,19 +11,12 @@
     <div class="brand">
       <p class="eyebrow">Panel administratora</p>
       <h1>Zarządzanie ligą</h1>
-      <p>Dodawaj drużyny, aktualizuj wyniki i prowadź ranking MVP bez edycji kodu strony.</p>
+      <p>Kluby, drużyny, zawodnicy, wyniki, klasyfikacje i loga w jednym miejscu.</p>
     </div>
     <nav class="main-nav admin-nav" aria-label="Nawigacja administratora">
       <a class="nav-link" href="index.html">Start</a>
-      <div class="nav-group">
-        <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-league">Liga</button>
-        <div class="nav-menu" id="nav-league">
-          <a href="kluby.html">Kluby <span>Drużyny</span></a>
-          <a href="zasady.html">Zasady <span>Fair play</span></a>
-          <a href="partnerzy.html">Partnerzy <span>Współpraca</span></a>
-        </div>
-      </div>
       <a class="nav-link" href="klasyfikacje.html">Wyniki</a>
+      <a class="nav-link" href="kluby.html">Kluby</a>
       <a class="nav-link" href="kontakt.html">Kontakt</a>
       <button id="admin-logout" class="button-secondary compact-button" type="button">Wyloguj</button>
     </nav>
@@ -31,28 +24,61 @@
 
   <main class="container admin-container">
     <section class="page-intro">
-      <span class="eyebrow">Dostęp chroniony</span>
-      <h2>Panel jest widoczny tylko po zalogowaniu</h2>
-      <p>Zmiany są zapisywane lokalnie w przeglądarce, dlatego sprawdzają się jako prosty panel demonstracyjny dla statycznej strony.</p>
+      <span class="eyebrow">Dashboard</span>
+      <h2>Panel operacyjny ligi</h2>
+      <p>Zmiany zapisują się lokalnie w przeglądarce. Formularze są na górze, a pełne tabele danych pod nimi, żeby łatwo kontrolować stan ligi.</p>
+    </section>
+
+    <section class="admin-dashboard" aria-label="Podsumowanie panelu">
+      <article class="admin-stat"><span id="admin-teams-count">0</span><p>Kluby</p></article>
+      <article class="admin-stat"><span id="admin-results-count">0</span><p>Wyniki</p></article>
+      <article class="admin-stat"><span id="admin-players-count">0</span><p>Zawodnicy</p></article>
+      <article class="admin-stat"><span id="admin-sports-count">4</span><p>Dyscypliny</p></article>
     </section>
 
     <section class="admin-panel" id="admin-content">
-      <article class="admin-card">
-        <h3>Zespoły</h3>
-        <p>Edytuj nazwę, miasto i opis klubów występujących w lidze.</p>
+      <article class="admin-card admin-card-wide">
+        <div class="admin-card-header">
+          <div>
+            <span class="eyebrow">Klasyfikacje</span>
+            <h3>Podgląd tabel</h3>
+          </div>
+          <a class="button button-alt compact-button" href="klasyfikacje.html">Zobacz publicznie</a>
+        </div>
+        <div id="admin-standings-preview"></div>
+      </article>
+
+      <article class="admin-card admin-card-wide">
+        <div class="admin-card-header">
+          <div>
+            <span class="eyebrow">Kluby</span>
+            <h3>Kluby i loga</h3>
+            <p>Logo może być adresem URL. Jeśli go nie podasz, strona pokaże kolorowy znak klubu.</p>
+          </div>
+        </div>
         <div id="team-editor"></div>
       </article>
 
-      <article class="admin-card">
-        <h3>Wyniki</h3>
-        <p>Dodawaj wyniki dla wybranej dyscypliny i poziomu rozgrywek.</p>
+      <article class="admin-card admin-card-wide">
+        <div class="admin-card-header">
+          <div>
+            <span class="eyebrow">Wyniki</span>
+            <h3>Mecze i rezultaty</h3>
+            <p>Dodawaj, edytuj i usuwaj wyniki dla każdej dyscypliny.</p>
+          </div>
+        </div>
         <div id="results-editor"></div>
       </article>
 
-      <article class="admin-card">
-        <h3>Ranking MVP</h3>
-        <p>Aktualizuj listę wyróżniających się zawodników.</p>
-        <div id="mvp-editor"></div>
+      <article class="admin-card admin-card-wide">
+        <div class="admin-card-header">
+          <div>
+            <span class="eyebrow">Zawodnicy</span>
+            <h3>Ranking MVP i zawodnicy</h3>
+            <p>Zarządzaj zawodnikami przypisanymi do dyscyplin i drużyn.</p>
+          </div>
+        </div>
+        <div id="players-editor"></div>
       </article>
     </section>
   </main>

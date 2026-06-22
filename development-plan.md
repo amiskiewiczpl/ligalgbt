@@ -30,5 +30,6 @@
 - Usunięto uszkodzone kodowanie tekstu oraz ograniczono typowe błędy projektów generowanych automatycznie: nadmiar dekoracji, losowe gradienty, niestabilne siatki, nieczytelne przyciski i przeładowane karty.
 - Nawigacja została uporządkowana do głównych ścieżek użytkownika: Start, Sporty, Liga, Wyniki, Media, Kontakt i Dołącz. Sporty, Liga oraz Media są sekcjami rozwijanymi, aby nie przeciążać paska linkami.
 - Header kurczy się po przewinięciu strony i zostawia subtelny tęczowy detal jako sygnał marki LGBT+ bez zasłaniania treści.
+- Panel administratora został przebudowany na dashboard z podglądem klasyfikacji, edycją klubów i logo, wyników oraz zawodników. Tabele w panelu i klasyfikacjach są ułożone jedna pod drugą.
 
 Projekt jest gotowy do publikacji jako statyczna strona.
