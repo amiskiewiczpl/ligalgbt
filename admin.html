@@ -9,25 +9,23 @@
 <body>
   <header class="site-header admin-header">
     <div class="brand">
-      <h1>Panel Administratora</h1>
-      <p>Zarządzanie drużynami, wynikami i rankingami.</p>
+      <p class="eyebrow">Panel Administratora</p>
+      <h1>Administrowanie ligą</h1>
+      <p>Dodawaj drużyny, aktualizuj wyniki i zarządzaj rankingiem MVP.</p>
     </div>
-    <nav class="main-nav">
+    <nav class="main-nav admin-nav">
       <a href="index.html">Strona główna</a>
-      <a href="siatkowka.html">Siatkówka</a>
-      <a href="badminton.html">Badminton</a>
-      <a href="squash.html">Squash</a>
-      <a href="tenis.html">Tenis</a>
+      <button id="admin-logout" class="button button-secondary">Wyloguj</button>
     </nav>
   </header>
 
   <main class="container admin-container">
-    <section>
-      <h2>Ustawienia ligi</h2>
-      <p>Dodawaj kluby, opisuj zespoły, wprowadzaj wyniki i ustalaj MVP.</p>
+    <section class="page-intro">
+      <h2>Panel jest chroniony</h2>
+      <p>Jeśli nie jesteś zalogowany, zostaniesz przekierowany do strony logowania.</p>
     </section>
 
-    <section class="admin-panel">
+    <section class="admin-panel" id="admin-content">
       <div class="admin-card">
         <h3>Zespoły</h3>
         <p>Na początek: Orion Poznań, Neon Wrocław, Volup Warszawa, Dragons Kraków, Unicorns Łódź.</p>
@@ -47,7 +45,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>Administrator może edytować dane lokalnie; zmiany zapisują się w pamięci przeglądarki.</p>
+    <p>Panel administratora jest dostępny tylko dla zalogowanych użytkowników.</p>
   </footer>
 
   <script src="data.js"></script>

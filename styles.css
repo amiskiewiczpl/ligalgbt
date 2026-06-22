@@ -29,6 +29,15 @@ body {
   background: linear-gradient(135deg, #2b1e38 0%, #11131d 100%);
 }
 
+.brand .eyebrow {
+  display: inline-block;
+  margin-bottom: .8rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #96a8c5;
+  font-size: .85rem;
+}
+
 .brand h1 {
   margin: 0 0 .3rem;
   font-size: clamp(1.8rem, 2.4vw, 2.8rem);
@@ -70,7 +79,10 @@ body {
 }
 
 .hero,
-.sport-hero {
+.sport-hero,
+.login-card,
+.page-intro,
+.section-lead {
   padding: 2rem;
   margin-bottom: 2rem;
   background: rgba(255,255,255,.03);
@@ -84,7 +96,9 @@ body {
 }
 
 .hero-actions,
-.sport-links {
+.sport-links,
+.section-grid,
+.sport-grid {
   display: grid;
   gap: 1rem;
   margin-top: 1.5rem;
@@ -135,6 +149,41 @@ body {
 
 .sport-box {
   min-height: 150px;
+}
+
+.login-container {
+  min-height: calc(100vh - 7rem);
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.6rem;
+}
+
+.login-card {
+  max-width: 480px;
+  width: 100%;
+}
+
+.login-card form {
+  margin-top: 1rem;
+}
+
+.login-card input {
+  margin-bottom: 1rem;
+}
+
+.login-card .login-note {
+  margin-top: 1rem;
+  color: #a2b0cd;
+}
+
+.login-error {
+  color: #ff8b8b;
+  margin-top: 1rem;
+}
+
+.button-secondary {
+  background: rgba(255,255,255,.08);
+  color: #f2f7fb;
 }
 
 .admin-panel {
@@ -198,6 +247,11 @@ button {
 
 button:hover {
   background: #5d4fc6;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 label {

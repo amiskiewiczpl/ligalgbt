@@ -3,6 +3,48 @@ function getSportKey() {
   return sport || null;
 }
 
+function isAdminLoggedIn() {
+  const auth = localStorage.getItem('ligaLgbtAdmin');
+  if (!auth) return false;
+  try {
+    return JSON.parse(auth).loggedIn === true;
+  } catch {
+    return false;
+  }
+}
+
+function initLoginPage() {
+  if (isAdminLoggedIn()) {
+    window.location.href = 'admin.html';
+    return;
+  }
+
+  const form = document.getElementById('login-form');
+  if (!form) return;
+
+  const errorElement = document.createElement('p');
+  errorElement.className = 'login-error';
+  form.appendChild(errorElement);
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const password = formData.get('password').toString().trim();
+    if (password === leagueData.admin.password) {
+      localStorage.setItem('ligaLgbtAdmin', JSON.stringify({ loggedIn: true }));
+      window.location.href = 'admin.html';
+      return;
+    }
+    errorElement.textContent = 'Nieprawidłowe hasło. Spróbuj ponownie.';
+  });
+}
+
+function requireAdminAuth() {
+  if (!isAdminLoggedIn()) {
+    window.location.href = 'login.html';
+  }
+}
+
 function renderTeams() {
   const sportKey = getSportKey();
   const section = document.getElementById('sport-teams');
@@ -72,6 +114,14 @@ function renderMvp() {
 function initAdminPanel() {
   const editor = document.getElementById('team-editor');
   if (!editor) return;
+
+  const logoutButton = document.getElementById('admin-logout');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+      localStorage.removeItem('ligaLgbtAdmin');
+      window.location.href = 'login.html';
+    });
+  }
 
   editor.innerHTML = '';
   const form = document.createElement('form');
@@ -322,7 +372,12 @@ function initMvpEditor() {
 function initPage() {
   const page = document.body.dataset.page;
   if (page === 'home') return;
+  if (page === 'login') {
+    initLoginPage();
+    return;
+  }
   if (page === 'admin') {
+    requireAdminAuth();
     initAdminPanel();
     return;
   }

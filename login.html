@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="login">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logowanie administratora | Liga LGBT</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container login-container">
+    <section class="login-card">
+      <span class="eyebrow">Logowanie</span>
+      <h1>Panel Administracyjny</h1>
+      <p>Wprowadź hasło administratora, aby uzyskać dostęp do panelu.</p>
+      <form id="login-form">
+        <label>Hasło<input type="password" name="password" required placeholder="Hasło administratora" /></label>
+        <button type="submit" class="button">Zaloguj się</button>
+      </form>
+      <p class="login-note">Panel admina jest dostępny tylko po poprawnym logowaniu.</p>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.body.dataset.page = 'login';
+  </script>
+</body>
+</html>

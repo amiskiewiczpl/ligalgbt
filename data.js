@@ -1,4 +1,7 @@
 const defaultLeagueData = {
+  admin: {
+    password: 'LigaLgbt2026!'
+  },
   teams: [
     { id: 1, name: 'Orion Poznań', city: 'Poznań', description: 'Dynamiczna drużyna z Poznania, która stawia na zaangażowanie i dobrą atmosferę.', logo: '' },
     { id: 2, name: 'Neon Wrocław', city: 'Wrocław', description: 'Barwna ekipa z Wrocławia, gotowa na sportowe wyzwania.', logo: '' },
@@ -10,6 +13,8 @@ const defaultLeagueData = {
     siatkowka: {
       name: 'Siatkówka',
       levels: ['B', 'B-', 'C', 'D'],
+      headline: 'Poziomy B, B-, C i D',
+      description: 'Rozgrywki siatkarskie podzielone na cztery poziomy, aby każda drużyna miała swoją kategorię i rywalizowała w równych warunkach.',
       results: [
         { id: 1, home: 'Orion Poznań', away: 'Neon Wrocław', score: '3:1', level: 'B' },
         { id: 2, home: 'Dragons Kraków', away: 'Volup Warszawa', score: '2:3', level: 'C' }
@@ -21,21 +26,39 @@ const defaultLeagueData = {
     },
     badminton: {
       name: 'Badminton',
+      headline: 'Rundy szybkich pojedynków',
+      description: 'Badminton to szybka rywalizacja, w której liczy się refleks, celność i dobre przygotowanie.',
       results: [],
       mvp: []
     },
     squash: {
       name: 'Squash',
+      headline: 'Intensywny i dynamiczny',
+      description: 'Squash buduje kondycję i precyzję, a mecze to szybkie wymiany na małym korcie.',
       results: [],
       mvp: []
     },
     tenis: {
       name: 'Tenis',
+      headline: 'Turnieje singlowe i deblowe',
+      description: 'Tenis w naszej lidze to precyzja, taktyka i sportowa rywalizacja w dobrym stylu.',
       results: [],
       mvp: []
     }
   }
 };
+
+function normalizeLoadedData(data) {
+  if (!data) return structuredClone(defaultLeagueData);
+  if (!data.admin) data.admin = defaultLeagueData.admin;
+  if (!Array.isArray(data.teams)) data.teams = structuredClone(defaultLeagueData.teams);
+  if (!data.sports) data.sports = structuredClone(defaultLeagueData.sports);
+  const keys = Object.keys(defaultLeagueData.sports);
+  keys.forEach(key => {
+    if (!data.sports[key]) data.sports[key] = structuredClone(defaultLeagueData.sports[key]);
+  });
+  return data;
+}
 
 function loadLeagueData() {
   const stored = localStorage.getItem('ligaLgbtData');
@@ -44,7 +67,8 @@ function loadLeagueData() {
     return structuredClone(defaultLeagueData);
   }
   try {
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    return normalizeLoadedData(parsed);
   } catch (error) {
     console.warn('Błąd danych lokalnych, używam domyślnych', error);
     localStorage.setItem('ligaLgbtData', JSON.stringify(defaultLeagueData));
