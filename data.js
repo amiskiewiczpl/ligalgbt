@@ -10,48 +10,74 @@ const defaultLeagueData = {
     { id: 5, name: 'Unicorns Łódź', city: 'Łódź', description: 'Kreatywny klub z Łodzi z sercem do sportu i zespołowej gry.', logo: '' }
   ],
   clubTeams: [
-    { id: 1, name: 'Orion Poznań B', club: 'Orion Poznań', sport: 'siatkowka', level: 'B' },
-    { id: 2, name: 'Neon Wrocław B', club: 'Neon Wrocław', sport: 'siatkowka', level: 'B' },
-    { id: 3, name: 'Dragons Kraków C', club: 'Dragons Kraków', sport: 'siatkowka', level: 'C' },
-    { id: 4, name: 'Volup Warszawa C', club: 'Volup Warszawa', sport: 'siatkowka', level: 'C' }
+    { id: 1, name: 'Orion Poznań B', club: 'Orion Poznań', sport: 'siatkowka', level: 'B', description: 'Skład ligowy na poziomie B, zgłoszony jako osobna drużyna klubu.' },
+    { id: 2, name: 'Neon Wrocław B', club: 'Neon Wrocław', sport: 'siatkowka', level: 'B', description: 'Drużyna poziomu B z własnym terminarzem i wynikami.' },
+    { id: 3, name: 'Dragons Kraków C', club: 'Dragons Kraków', sport: 'siatkowka', level: 'C', description: 'Skład turniejowo-ligowy na poziomie C.' },
+    { id: 4, name: 'Volup Warszawa C', club: 'Volup Warszawa', sport: 'siatkowka', level: 'C', description: 'Drużyna siatkarska przypisana do poziomu C.' }
+  ],
+  players: [
+    { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'] },
+    { id: 2, name: 'Anna Zielińska', club: 'Neon Wrocław', sports: ['siatkowka', 'badminton'] },
+    { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['squash'] },
+    { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'] }
   ],
   sports: {
     siatkowka: {
       name: 'Siatkówka',
+      type: 'team',
+      defaultScoring: 'volleyball',
       levels: ['B', 'B-', 'C', 'D'],
       headline: 'Poziomy B, B-, C i D',
       description: 'Rozgrywki siatkarskie są podzielone na cztery poziomy. Klub może wystawić kilka drużyn uczestniczących.',
       results: [
-        { id: 1, home: 'Orion Poznań B', away: 'Neon Wrocław B', score: '3:1', level: 'B' },
-        { id: 2, home: 'Dragons Kraków C', away: 'Volup Warszawa C', score: '2:3', level: 'C' }
-      ],
-      mvp: [
-        { id: 1, player: 'Kacper Kowalski', team: 'Orion Poznań B', points: 28 },
-        { id: 2, player: 'Anna Zielińska', team: 'Neon Wrocław B', points: 24 }
+        { id: 1, home: 'Orion Poznań B', away: 'Neon Wrocław B', sets: '25:20, 25:22, 25:19', score: '3:0', level: 'B', scoring: 'volleyball', mvp: 'Kacper Kowalski' },
+        { id: 2, home: 'Dragons Kraków C', away: 'Volup Warszawa C', sets: '25:21, 21:25, 25:19, 22:25, 13:15', score: '2:3', level: 'C', scoring: 'volleyball', mvp: 'Łukasz Nowak' }
       ]
     },
     badminton: {
       name: 'Badminton',
+      type: 'individual',
+      defaultScoring: 'sets',
       headline: 'Szybkie pojedynki singlowe i deblowe',
       description: 'W zawodach indywidualnych zawodnik reprezentuje bezpośrednio klub.',
-      results: [],
-      mvp: []
+      results: []
     },
     squash: {
       name: 'Squash',
+      type: 'individual',
+      defaultScoring: 'sets',
       headline: 'Intensywna gra na małym korcie',
       description: 'W zawodach indywidualnych zawodnik reprezentuje bezpośrednio klub.',
-      results: [],
-      mvp: []
+      results: []
     },
     tenis: {
       name: 'Tenis',
+      type: 'individual',
+      defaultScoring: 'sets',
       headline: 'Turnieje singlowe i deblowe',
       description: 'W zawodach indywidualnych zawodnik reprezentuje bezpośrednio klub.',
-      results: [],
-      mvp: []
+      results: []
     }
-  }
+  },
+  tournaments: [
+    {
+      id: 1,
+      name: 'Letni Puchar Tenisa',
+      sport: 'tenis',
+      scoring: 'sets',
+      status: 'completed',
+      bracket: [
+        { round: 'Półfinał', home: 'Dariusz Karpuk', away: 'Sebastian Górski', score: '2:0' },
+        { round: 'Półfinał', home: 'Krzysztof Sobanowski', away: 'Michał Wojakowski', score: '2:1' },
+        { round: 'Finał', home: 'Dariusz Karpuk', away: 'Krzysztof Sobanowski', score: '2:1' }
+      ],
+      finalClassification: [
+        { place: 1, participant: 'Dariusz Karpuk', club: 'Unicorns Łódź' },
+        { place: 2, participant: 'Krzysztof Sobanowski', club: 'Dragons Kraków' },
+        { place: 3, participant: 'Sebastian Górski', club: 'Volup Warszawa' }
+      ]
+    }
+  ]
 };
 
 function normalizeLoadedData(data) {
@@ -62,11 +88,28 @@ function normalizeLoadedData(data) {
   if (!data.admin) data.admin = defaultLeagueData.admin;
   if (!Array.isArray(data.teams)) data.teams = structuredClone(defaultLeagueData.teams);
   if (!Array.isArray(data.clubTeams)) data.clubTeams = structuredClone(defaultLeagueData.clubTeams);
+  if (!Array.isArray(data.players)) data.players = structuredClone(defaultLeagueData.players);
+  if (!Array.isArray(data.tournaments)) data.tournaments = structuredClone(defaultLeagueData.tournaments);
   if (!data.sports) data.sports = structuredClone(defaultLeagueData.sports);
   Object.keys(defaultLeagueData.sports).forEach(key => {
     if (!data.sports[key]) data.sports[key] = structuredClone(defaultLeagueData.sports[key]);
     if (!Array.isArray(data.sports[key].results)) data.sports[key].results = [];
-    if (!Array.isArray(data.sports[key].mvp)) data.sports[key].mvp = [];
+    if (!data.sports[key].type) data.sports[key].type = defaultLeagueData.sports[key].type;
+    if (!data.sports[key].defaultScoring) data.sports[key].defaultScoring = defaultLeagueData.sports[key].defaultScoring;
+    data.sports[key].results.forEach(match => {
+      if (!match.scoring) match.scoring = data.sports[key].defaultScoring;
+      if (!match.sets && match.score) match.sets = '';
+      if (typeof match.mvp !== 'string') match.mvp = '';
+    });
+    delete data.sports[key].mvp;
+  });
+  data.clubTeams.forEach(team => {
+    if (typeof team.description !== 'string') team.description = '';
+  });
+  data.tournaments.forEach(tournament => {
+    if (!Array.isArray(tournament.bracket)) tournament.bracket = [];
+    if (!Array.isArray(tournament.finalClassification)) tournament.finalClassification = [];
+    if (!tournament.scoring) tournament.scoring = 'sets';
   });
   return data;
 }
