@@ -3,6 +3,25 @@ function getSportKey() {
   return sport || null;
 }
 
+function showToast(message, type = 'info', duration = 4000) {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 function isAdminLoggedIn() {
   const auth = localStorage.getItem('ligaLgbtAdmin');
   if (!auth) return false;
@@ -22,26 +41,41 @@ function initLoginPage() {
   const form = document.getElementById('login-form');
   if (!form) return;
 
-  const errorElement = document.createElement('p');
-  errorElement.className = 'login-error';
-  form.appendChild(errorElement);
+  const passwordInput = form.querySelector('input[name="password"]');
 
   form.addEventListener('submit', event => {
     event.preventDefault();
     const formData = new FormData(form);
     const password = formData.get('password').toString().trim();
-    if (password === leagueData.admin.password) {
-      localStorage.setItem('ligaLgbtAdmin', JSON.stringify({ loggedIn: true }));
-      window.location.href = 'admin.html';
+    
+    if (!password) {
+      showToast('⚠️ Proszę wpisać hasło', 'warning');
       return;
     }
-    errorElement.textContent = 'Nieprawidłowe hasło. Spróbuj ponownie.';
+
+    if (password === leagueData.admin.password) {
+      localStorage.setItem('ligaLgbtAdmin', JSON.stringify({ loggedIn: true }));
+      showToast('✅ Zalogowano! Przekierowanie...', 'success', 2000);
+      setTimeout(() => {
+        window.location.href = 'admin.html';
+      }, 800);
+      return;
+    }
+
+    showToast('❌ Nieprawidłowe hasło. Spróbuj ponownie.', 'error');
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
   });
 }
 
 function requireAdminAuth() {
   if (!isAdminLoggedIn()) {
-    window.location.href = 'login.html';
+    showToast('⚠️ Brak dostępu. Zaloguj się jako admin.', 'warning', 3000);
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 500);
   }
 }
 
@@ -119,7 +153,10 @@ function initAdminPanel() {
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       localStorage.removeItem('ligaLgbtAdmin');
-      window.location.href = 'login.html';
+      showToast('👋 Wylogowano pomyślnie!', 'info', 2000);
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 800);
     });
   }
 
@@ -164,14 +201,38 @@ function initAdminPanel() {
     const description = formData.get('description').toString().trim();
     const logo = formData.get('logo').toString().trim();
 
+    // Validation
+    if (!name) {
+      showToast('❌ Nazwa zespołu jest wymagana', 'error');
+      return;
+    }
+    if (name.length < 3) {
+      showToast('❌ Nazwa powinna mieć co najmniej 3 znaki', 'warning');
+      return;
+    }
+    if (!city) {
+      showToast('❌ Miasto jest wymagane', 'error');
+      return;
+    }
+    if (!description) {
+      showToast('❌ Opis jest wymagany', 'error');
+      return;
+    }
+    if (description.length < 10) {
+      showToast('❌ Opis powinien być bardziej szczegółowy (min. 10 znaków)', 'warning');
+      return;
+    }
+
     const existing = leagueData.teams.find(team => team.name.toLowerCase() === name.toLowerCase());
     if (existing) {
       existing.city = city;
       existing.description = description;
       existing.logo = logo;
+      showToast(`✅ Zespół "${name}" został zaktualizowany`, 'success');
     } else {
       const nextId = Math.max(0, ...leagueData.teams.map(team => team.id)) + 1;
       leagueData.teams.push({ id: nextId, name, city, description, logo });
+      showToast(`✅ Nowy zespół "${name}" został dodany`, 'success');
     }
 
     saveLeagueData(leagueData);
@@ -274,18 +335,45 @@ function initResultsEditor() {
     const away = formData.get('away').toString();
     const score = formData.get('score').toString().trim();
 
-    const sport = leagueData.sports[sportKey];
-    if (!sport) return;
-    if (sport.results.length >= 8) {
-      alert('Maksymalnie 8 wyników można przechowywać dla dyscypliny.');
+    // Validation
+    if (!home) {
+      showToast('❌ Wybierz drużynę domową', 'error');
       return;
     }
+    if (!away) {
+      showToast('❌ Wybierz drużynę gościnną', 'error');
+      return;
+    }
+    if (home === away) {
+      showToast('⚠️ Obie drużyny nie mogą być takie same', 'warning');
+      return;
+    }
+    if (!score) {
+      showToast('❌ Podaj wynik (np. 3:1)', 'error');
+      return;
+    }
+    if (!/^\d+:\d+$/.test(score)) {
+      showToast('❌ Wynik musi być w formacie "X:Y" (np. 3:1)', 'warning');
+      return;
+    }
+
+    const sport = leagueData.sports[sportKey];
+    if (!sport) {
+      showToast('❌ Dyscyplina nie istnieje', 'error');
+      return;
+    }
+    if (sport.results.length >= 8) {
+      showToast('⚠️ Maksymalnie 8 wyników dla tej dyscypliny', 'warning');
+      return;
+    }
+    
     const nextId = Math.max(0, ...sport.results.map(item => item.id)) + 1;
     sport.results.push({ id: nextId, home, away, score, level });
     saveLeagueData(leagueData);
     refreshList();
     renderResults();
     form.reset();
+    showToast(`✅ Wynik ${home} ${score} ${away} został dodany`, 'success');
   });
 }
 
@@ -357,8 +445,33 @@ function initMvpEditor() {
     const team = formData.get('team').toString().trim();
     const points = Number(formData.get('points'));
 
+    // Validation
+    if (!player) {
+      showToast('❌ Imię zawodnika jest wymagane', 'error');
+      return;
+    }
+    if (player.length < 3) {
+      showToast('❌ Imię powinno mieć co najmniej 3 znaki', 'warning');
+      return;
+    }
+    if (!team) {
+      showToast('❌ Nazwa drużyny jest wymagana', 'error');
+      return;
+    }
+    if (isNaN(points) || points < 0) {
+      showToast('❌ Punkty muszą być liczbą dodatnią', 'error');
+      return;
+    }
+    if (points > 999) {
+      showToast('⚠️ Punkty są zbyt wysokie (max 999)', 'warning');
+      return;
+    }
+
     const sport = leagueData.sports[sportKey];
-    if (!sport) return;
+    if (!sport) {
+      showToast('❌ Dyscyplina nie istnieje', 'error');
+      return;
+    }
 
     const nextId = Math.max(0, ...sport.mvp.map(item => item.id)) + 1;
     sport.mvp.push({ id: nextId, player, team, points });
@@ -366,6 +479,7 @@ function initMvpEditor() {
     refreshList();
     renderMvp();
     form.reset();
+    showToast(`✅ Zawodnik "${player}" dodany do rankingu MVP`, 'success');
   });
 }
 
