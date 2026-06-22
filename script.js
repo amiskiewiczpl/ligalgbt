@@ -49,22 +49,32 @@ const clubBadgeMap = [
   { key: 'unicorns', label: 'UL', className: 'club-unicorns', names: ['unicorns', 'łódź', 'lodz'] }
 ];
 
-function getTeamByName(name) {
+function getClubByName(name) {
   return leagueData.teams.find(team => team.name === name) || null;
+}
+
+function getParticipantByName(name) {
+  return leagueData.clubTeams.find(team => team.name === name) || null;
+}
+
+function getParticipantClubName(value) {
+  const participant = getParticipantByName(value);
+  return participant?.club || value;
 }
 
 function getClubBadge(value) {
   const normalized = String(value || '').toLowerCase();
-  const team = getTeamByName(value);
+  const clubName = getParticipantClubName(value);
+  const team = getClubByName(clubName);
   const club = clubBadgeMap.find(item => item.names.some(name => normalized.includes(name))) || null;
   const label = club?.label || String(value || '?').slice(0, 2).toUpperCase();
   const className = club?.className || '';
-  const title = team?.name || value || 'Klub';
+  const title = team?.name || clubName || value || 'Klub';
   return `<span class="club-badge ${className}" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
 }
 
 function renderLogo(value) {
-  const team = getTeamByName(value);
+  const team = getClubByName(getParticipantClubName(value));
   if (team?.logo) {
     return `<img class="club-logo" src="${escapeHtml(team.logo)}" alt="${escapeHtml(team.name)}" />`;
   }
@@ -75,9 +85,23 @@ function getSportName(key) {
   return leagueData.sports[key]?.name || key;
 }
 
-function getTeamOptions(selected = '') {
+function getClubOptions(selected = '') {
   return leagueData.teams
     .map(team => `<option value="${escapeHtml(team.name)}" ${team.name === selected ? 'selected' : ''}>${escapeHtml(team.name)}</option>`)
+    .join('');
+}
+
+function getParticipantOptions(sportKey, selected = '') {
+  const participants = sportKey === 'siatkowka'
+    ? leagueData.clubTeams.filter(team => team.sport === sportKey)
+    : leagueData.teams;
+  const source = participants.length ? participants : leagueData.teams;
+  return source
+    .map(item => {
+      const value = item.name;
+      const label = item.club ? `${item.name} (${item.club})` : item.name;
+      return `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    })
     .join('');
 }
 
@@ -229,12 +253,85 @@ function renderTeams() {
   if (!section || !sportKey) return;
 
   section.innerHTML = '';
-  leagueData.teams.forEach(team => {
+  const entries = sportKey === 'siatkowka'
+    ? leagueData.clubTeams.filter(team => team.sport === sportKey)
+    : leagueData.teams.map(team => ({ ...team, club: team.name, level: 'indywidualnie' }));
+
+  entries.forEach(team => {
     const card = document.createElement('article');
     card.className = 'team-card';
-    card.innerHTML = `<h3>${renderLogo(team.name)} ${escapeHtml(team.name)}</h3><p>${escapeHtml(team.description)}</p>`;
+    const club = getClubByName(team.club || team.name);
+    card.innerHTML = `<h3>${renderLogo(team.name)} ${escapeHtml(team.name)}</h3><p>${escapeHtml(club?.description || '')}</p><p class="club-city">${escapeHtml(team.club || team.name)} · ${escapeHtml(team.level || '')}</p>`;
     section.appendChild(card);
   });
+}
+
+function renderClubsPage() {
+  const grid = document.querySelector('.clubs-grid');
+  if (!grid) return;
+
+  grid.innerHTML = leagueData.teams.map(team => {
+    const participantCount = leagueData.clubTeams.filter(entry => entry.club === team.name).length;
+    return `
+      <article class="club-card">
+        <div class="club-header">
+          <h3>${renderLogo(team.name)} ${escapeHtml(team.name)}</h3>
+          <p class="club-city">${escapeHtml(team.city)}</p>
+        </div>
+        <p class="club-description">${escapeHtml(team.description)}</p>
+        <div class="club-stats">
+          <div class="stat"><span class="stat-label">Drużyny</span><span class="stat-value">${participantCount}</span></div>
+          <div class="stat"><span class="stat-label">Sporty</span><span class="stat-value">${participantCount ? 1 : 0}</span></div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function renderPublicRankingsPage() {
+  const main = document.querySelector('main.container');
+  if (!main) return;
+
+  const legend = leagueData.teams.map(team => `<span>${renderLogo(team.name)} ${escapeHtml(team.name)}</span>`).join('');
+  const sportSections = Object.keys(leagueData.sports).map(key => {
+    const sport = leagueData.sports[key];
+    const resultsRows = sport.results.length
+      ? sport.results.map(match => `
+          <tr><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(match.score)}</strong></td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td></tr>
+        `).join('')
+      : '<tr><td colspan="6">Brak wyników dla tej dyscypliny.</td></tr>';
+    const playerRows = sport.mvp.length
+      ? sport.mvp.slice().sort((a, b) => b.points - a.points).map((player, index) => `
+          <tr><td>${index + 1}</td><td>${escapeHtml(player.player)}</td><td>${escapeHtml(player.team)}</td><td>${renderLogo(player.team)}</td><td><strong>${player.points}</strong></td></tr>
+        `).join('')
+      : '<tr><td colspan="5">Brak zawodników w rankingu.</td></tr>';
+
+    return `
+      <section class="rankings-section">
+        <h2>${escapeHtml(sport.name)}</h2>
+        <div class="rankings-container">
+          <div class="ranking-view">
+            <h3>Wyniki</h3>
+            <table><thead><tr><th>Poziom</th><th>Drużyna / reprezentant 1</th><th>Logo</th><th>Wynik</th><th>Logo</th><th>Drużyna / reprezentant 2</th></tr></thead><tbody>${resultsRows}</tbody></table>
+          </div>
+          <div class="ranking-view">
+            <h3>Zawodnicy</h3>
+            <table><thead><tr><th>#</th><th>Zawodnik</th><th>Drużyna / klub</th><th>Logo</th><th>Punkty</th></tr></thead><tbody>${playerRows}</tbody></table>
+          </div>
+        </div>
+      </section>
+    `;
+  }).join('');
+
+  main.innerHTML = `
+    <section class="page-intro">
+      <span class="eyebrow">Wyniki</span>
+      <h2>Kluby, drużyny uczestniczące i zawodnicy</h2>
+      <p>W siatkówce klub wystawia drużyny. W zawodach indywidualnych zawodnik reprezentuje bezpośrednio klub.</p>
+    </section>
+    <section class="legend-strip" aria-label="Legenda klubów">${legend}</section>
+    ${sportSections}
+  `;
 }
 
 function renderResults() {
@@ -309,19 +406,51 @@ function saveAndRefreshAdmin(message) {
   renderAdminDashboard();
   renderAdminStandings();
   renderAdminTeams();
+  renderAdminClubTeams();
   renderAdminResults();
   renderAdminPlayers();
   if (message) showToast(message, 'success');
+}
+
+function syncClubName(oldName, newName) {
+  if (!oldName || oldName === newName) return;
+  leagueData.clubTeams.forEach(team => {
+    if (team.club === oldName) team.club = newName;
+  });
+  Object.values(leagueData.sports).forEach(sport => {
+    sport.results.forEach(match => {
+      if (match.home === oldName) match.home = newName;
+      if (match.away === oldName) match.away = newName;
+    });
+    sport.mvp.forEach(player => {
+      if (player.team === oldName) player.team = newName;
+    });
+  });
+}
+
+function syncParticipantName(oldName, newName) {
+  if (!oldName || oldName === newName) return;
+  Object.values(leagueData.sports).forEach(sport => {
+    sport.results.forEach(match => {
+      if (match.home === oldName) match.home = newName;
+      if (match.away === oldName) match.away = newName;
+    });
+    sport.mvp.forEach(player => {
+      if (player.team === oldName) player.team = newName;
+    });
+  });
 }
 
 function renderAdminDashboard() {
   const resultsCount = Object.values(leagueData.sports).reduce((sum, sport) => sum + sport.results.length, 0);
   const playersCount = Object.values(leagueData.sports).reduce((sum, sport) => sum + sport.mvp.length, 0);
   const teamsCount = document.getElementById('admin-teams-count');
+  const entriesCount = document.getElementById('admin-entries-count');
   const results = document.getElementById('admin-results-count');
   const players = document.getElementById('admin-players-count');
   const sports = document.getElementById('admin-sports-count');
   if (teamsCount) teamsCount.textContent = leagueData.teams.length;
+  if (entriesCount) entriesCount.textContent = leagueData.clubTeams.length;
   if (results) results.textContent = resultsCount;
   if (players) players.textContent = playersCount;
   if (sports) sports.textContent = Object.keys(leagueData.sports).length;
@@ -401,10 +530,12 @@ function renderAdminTeams() {
 
     const existing = leagueData.teams.find(team => team.id === id);
     if (existing) {
+      const oldName = existing.name;
       existing.name = name;
       existing.city = city;
       existing.logo = logo;
       existing.description = description;
+      syncClubName(oldName, name);
       saveAndRefreshAdmin('Klub został zaktualizowany.');
     } else {
       const nextId = Math.max(0, ...leagueData.teams.map(team => team.id)) + 1;
@@ -428,8 +559,97 @@ function renderAdminTeams() {
 
   editor.querySelectorAll('.delete-team').forEach(button => {
     button.addEventListener('click', () => {
+      const removed = leagueData.teams.find(team => team.id === Number(button.dataset.id));
       leagueData.teams = leagueData.teams.filter(team => team.id !== Number(button.dataset.id));
+      if (removed) {
+        leagueData.clubTeams = leagueData.clubTeams.filter(team => team.club !== removed.name);
+      }
       saveAndRefreshAdmin('Klub został usunięty.');
+    });
+  });
+}
+
+function renderAdminClubTeams() {
+  const editor = document.getElementById('club-team-editor');
+  if (!editor) return;
+
+  editor.innerHTML = `
+    <form id="club-team-form" class="admin-form">
+      <input type="hidden" name="id" />
+      <fieldset>
+        <legend>Dodaj lub edytuj drużynę uczestniczącą</legend>
+        <div class="admin-form-grid">
+          <label>Nazwa drużyny<input type="text" name="name" required placeholder="np. Orion Poznań B" /></label>
+          <label>Klub<select name="club" required>${getClubOptions()}</select></label>
+          <label>Dyscyplina<select name="sport" required>${getSportOptions('siatkowka')}</select></label>
+          <label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label>
+        </div>
+        <div class="admin-actions"><button type="submit">Zapisz drużynę</button><button type="reset" class="button-secondary">Wyczyść</button></div>
+      </fieldset>
+    </form>
+    <div class="admin-table-block">
+      <h4>Drużyny uczestniczące</h4>
+      <table>
+        <thead><tr><th>Logo</th><th>Drużyna</th><th>Klub</th><th>Dyscyplina</th><th>Poziom</th><th>Akcje</th></tr></thead>
+        <tbody>
+          ${leagueData.clubTeams.map(team => `
+            <tr>
+              <td>${renderLogo(team.name)}</td>
+              <td>${escapeHtml(team.name)}</td>
+              <td>${escapeHtml(team.club)}</td>
+              <td>${escapeHtml(getSportName(team.sport))}</td>
+              <td>${escapeHtml(team.level || '-')}</td>
+              <td><div class="table-actions"><button type="button" class="compact-button edit-club-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-club-team" data-id="${team.id}">Usuń</button></div></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  const form = editor.querySelector('#club-team-form');
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const id = Number(formData.get('id'));
+    const name = formData.get('name').toString().trim();
+    const club = formData.get('club').toString();
+    const sport = formData.get('sport').toString();
+    const level = formData.get('level').toString().trim();
+    if (!name || !club || !sport) {
+      showToast('Uzupełnij nazwę drużyny, klub i dyscyplinę.', 'error');
+      return;
+    }
+    const existing = leagueData.clubTeams.find(team => team.id === id);
+    if (existing) {
+      const oldName = existing.name;
+      Object.assign(existing, { name, club, sport, level });
+      syncParticipantName(oldName, name);
+      saveAndRefreshAdmin('Drużyna uczestnicząca została zaktualizowana.');
+    } else {
+      const nextId = Math.max(0, ...leagueData.clubTeams.map(team => team.id)) + 1;
+      leagueData.clubTeams.push({ id: nextId, name, club, sport, level });
+      saveAndRefreshAdmin('Dodano drużynę uczestniczącą.');
+    }
+  });
+
+  editor.querySelectorAll('.edit-club-team').forEach(button => {
+    button.addEventListener('click', () => {
+      const team = leagueData.clubTeams.find(item => item.id === Number(button.dataset.id));
+      if (!team) return;
+      form.id.value = team.id;
+      form.name.value = team.name;
+      form.club.value = team.club;
+      form.sport.value = team.sport;
+      form.level.value = team.level || '';
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  editor.querySelectorAll('.delete-club-team').forEach(button => {
+    button.addEventListener('click', () => {
+      leagueData.clubTeams = leagueData.clubTeams.filter(team => team.id !== Number(button.dataset.id));
+      saveAndRefreshAdmin('Drużyna uczestnicząca została usunięta.');
     });
   });
 }
@@ -446,9 +666,9 @@ function renderAdminResults() {
         <div class="admin-form-grid">
           <label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label>
           <label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label>
-          <label>Drużyna 1<select name="home" required>${getTeamOptions()}</select></label>
+          <label>Drużyna / reprezentant 1<select name="home" required>${getParticipantOptions('siatkowka')}</select></label>
           <label>Wynik<input type="text" name="score" required placeholder="3:1" /></label>
-          <label>Drużyna 2<select name="away" required>${getTeamOptions()}</select></label>
+          <label>Drużyna / reprezentant 2<select name="away" required>${getParticipantOptions('siatkowka')}</select></label>
         </div>
         <div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div>
       </fieldset>
@@ -465,6 +685,13 @@ function renderAdminResults() {
   `;
 
   const form = editor.querySelector('#result-form');
+  function refreshResultParticipantOptions(selectedHome = '', selectedAway = '') {
+    const sportKey = form.sport.value;
+    form.home.innerHTML = getParticipantOptions(sportKey, selectedHome);
+    form.away.innerHTML = getParticipantOptions(sportKey, selectedAway);
+  }
+  form.sport.addEventListener('change', () => refreshResultParticipantOptions());
+
   form.addEventListener('submit', event => {
     event.preventDefault();
     const formData = new FormData(form);
@@ -504,6 +731,7 @@ function renderAdminResults() {
       form.id.value = match.id;
       form.sport.value = sportKey;
       form.level.value = match.level || '';
+      refreshResultParticipantOptions(match.home, match.away);
       form.home.value = match.home;
       form.score.value = match.score;
       form.away.value = match.away;
@@ -532,7 +760,7 @@ function renderAdminPlayers() {
         <div class="admin-form-grid">
           <label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label>
           <label>Zawodnik<input type="text" name="player" required /></label>
-          <label>Drużyna / klub<select name="team" required>${getTeamOptions()}</select></label>
+          <label>Reprezentowany klub<select name="team" required>${getClubOptions()}</select></label>
           <label>Punkty<input type="number" name="points" required min="0" /></label>
         </div>
         <div class="admin-actions"><button type="submit">Zapisz zawodnika</button><button type="reset" class="button-secondary">Wyczyść</button></div>
@@ -545,7 +773,7 @@ function renderAdminPlayers() {
             <tr><td>${index + 1}</td><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(player.player)}</td><td>${escapeHtml(player.team)}</td><td>${renderLogo(player.team)}</td><td><strong>${player.points}</strong></td><td><div class="table-actions"><button type="button" class="compact-button edit-player" data-sport="${key}" data-id="${player.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-player" data-sport="${key}" data-id="${player.id}">Usuń</button></div></td></tr>
           `).join('')
         : `<tr><td colspan="7">Brak zawodników: ${escapeHtml(sport.name)}</td></tr>`;
-      return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>#</th><th>Dyscyplina</th><th>Zawodnik</th><th>Drużyna / klub</th><th>Logo</th><th>Punkty</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>#</th><th>Dyscyplina</th><th>Zawodnik</th><th>Klub</th><th>Logo</th><th>Punkty</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }).join('')}
   `;
 
@@ -625,6 +853,14 @@ function initPage() {
   if (page === 'admin') {
     requireAdminAuth();
     initAdminPanel();
+    return;
+  }
+  if (page === 'clubs') {
+    renderClubsPage();
+    return;
+  }
+  if (page === 'rankings') {
+    renderPublicRankingsPage();
     return;
   }
   if (page === 'sport') {

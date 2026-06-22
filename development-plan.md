@@ -31,5 +31,6 @@
 - Nawigacja została uporządkowana do głównych ścieżek użytkownika: Start, Sporty, Liga, Wyniki, Media, Kontakt i Dołącz. Sporty, Liga oraz Media są sekcjami rozwijanymi, aby nie przeciążać paska linkami.
 - Header kurczy się po przewinięciu strony i zostawia subtelny tęczowy detal jako sygnał marki LGBT+ bez zasłaniania treści.
 - Panel administratora został przebudowany na dashboard z podglądem klasyfikacji, edycją klubów i logo, wyników oraz zawodników. Tabele w panelu i klasyfikacjach są ułożone jedna pod drugą.
+- Model danych rozdziela teraz kluby od drużyn uczestniczących. Klub może mieć wiele drużyn w ligach zespołowych, a w zawodach indywidualnych zawodnik reprezentuje bezpośrednio klub.
 
 Projekt jest gotowy do publikacji jako statyczna strona.
