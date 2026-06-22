@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="sport">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Siatkówka | Liga LGBT</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Siatkówka</h1>
+      <p>Rundy, poziomy i sportowa adrenalina w naszej lidze.</p>
+    </div>
+    <nav class="main-nav">
+      <a href="index.html">Strona główna</a>
+      <a href="siatkowka.html">Siatkówka</a>
+      <a href="badminton.html">Badminton</a>
+      <a href="squash.html">Squash</a>
+      <a href="tenis.html">Tenis</a>
+      <a class="admin-link" href="admin.html">Panel Administratora</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="sport-hero">
+      <h2>Rozgrywki siatkarskie</h2>
+      <p>Nasza siatkówka jest zorganizowana w czterech poziomach: B, B-, C i D. Każda drużyna ma szansę walczyć w swojej kategorii.</p>
+    </section>
+
+    <section class="sport-details">
+      <div class="sport-summary">
+        <h3>Poziomy ligi</h3>
+        <ul>
+          <li>B - najwyższy poziom rozgrywkowy</li>
+          <li>B- - rozwijająca się formuła</li>
+          <li>C - solidne wyzwania</li>
+          <li>D - debut i integracja</li>
+        </ul>
+      </div>
+      <div class="sport-summary">
+        <h3>Co zobaczysz na tej stronie</h3>
+        <p>Prezentację zespołów, wyniki, tabelę rozgrywek oraz ranking MVP.</p>
+      </div>
+    </section>
+
+    <section id="team-section">
+      <h2>Drużyny</h2>
+      <div class="team-grid" id="sport-teams"></div>
+    </section>
+
+    <section id="results-section">
+      <h2>Wyniki</h2>
+      <div id="sport-results"></div>
+    </section>
+
+    <section id="mvp-section">
+      <h2>Ranking MVP</h2>
+      <div id="sport-mvp"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Liga LGBT 2026 — siatkówka B, B-, C, D.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.body.dataset.sport = 'siatkowka';
+  </script>
+</body>
+</html>

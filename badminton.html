@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="sport">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Badminton | Liga LGBT</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>Badminton</h1>
+      <p>Precyzja, refleks i rywalizacja w krótkich, dynamicznych meczach.</p>
+    </div>
+    <nav class="main-nav">
+      <a href="index.html">Strona główna</a>
+      <a href="siatkowka.html">Siatkówka</a>
+      <a href="badminton.html">Badminton</a>
+      <a href="squash.html">Squash</a>
+      <a href="tenis.html">Tenis</a>
+      <a class="admin-link" href="admin.html">Panel Administratora</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="sport-hero">
+      <h2>Rywalizacja w badmintonie</h2>
+      <p>Siatka, lotka i szybkie wymiany punktowe. Oto badminton na naszej sportowej stronie.</p>
+    </section>
+
+    <section id="team-section">
+      <h2>Drużyny</h2>
+      <div class="team-grid" id="sport-teams"></div>
+    </section>
+
+    <section id="results-section">
+      <h2>Wyniki</h2>
+      <div id="sport-results"></div>
+    </section>
+
+    <section id="mvp-section">
+      <h2>Ranking MVP</h2>
+      <div id="sport-mvp"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Liga LGBT 2026 — badminton dla wszystkich.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.body.dataset.sport = 'badminton';
+  </script>
+</body>
+</html>
