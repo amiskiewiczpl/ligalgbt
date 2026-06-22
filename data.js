@@ -10,10 +10,10 @@ const defaultLeagueData = {
     { id: 5, name: 'Unicorns Łódź', city: 'Łódź', description: 'Kreatywny klub z Łodzi z sercem do sportu i zespołowej gry.', logo: '' }
   ],
   clubTeams: [
-    { id: 1, name: 'Orion Poznań B', club: 'Orion Poznań', sport: 'siatkowka', level: 'B', description: 'Skład ligowy na poziomie B, zgłoszony jako osobna drużyna klubu.' },
-    { id: 2, name: 'Neon Wrocław B', club: 'Neon Wrocław', sport: 'siatkowka', level: 'B', description: 'Drużyna poziomu B z własnym terminarzem i wynikami.' },
-    { id: 3, name: 'Dragons Kraków C', club: 'Dragons Kraków', sport: 'siatkowka', level: 'C', description: 'Skład turniejowo-ligowy na poziomie C.' },
-    { id: 4, name: 'Volup Warszawa C', club: 'Volup Warszawa', sport: 'siatkowka', level: 'C', description: 'Drużyna siatkarska przypisana do poziomu C.' }
+    { id: 1, name: 'Orion Poznań B', club: 'Orion Poznań', sport: 'siatkowka', level: 'B', description: 'Skład ligowy na poziomie B, zgłoszony jako osobna drużyna klubu.', roster: ['Kacper Kowalski', 'Marta Sokołowska', 'Piotr Maj'] },
+    { id: 2, name: 'Neon Wrocław B', club: 'Neon Wrocław', sport: 'siatkowka', level: 'B', description: 'Drużyna poziomu B z własnym terminarzem i wynikami.', roster: ['Anna Zielińska', 'Tomasz Brzeziński', 'Julia Wrona'] },
+    { id: 3, name: 'Dragons Kraków C', club: 'Dragons Kraków', sport: 'siatkowka', level: 'C', description: 'Skład turniejowo-ligowy na poziomie C.', roster: ['Krzysztof Sobanowski', 'Michał Wojakowski'] },
+    { id: 4, name: 'Volup Warszawa C', club: 'Volup Warszawa', sport: 'siatkowka', level: 'C', description: 'Drużyna siatkarska przypisana do poziomu C.', roster: ['Łukasz Nowak', 'Sebastian Górski'] }
   ],
   players: [
     { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'] },
@@ -105,6 +105,9 @@ function normalizeLoadedData(data) {
   });
   data.clubTeams.forEach(team => {
     if (typeof team.description !== 'string') team.description = '';
+    if (!Array.isArray(team.roster)) {
+      team.roster = defaultLeagueData.clubTeams.find(defaultTeam => defaultTeam.name === team.name || defaultTeam.id === team.id)?.roster || [];
+    }
   });
   data.tournaments.forEach(tournament => {
     if (!Array.isArray(tournament.bracket)) tournament.bracket = [];

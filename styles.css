@@ -713,6 +713,45 @@ button:hover,
   line-height: 1.35;
 }
 
+.team-roster-block {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.team-roster-block h4 {
+  margin: 0 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.team-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.team-roster span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(137, 200, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(137, 200, 255, 0.08);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.team-roster-empty {
+  margin-top: 0;
+}
+
 .danger-button {
   background: rgba(255, 111, 111, 0.12);
   border-color: rgba(255, 111, 111, 0.3);
