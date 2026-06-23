@@ -18,7 +18,7 @@ const defaultLeagueData = {
   players: [
     { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Rozgrywajacy Orionu, regularny w przyjeciu i spokojnym prowadzeniu zespolu.' },
     { id: 2, name: 'Anna Zielińska', club: 'Neon Wrocław', sports: ['siatkowka', 'badminton'], bio: 'Wszechstronna zawodniczka Neonu, laczy gre zespolowa z dobrym refleksem w badmintonie.' },
-    { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['squash'], bio: 'Dynamiczny zawodnik squashowy z mocnym tempem gry i szybkim doskokiem do pilki.' },
+    { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['siatkowka', 'squash'], bio: 'Dynamiczny zawodnik squashowy z mocnym tempem gry i szybkim doskokiem do pilki.' },
     { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'], bio: 'Tenisista turniejowy, cierpliwy w wymianach i skuteczny przy dluzszych meczach.' },
     { id: 5, name: 'Marta Sokołowska', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Przyjmujaca Orionu, dobrze czyta ustawienie rywali i utrzymuje tempo w dlugich akcjach.' },
     { id: 6, name: 'Piotr Maj', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Srodkowy z dobrym blokiem i duza regularnoscia w krotkich pilkach.' },
@@ -88,7 +88,7 @@ const defaultLeagueData = {
 };
 
 function normalizeLoadedData(data) {
-  if (!data) return structuredClone(defaultLeagueData);
+  if (!data) data = structuredClone(defaultLeagueData);
   const serialized = JSON.stringify(data);
   const damagedMarkers = ['\uFFFD', '\u0107\u017C\u02DD', '\u0139', '\u0102', '\u00E2', '\u0111'];
   if (damagedMarkers.some(marker => serialized.includes(marker))) return structuredClone(defaultLeagueData);
@@ -129,11 +129,29 @@ function normalizeLoadedData(data) {
   });
   data.players.forEach(player => {
     if (typeof player.bio !== 'string') player.bio = '';
+    if (!Array.isArray(player.sports)) player.sports = [];
+    player.sports = [...new Set(player.sports)].filter(sportKey => Boolean(data.sports[sportKey]));
+    data.clubTeams
+      .filter(team => (team.roster || []).includes(player.name))
+      .forEach(team => {
+        if (team.sport && !player.sports.includes(team.sport)) player.sports.push(team.sport);
+      });
   });
   data.tournaments.forEach(tournament => {
     if (!Array.isArray(tournament.bracket)) tournament.bracket = [];
     if (!Array.isArray(tournament.finalClassification)) tournament.finalClassification = [];
     if (!tournament.scoring) tournament.scoring = 'sets';
+    if (!Array.isArray(tournament.participants)) {
+      tournament.participants = [
+        ...tournament.finalClassification.map(row => row.participant),
+        ...tournament.bracket.flatMap(match => [match.home, match.away])
+      ];
+    }
+    const sport = data.sports[tournament.sport];
+    const eligibleNames = sport?.type === 'team'
+      ? data.clubTeams.filter(team => team.sport === tournament.sport).map(team => team.name)
+      : data.players.filter(player => player.sports.includes(tournament.sport)).map(player => player.name);
+    tournament.participants = [...new Set(tournament.participants)].filter(name => eligibleNames.includes(name));
   });
   return data;
 }
@@ -141,8 +159,9 @@ function normalizeLoadedData(data) {
 function loadLeagueData() {
   const stored = localStorage.getItem('ligaLgbtData');
   if (!stored) {
-    localStorage.setItem('ligaLgbtData', JSON.stringify(defaultLeagueData));
-    return structuredClone(defaultLeagueData);
+    const normalized = normalizeLoadedData(structuredClone(defaultLeagueData));
+    localStorage.setItem('ligaLgbtData', JSON.stringify(normalized));
+    return normalized;
   }
   try {
     const parsed = JSON.parse(stored);
@@ -151,8 +170,9 @@ function loadLeagueData() {
     return normalized;
   } catch (error) {
     console.warn('Błąd danych lokalnych, używam domyślnych.', error);
-    localStorage.setItem('ligaLgbtData', JSON.stringify(defaultLeagueData));
-    return structuredClone(defaultLeagueData);
+    const normalized = normalizeLoadedData(structuredClone(defaultLeagueData));
+    localStorage.setItem('ligaLgbtData', JSON.stringify(normalized));
+    return normalized;
   }
 }
 
