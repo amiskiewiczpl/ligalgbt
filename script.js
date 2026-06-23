@@ -108,6 +108,68 @@ function getPlayerOptions(sportKey, selected = '') {
     .join('');
 }
 
+function getPlayersForClub(club) {
+  return leagueData.players.filter(player => player.club === club);
+}
+
+function getRosterSelectOptions(club, selected = []) {
+  const selectedSet = new Set(selected || []);
+  const players = getPlayersForClub(club);
+  const selectedOnly = [...selectedSet]
+    .filter(name => !players.some(player => player.name === name))
+    .map(name => ({ name, club }));
+  return [...players, ...selectedOnly]
+    .map(player => `<option value="${escapeHtml(player.name)}" ${selectedSet.has(player.name) ? 'selected' : ''}>${escapeHtml(player.name)}</option>`)
+    .join('');
+}
+
+function getMatchMvpOptions(sportKey, home, away, selected = '') {
+  return getMatchMvpNames(sportKey, home, away, selected)
+    .map(name => `<option value="${escapeHtml(name)}" ${name === selected ? 'selected' : ''}>${escapeHtml(name)}</option>`)
+    .join('');
+}
+
+function getMatchMvpNames(sportKey, home, away, selected = '') {
+  const sport = leagueData.sports[sportKey];
+  let names = [];
+  if (sport?.type === 'team') {
+    const homeTeam = getParticipantByName(home);
+    const awayTeam = getParticipantByName(away);
+    names = [...(homeTeam?.roster || []), ...(awayTeam?.roster || [])];
+  } else {
+    names = [home, away].filter(Boolean);
+  }
+  if (selected && !names.includes(selected)) names.push(selected);
+  return [...new Set(names)];
+}
+
+function getScoreOptions(scoring = 'volleyball', selected = '') {
+  const scores = scoring === 'sets' ? ['2:0', '2:1', '0:2', '1:2'] : ['3:0', '3:1', '3:2', '0:3', '1:3', '2:3'];
+  return scores.map(score => `<option value="${score}" ${score === selected ? 'selected' : ''}>${score}</option>`).join('');
+}
+
+function getSetCountFromScore(score) {
+  const parsed = parseScore(score);
+  const count = parsed.home + parsed.away;
+  return count > 0 ? count : 3;
+}
+
+function renderSetInputs(score, sets = '') {
+  const pairs = parseSetPairs(sets);
+  const count = getSetCountFromScore(score);
+  return Array.from({ length: count }, (_, index) => {
+    const [home = '', away = ''] = pairs[index] || [];
+    return `<div class="set-score-row"><span>Set ${index + 1}</span><label>Drużyna 1<input type="number" min="0" name="setHome" value="${escapeHtml(home)}" required /></label><label>Drużyna 2<input type="number" min="0" name="setAway" value="${escapeHtml(away)}" required /></label></div>`;
+  }).join('');
+}
+
+function collectSetScores(form) {
+  const homeScores = [...form.querySelectorAll('input[name="setHome"]')].map(input => Number(input.value));
+  const awayScores = [...form.querySelectorAll('input[name="setAway"]')].map(input => Number(input.value));
+  if (!homeScores.length || homeScores.some(Number.isNaN) || awayScores.some(Number.isNaN)) return '';
+  return homeScores.map((home, index) => `${home}:${awayScores[index]}`).join(', ');
+}
+
 function parseRosterText(value) {
   return String(value || '')
     .split(/[\n,]/)
@@ -561,13 +623,18 @@ function renderAdminTeams() {
 function renderAdminClubTeams() {
   const editor = document.getElementById('club-team-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="club-team-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj drużynę uczestniczącą</legend><div class="admin-form-grid"><label>Nazwa drużyny<input type="text" name="name" required placeholder="np. Orion Poznań B" /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Dyscyplina<select name="sport" required>${getSportOptions('siatkowka')}</select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label></div><label>Opis drużyny<textarea name="description" placeholder="Opcjonalnie: opis tej konkretnej drużyny, nie opis całego klubu."></textarea></label><label>Skład drużyny<textarea name="roster" placeholder="Jedno nazwisko w linii albo po przecinku. Możesz wpisać osoby z rejestru zawodników."></textarea></label><div class="admin-actions"><button type="submit">Zapisz drużynę</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form><div class="admin-table-block"><h4>Drużyny uczestniczące</h4><table><thead><tr><th>Logo</th><th>Drużyna</th><th>Klub</th><th>Dyscyplina</th><th>Poziom</th><th>Skład</th><th>Opis</th><th>Akcje</th></tr></thead><tbody>${leagueData.clubTeams.map(team => `<tr><td>${renderLogo(team.name)}</td><td>${escapeHtml(team.name)}</td><td>${escapeHtml(team.club)}</td><td>${escapeHtml(getSportName(team.sport))}</td><td>${escapeHtml(team.level || '-')}</td><td>${escapeHtml((team.roster || []).join(', ') || '-')}</td><td>${escapeHtml(team.description || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-club-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-club-team" data-id="${team.id}">Usuń</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  editor.innerHTML = `<form id="club-team-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj drużynę uczestniczącą</legend><div class="admin-form-grid"><label>Nazwa drużyny<input type="text" name="name" required placeholder="np. Orion Poznań B" /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Dyscyplina<select name="sport" required>${getSportOptions('siatkowka')}</select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label></div><label>Opis drużyny<textarea name="description" placeholder="Opcjonalnie: opis tej konkretnej drużyny, nie opis całego klubu."></textarea></label><label>Skład drużyny<select name="roster" multiple size="6"></select></label><p class="form-hint">Skład wybierasz z zawodników przypisanych do wybranego klubu. Nowych zawodników dodasz w sekcji Zawodnicy.</p><div class="admin-actions"><button type="submit">Zapisz drużynę</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form><div class="admin-table-block"><h4>Drużyny uczestniczące</h4><table><thead><tr><th>Logo</th><th>Drużyna</th><th>Klub</th><th>Dyscyplina</th><th>Poziom</th><th>Skład</th><th>Opis</th><th>Akcje</th></tr></thead><tbody>${leagueData.clubTeams.map(team => `<tr><td>${renderLogo(team.name)}</td><td>${escapeHtml(team.name)}</td><td>${escapeHtml(team.club)}</td><td>${escapeHtml(getSportName(team.sport))}</td><td>${escapeHtml(team.level || '-')}</td><td>${escapeHtml((team.roster || []).join(', ') || '-')}</td><td>${escapeHtml(team.description || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-club-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-club-team" data-id="${team.id}">Usuń</button></div></td></tr>`).join('')}</tbody></table></div>`;
   const form = editor.querySelector('#club-team-form');
+  function refreshRosterOptions(selected = []) {
+    form.roster.innerHTML = getRosterSelectOptions(form.club.value, selected);
+  }
+  refreshRosterOptions();
+  form.club.addEventListener('change', () => refreshRosterOptions());
   form.addEventListener('submit', event => {
     event.preventDefault();
     const data = new FormData(form);
     const id = Number(data.get('id'));
-    const payload = { name: data.get('name').toString().trim(), club: data.get('club').toString(), sport: data.get('sport').toString(), level: data.get('level').toString().trim(), description: data.get('description').toString().trim(), roster: parseRosterText(data.get('roster').toString()) };
+    const payload = { name: data.get('name').toString().trim(), club: data.get('club').toString(), sport: data.get('sport').toString(), level: data.get('level').toString().trim(), description: data.get('description').toString().trim(), roster: data.getAll('roster').map(item => item.toString()) };
     if (!payload.name || !payload.club || !payload.sport) return showToast('Uzupełnij nazwę drużyny, klub i dyscyplinę.', 'error');
     const existing = leagueData.clubTeams.find(team => team.id === id);
     if (existing) {
@@ -583,7 +650,7 @@ function renderAdminClubTeams() {
   editor.querySelectorAll('.edit-club-team').forEach(button => button.addEventListener('click', () => {
     const team = leagueData.clubTeams.find(item => item.id === Number(button.dataset.id));
     if (!team) return;
-    form.id.value = team.id; form.name.value = team.name; form.club.value = team.club; form.sport.value = team.sport; form.level.value = team.level || ''; form.description.value = team.description || ''; form.roster.value = stringifyRoster(team.roster);
+    form.id.value = team.id; form.name.value = team.name; form.club.value = team.club; form.sport.value = team.sport; form.level.value = team.level || ''; form.description.value = team.description || ''; refreshRosterOptions(team.roster || []);
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }));
   editor.querySelectorAll('.delete-club-team').forEach(button => button.addEventListener('click', () => {
@@ -633,31 +700,51 @@ function renderAdminPlayers() {
 function renderAdminResults() {
   const editor = document.getElementById('results-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety = punkty</option></select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label><label>Uczestnik 1<select name="home" required></select></label><label>Sety<input type="text" name="sets" required placeholder="25:20, 23:25, 15:12" /></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
+  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety = punkty</option></select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label><label>Uczestnik 1<select name="home" required></select></label><label>Wynik meczu<select name="score" required></select></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="set-fields" id="set-fields"></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
     const sport = leagueData.sports[key];
     const rows = sport.results.length ? sport.results.map(match => `<tr><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(deriveScore(match))}</strong></td><td>${escapeHtml(match.sets || '-')}</td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td><td>${escapeHtml(match.mvp || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-result" data-sport="${key}" data-id="${match.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-result" data-sport="${key}" data-id="${match.id}">Usuń</button></div></td></tr>`).join('') : `<tr><td colspan="10">Brak wyników: ${escapeHtml(sport.name)}</td></tr>`;
     return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>Dyscyplina</th><th>Poziom</th><th>Uczestnik 1</th><th>Logo</th><th>Wynik</th><th>Sety</th><th>Logo</th><th>Uczestnik 2</th><th>MVP</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('')}`;
   const form = editor.querySelector('#result-form');
-  function refreshFormOptions(home = '', away = '', mvp = '') {
+  const setFields = editor.querySelector('#set-fields');
+  function refreshScoreFields(score = form.score.value, sets = '') {
+    setFields.innerHTML = renderSetInputs(score, sets);
+  }
+  function refreshMvpOptions(mvp = '') {
+    form.mvp.innerHTML = `<option value="">Brak</option>${getMatchMvpOptions(form.sport.value, form.home.value, form.away.value, mvp)}`;
+  }
+  function refreshFormOptions(home = '', away = '', mvp = '', score = '') {
     const sportKey = form.sport.value;
+    const defaultScoring = leagueData.sports[sportKey].defaultScoring || 'volleyball';
     form.home.innerHTML = getParticipantOptions(sportKey, home);
     form.away.innerHTML = getParticipantOptions(sportKey, away);
-    form.mvp.innerHTML = `<option value="">Brak</option>${getPlayerOptions(sportKey, mvp)}`;
-    form.scoring.value = leagueData.sports[sportKey].defaultScoring || 'volleyball';
+    form.scoring.value = defaultScoring;
+    form.score.innerHTML = getScoreOptions(defaultScoring, score);
+    refreshMvpOptions(mvp);
+    refreshScoreFields(form.score.value);
   }
   refreshFormOptions();
   form.sport.addEventListener('change', () => refreshFormOptions());
+  form.scoring.addEventListener('change', () => {
+    form.score.innerHTML = getScoreOptions(form.scoring.value);
+    refreshScoreFields(form.score.value);
+    refreshMvpOptions();
+  });
+  form.score.addEventListener('change', () => refreshScoreFields(form.score.value));
+  form.home.addEventListener('change', () => refreshMvpOptions());
+  form.away.addEventListener('change', () => refreshMvpOptions());
   form.addEventListener('submit', event => {
     event.preventDefault();
     const data = new FormData(form);
     const sportKey = data.get('sport').toString();
     const originalSport = data.get('originalSport').toString();
     const id = Number(data.get('id'));
-    const payload = { level: data.get('level').toString().trim(), home: data.get('home').toString(), away: data.get('away').toString(), sets: data.get('sets').toString().trim(), scoring: data.get('scoring').toString(), mvp: data.get('mvp').toString() };
-    payload.score = deriveScore(payload);
+    const payload = { level: data.get('level').toString().trim(), home: data.get('home').toString(), away: data.get('away').toString(), score: data.get('score').toString(), sets: collectSetScores(form), scoring: data.get('scoring').toString(), mvp: data.get('mvp').toString() };
     if (payload.home === payload.away) return showToast('Uczestnicy meczu muszą być różni.', 'warning');
-    if (!parseSetPairs(payload.sets).length) return showToast('Wpisz sety w formacie np. 25:20, 23:25, 15:12.', 'warning');
+    if (!parseSetPairs(payload.sets).length) return showToast('Uzupełnij punkty setów.', 'warning');
+    if (deriveScore(payload) !== payload.score) return showToast('Punkty setów nie zgadzają się z wybranym wynikiem meczu.', 'warning');
+    const allowedMvp = getMatchMvpNames(sportKey, payload.home, payload.away);
+    if (payload.mvp && !allowedMvp.includes(payload.mvp)) return showToast('MVP musi być zawodnikiem jednej z grających drużyn.', 'warning');
     if (id && originalSport && originalSport !== sportKey && leagueData.sports[originalSport]) {
       leagueData.sports[originalSport].results = leagueData.sports[originalSport].results.filter(match => match.id !== id);
     }
@@ -675,7 +762,7 @@ function renderAdminResults() {
     const sportKey = button.dataset.sport;
     const match = leagueData.sports[sportKey].results.find(item => item.id === Number(button.dataset.id));
     if (!match) return;
-    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; refreshFormOptions(match.home, match.away, match.mvp || ''); form.level.value = match.level || ''; form.sets.value = match.sets || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.mvp.value = match.mvp || '';
+    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; refreshFormOptions(match.home, match.away, match.mvp || '', deriveScore(match)); form.level.value = match.level || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.score.innerHTML = getScoreOptions(form.scoring.value, deriveScore(match)); refreshScoreFields(deriveScore(match), match.sets || ''); refreshMvpOptions(match.mvp || ''); form.mvp.value = match.mvp || '';
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }));
   editor.querySelectorAll('.delete-result').forEach(button => button.addEventListener('click', () => {

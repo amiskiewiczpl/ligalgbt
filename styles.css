@@ -449,6 +449,10 @@ strong {
   gap: 1rem;
 }
 
+.admin-container {
+  max-width: 1180px;
+}
+
 .hero-actions {
   align-self: end;
 }
@@ -635,10 +639,13 @@ button:hover,
 .admin-card-wide {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .admin-card-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
   align-items: start;
@@ -651,12 +658,20 @@ button:hover,
 
 .admin-form {
   margin-bottom: 1.4rem;
+  min-width: 0;
 }
 
 .admin-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 0.8rem;
+}
+
+.admin-form label {
+  display: block;
+  min-width: 0;
+  color: var(--muted-strong);
+  font-weight: 800;
 }
 
 .admin-actions,
@@ -678,10 +693,48 @@ button:hover,
 
 .admin-table-block {
   margin-top: 1.4rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .admin-table-block h4 {
   margin: 0 0 0.35rem;
+}
+
+.admin-table-block td,
+.admin-table-block th {
+  white-space: normal;
+  vertical-align: top;
+}
+
+.form-hint {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.set-fields {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.set-score-row {
+  display: grid;
+  grid-template-columns: minmax(58px, auto) repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  align-items: end;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.set-score-row > span {
+  color: var(--accent);
+  font-weight: 900;
+  line-height: 2.9rem;
+  white-space: nowrap;
 }
 
 .bracket-grid {
@@ -1128,6 +1181,16 @@ select {
   background-color: #111f35;
 }
 
+select[multiple] {
+  min-height: 150px;
+  padding: 0.45rem;
+}
+
+select[multiple] option {
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: rgba(216, 227, 247, 0.55);
@@ -1361,6 +1424,14 @@ legend {
   .hero-actions,
   .newsletter-form {
     grid-template-columns: 1fr;
+  }
+
+  .set-score-row {
+    grid-template-columns: 1fr;
+  }
+
+  .set-score-row > span {
+    line-height: 1.2;
   }
 
   .button,

@@ -19,7 +19,14 @@ const defaultLeagueData = {
     { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'] },
     { id: 2, name: 'Anna Zielińska', club: 'Neon Wrocław', sports: ['siatkowka', 'badminton'] },
     { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['squash'] },
-    { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'] }
+    { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'] },
+    { id: 5, name: 'Marta Sokołowska', club: 'Orion Poznań', sports: ['siatkowka'] },
+    { id: 6, name: 'Piotr Maj', club: 'Orion Poznań', sports: ['siatkowka'] },
+    { id: 7, name: 'Tomasz Brzeziński', club: 'Neon Wrocław', sports: ['siatkowka'] },
+    { id: 8, name: 'Julia Wrona', club: 'Neon Wrocław', sports: ['siatkowka'] },
+    { id: 9, name: 'Krzysztof Sobanowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'] },
+    { id: 10, name: 'Michał Wojakowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'] },
+    { id: 11, name: 'Sebastian Górski', club: 'Volup Warszawa', sports: ['siatkowka', 'tenis'] }
   ],
   sports: {
     siatkowka: {
