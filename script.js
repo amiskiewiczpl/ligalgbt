@@ -25,14 +25,9 @@ function showToast(message, type = 'info', duration = 4000) {
   }, duration);
 }
 
-function isAdminLoggedIn() {
-  const auth = localStorage.getItem('ligaLgbtAdmin');
-  if (!auth) return false;
-  try {
-    return JSON.parse(auth).loggedIn === true;
-  } catch {
-    return false;
-  }
+async function isAdminLoggedIn() {
+  if (!window.leagueStore?.isConfigured) return false;
+  return Boolean(await window.leagueStore.getSession());
 }
 
 const clubBadgeMap = [
@@ -503,40 +498,48 @@ function initStaticForms() {
   });
 }
 
-function initLoginPage() {
-  if (isAdminLoggedIn()) {
+async function initLoginPage() {
+  if (await isAdminLoggedIn()) {
     window.location.href = 'admin.html';
     return;
   }
   const form = document.getElementById('login-form');
   if (!form) return;
   const passwordInput = form.querySelector('input[name="password"]');
-  form.addEventListener('submit', event => {
+  const emailInput = form.querySelector('input[name="email"]');
+  if (!window.leagueStore?.isConfigured) {
+    form.querySelector('button[type="submit"]').disabled = true;
+    showToast('Baza danych nie jest jeszcze skonfigurowana. Uzupełnij config.js.', 'warning', 8000);
+    return;
+  }
+  form.addEventListener('submit', async event => {
     event.preventDefault();
+    const email = new FormData(form).get('email').toString().trim();
     const password = new FormData(form).get('password').toString().trim();
-    if (!password) {
-      showToast('Wpisz hasło administratora.', 'warning');
+    if (!email || !password) {
+      showToast('Wpisz e-mail i hasło administratora.', 'warning');
       return;
     }
-    if (password === leagueData.admin.password) {
-      localStorage.setItem('ligaLgbtAdmin', JSON.stringify({ loggedIn: true }));
+    try {
+      await window.leagueStore.signIn(email, password);
       showToast('Zalogowano. Przekierowuję do panelu.', 'success', 2000);
       setTimeout(() => { window.location.href = 'admin.html'; }, 800);
-      return;
-    }
-    showToast('Nieprawidłowe hasło. Spróbuj ponownie.', 'error');
-    if (passwordInput) {
-      passwordInput.value = '';
-      passwordInput.focus();
+    } catch (error) {
+      console.error('Błąd logowania.', error);
+      showToast('Nieprawidłowy e-mail lub hasło.', 'error');
+      if (passwordInput) passwordInput.value = '';
+      (emailInput || passwordInput)?.focus();
     }
   });
 }
 
-function requireAdminAuth() {
-  if (!isAdminLoggedIn()) {
+async function requireAdminAuth() {
+  if (!await isAdminLoggedIn()) {
     showToast('Brak dostępu. Zaloguj się jako administrator.', 'warning', 3000);
     setTimeout(() => { window.location.href = 'login.html'; }, 500);
+    return false;
   }
+  return true;
 }
 
 function renderTeams() {
@@ -684,7 +687,6 @@ function renderTournamentSections() {
 }
 
 function saveAndRefreshAdmin(message) {
-  saveLeagueData(leagueData);
   renderAdminDashboard();
   renderAdminStandings();
   renderAdminTeams();
@@ -692,7 +694,16 @@ function saveAndRefreshAdmin(message) {
   renderAdminPlayers();
   renderAdminResults();
   renderAdminTournaments();
-  if (message) showToast(message, 'success');
+  if (!message) return;
+  saveLeagueData(leagueData)
+    .then(result => {
+      const suffix = result.remote ? ' Zmiana jest już widoczna dla wszystkich.' : ' Zapisano lokalnie.';
+      showToast(message + suffix, result.remote ? 'success' : 'warning');
+    })
+    .catch(error => {
+      console.error('Nie udało się zapisać wspólnych danych ligi.', error);
+      showToast('Nie udało się zapisać zmiany w bazie. Sprawdź połączenie i zalogowanie.', 'error', 6000);
+    });
 }
 
 function syncClubName(oldName, newName) {
@@ -1064,19 +1075,32 @@ function renderAdminTournaments() {
 function initAdminPanel() {
   if (!document.getElementById('admin-content')) return;
   const logoutButton = document.getElementById('admin-logout');
-  if (logoutButton) logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('ligaLgbtAdmin');
+  if (logoutButton) logoutButton.addEventListener('click', async () => {
+    try {
+      await window.leagueStore?.signOut();
+    } catch (error) {
+      console.error('Błąd wylogowania.', error);
+    }
     showToast('Wylogowano.', 'info', 2000);
     setTimeout(() => { window.location.href = 'login.html'; }, 800);
   });
   saveAndRefreshAdmin();
+  if (window.leagueStore?.loadState === 'missing') {
+    saveLeagueData(leagueData)
+      .then(() => showToast('Utworzono pierwszy wspólny zapis danych ligi.', 'success'))
+      .catch(error => {
+        console.error('Nie udało się utworzyć pierwszego zapisu.', error);
+        showToast('Nie udało się utworzyć wspólnego zapisu danych.', 'error', 6000);
+      });
+  }
 }
 
-function initPage() {
+async function initPage() {
+  await window.leagueDataReady;
   const page = document.body.dataset.page || document.documentElement.dataset.page;
   if (page === 'login') return initLoginPage();
   if (page === 'admin') {
-    requireAdminAuth();
+    if (!await requireAdminAuth()) return;
     return initAdminPanel();
   }
   if (page === 'clubs') return renderClubsPage();
@@ -1090,7 +1114,9 @@ function initPage() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', initPage);
-window.addEventListener('DOMContentLoaded', initNavigation);
-window.addEventListener('DOMContentLoaded', initHeaderScrollState);
-window.addEventListener('DOMContentLoaded', initStaticForms);
+window.addEventListener('DOMContentLoaded', () => {
+  initNavigation();
+  initHeaderScrollState();
+  initStaticForms();
+  initPage();
+});

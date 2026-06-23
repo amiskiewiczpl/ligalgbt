@@ -1,6 +1,6 @@
 const defaultLeagueData = {
   admin: {
-    password: 'LigaLgbt2026!'
+    password: ''
   },
   teams: [
     { id: 1, name: 'Orion Poznań', city: 'Poznań', description: 'Dynamiczny klub z Poznania, który stawia na zaangażowanie, spokojną organizację i dobrą atmosferę.', logo: '' },
@@ -158,6 +158,14 @@ function loadLeagueData() {
 
 function saveLeagueData(data) {
   localStorage.setItem('ligaLgbtData', JSON.stringify(data));
+  if (window.leagueStore) return window.leagueStore.saveRemoteData(data);
+  return Promise.resolve({ remote: false });
 }
 
-const leagueData = loadLeagueData();
+let leagueData = loadLeagueData();
+
+function replaceLeagueData(data) {
+  const normalized = normalizeLoadedData(structuredClone(data));
+  Object.keys(leagueData).forEach(key => delete leagueData[key]);
+  Object.assign(leagueData, normalized);
+}
