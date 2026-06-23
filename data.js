@@ -103,6 +103,9 @@ function normalizeLoadedData(data) {
     if (!Array.isArray(data.sports[key].results)) data.sports[key].results = [];
     if (!data.sports[key].type) data.sports[key].type = defaultLeagueData.sports[key].type;
     if (!data.sports[key].defaultScoring) data.sports[key].defaultScoring = defaultLeagueData.sports[key].defaultScoring;
+    if (Array.isArray(defaultLeagueData.sports[key].levels) && !Array.isArray(data.sports[key].levels)) {
+      data.sports[key].levels = structuredClone(defaultLeagueData.sports[key].levels);
+    }
     data.sports[key].results.forEach(match => {
       if (!match.scoring) match.scoring = data.sports[key].defaultScoring;
       if (!match.sets && match.score) match.sets = '';

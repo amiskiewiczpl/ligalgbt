@@ -89,6 +89,19 @@ function getSportOptions(selected = '') {
   return Object.keys(leagueData.sports).map(key => `<option value="${key}" ${key === selected ? 'selected' : ''}>${escapeHtml(getSportName(key))}</option>`).join('');
 }
 
+function getLevelOptions(sportKey, selected = '', includeBlank = true) {
+  const levels = leagueData.sports[sportKey]?.levels || [];
+  const options = includeBlank ? [''] : [];
+  levels.forEach(level => {
+    if (!options.includes(level)) options.push(level);
+  });
+  if (selected && !options.includes(selected)) options.push(selected);
+  return options.map(level => {
+    const label = level || 'Bez poziomu';
+    return `<option value="${escapeHtml(level)}" ${level === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+  }).join('');
+}
+
 function getParticipantOptions(sportKey, selected = '') {
   const sport = leagueData.sports[sportKey];
   const source = sport?.type === 'team'
@@ -249,27 +262,102 @@ function getMatchPoints(match, side) {
   return 0;
 }
 
-function calculateStandings(sportKey) {
+function createStandingsRow(name, level = '') {
+  return {
+    name,
+    level,
+    played: 0,
+    wins: 0,
+    losses: 0,
+    setsWon: 0,
+    setsLost: 0,
+    pointsFor: 0,
+    pointsAgainst: 0,
+    points: 0
+  };
+}
+
+function applyMatchToRow(row, match, side) {
+  const score = parseScore(deriveScore(match));
+  const own = side === 'home' ? score.home : score.away;
+  const other = side === 'home' ? score.away : score.home;
+  const setPairs = parseSetPairs(match.sets);
+  row.played += 1;
+  row.wins += own > other ? 1 : 0;
+  row.losses += own < other ? 1 : 0;
+  row.setsWon += own;
+  row.setsLost += other;
+  row.points += getMatchPoints(match, side);
+  setPairs.forEach(([homePoints, awayPoints]) => {
+    row.pointsFor += side === 'home' ? homePoints : awayPoints;
+    row.pointsAgainst += side === 'home' ? awayPoints : homePoints;
+  });
+}
+
+function compareBaseStandings(a, b) {
+  return b.points - a.points
+    || b.wins - a.wins
+    || b.setsWon - a.setsWon
+    || b.pointsFor - a.pointsFor;
+}
+
+function calculateHeadToHeadRows(sportKey, names, level = '') {
+  const rows = new Map(names.map(name => [name, createStandingsRow(name, level)]));
+  const sport = leagueData.sports[sportKey];
+  if (!sport) return [];
+  sport.results
+    .filter(match => (!level || match.level === level) && names.includes(match.home) && names.includes(match.away))
+    .forEach(match => {
+      applyMatchToRow(rows.get(match.home), match, 'home');
+      applyMatchToRow(rows.get(match.away), match, 'away');
+    });
+  return [...rows.values()].sort((a, b) => compareBaseStandings(a, b) || a.name.localeCompare(b.name));
+}
+
+function compareStandingsRows(sportKey, level) {
+  return (a, b) => {
+    const base = compareBaseStandings(a, b);
+    if (base) return base;
+    const headToHead = calculateHeadToHeadRows(sportKey, [a.name, b.name], level);
+    if (headToHead[0]?.name === a.name && headToHead[1]?.name === b.name) return -1;
+    if (headToHead[0]?.name === b.name && headToHead[1]?.name === a.name) return 1;
+    return a.name.localeCompare(b.name);
+  };
+}
+
+function getTieGroups(rows) {
+  const groups = new Map();
+  rows.forEach(row => {
+    const key = [row.points, row.wins, row.setsWon, row.pointsFor].join('|');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+  return [...groups.values()].filter(group => group.length > 1);
+}
+
+function calculateStandings(sportKey, level = '') {
   const rows = new Map();
   const sport = leagueData.sports[sportKey];
   if (!sport) return [];
-  sport.results.forEach(match => {
-    ['home', 'away'].forEach(side => {
-      const name = match[side];
-      if (!rows.has(name)) rows.set(name, { name, played: 0, wins: 0, losses: 0, setsWon: 0, setsLost: 0, points: 0 });
-      const row = rows.get(name);
-      const score = parseScore(deriveScore(match));
-      const own = side === 'home' ? score.home : score.away;
-      const other = side === 'home' ? score.away : score.home;
-      row.played += 1;
-      row.wins += own > other ? 1 : 0;
-      row.losses += own < other ? 1 : 0;
-      row.setsWon += own;
-      row.setsLost += other;
-      row.points += getMatchPoints(match, side);
+
+  if (sport.type === 'team') {
+    leagueData.clubTeams
+      .filter(team => team.sport === sportKey && (!level || team.level === level))
+      .forEach(team => {
+        if (!rows.has(team.name)) rows.set(team.name, createStandingsRow(team.name, team.level || level));
+      });
+  }
+
+  sport.results
+    .filter(match => !level || match.level === level)
+    .forEach(match => {
+      ['home', 'away'].forEach(side => {
+        const name = match[side];
+        if (!rows.has(name)) rows.set(name, createStandingsRow(name, match.level || level));
+        applyMatchToRow(rows.get(name), match, side);
+      });
     });
-  });
-  return [...rows.values()].sort((a, b) => b.points - a.points || b.wins - a.wins || (b.setsWon - b.setsLost) - (a.setsWon - a.setsLost));
+  return [...rows.values()].sort(compareStandingsRows(sportKey, level));
 }
 
 function calculateMvpRows(sportKey) {
@@ -518,7 +606,60 @@ function renderPlayersPage() {
 function renderStandingsTable(sportKey) {
   const rows = calculateStandings(sportKey);
   if (!rows.length) return '<p class="empty-state">Brak wyników do klasyfikacji.</p>';
-  return `<table><thead><tr><th>#</th><th>Uczestnik</th><th>Logo</th><th>M</th><th>W</th><th>P</th><th>Sety</th><th>Punkty</th></tr></thead><tbody>${rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.name)}</td><td>${renderLogo(row.name)}</td><td>${row.played}</td><td>${row.wins}</td><td>${row.losses}</td><td>${row.setsWon}:${row.setsLost}</td><td><strong>${row.points}</strong></td></tr>`).join('')}</tbody></table>`;
+  return renderStandingsRows(rows, sportKey);
+}
+
+function getStandingsRowStatus(row, index, rows, level) {
+  if (!level) return '';
+  if (level === 'B' && index === 0) return 'champion';
+  if (level !== 'B' && index === 0) return 'promoted';
+  if (rows.length > 1 && index === rows.length - 1) return 'relegated';
+  return '';
+}
+
+function getStandingsStatusLabel(status) {
+  return {
+    champion: 'Mistrzostwo',
+    promoted: 'Awans',
+    relegated: 'Spadek'
+  }[status] || '';
+}
+
+function renderStandingsRows(rows, sportKey, level = '') {
+  const body = rows.map((row, index) => {
+    const status = getStandingsRowStatus(row, index, rows, level);
+    const statusLabel = getStandingsStatusLabel(status);
+    return `<tr class="${status ? `standing-${status}` : ''}"><td>${index + 1}</td><td>${renderLogo(row.name)}</td><td><strong>${escapeHtml(row.name)}</strong>${statusLabel ? `<span class="standing-status">${escapeHtml(statusLabel)}</span>` : ''}</td><td>${row.played}</td><td>${row.wins}</td><td>${row.losses}</td><td>${row.setsWon}:${row.setsLost}</td><td>${row.pointsFor}:${row.pointsAgainst}</td><td><strong>${row.points}</strong></td></tr>`;
+  }).join('');
+  const tieBreakers = renderHeadToHeadBreakers(sportKey, rows, level);
+  return `<table class="standings-table"><thead><tr><th>#</th><th>Logo</th><th>Drużyna</th><th>M</th><th>W</th><th>P</th><th>Sety</th><th>Małe punkty</th><th>Punkty</th></tr></thead><tbody>${body}</tbody></table>${tieBreakers}`;
+}
+
+function renderHeadToHeadBreakers(sportKey, rows, level = '') {
+  const groups = getTieGroups(rows);
+  if (!groups.length) return '';
+  return `<div class="head-to-head-list">${groups.map(group => {
+    const names = group.map(row => row.name);
+    const directRows = calculateHeadToHeadRows(sportKey, names, level);
+    return `<div class="head-to-head-card"><h4>Bilans bezpośredni: ${names.map(escapeHtml).join(' / ')}</h4><table><thead><tr><th>Drużyna</th><th>M</th><th>W</th><th>Sety</th><th>Małe punkty</th><th>Punkty</th></tr></thead><tbody>${directRows.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${row.played}</td><td>${row.wins}</td><td>${row.setsWon}:${row.setsLost}</td><td>${row.pointsFor}:${row.pointsAgainst}</td><td>${row.points}</td></tr>`).join('')}</tbody></table></div>`;
+  }).join('')}</div>`;
+}
+
+function renderSportStandings() {
+  const sportKey = getSportKey();
+  const section = document.getElementById('sport-standings');
+  if (!section || !sportKey) return;
+  const sport = leagueData.sports[sportKey];
+  if (!sport) return;
+  if (sport.type !== 'team' || !sport.levels?.length) {
+    section.innerHTML = renderStandingsTable(sportKey);
+    return;
+  }
+  section.innerHTML = `<div class="standings-legend"><span class="legend-champion">Mistrz poziomu B</span><span class="legend-promoted">Awans</span><span class="legend-relegated">Spadek</span></div>${sport.levels.map(level => {
+    const rows = calculateStandings(sportKey, level);
+    const empty = `<p class="empty-state">Brak drużyn zapisanych na poziom ${escapeHtml(level)}.</p>`;
+    return `<article class="level-standings"><div class="level-standings-header"><span class="eyebrow">Poziom</span><h3>${escapeHtml(level)}</h3></div>${rows.length ? renderStandingsRows(rows, sportKey, level) : empty}</article>`;
+  }).join('')}`;
 }
 
 function renderPublicRankingsPage() {
@@ -707,13 +848,21 @@ function renderAdminTeams() {
 function renderAdminClubTeams() {
   const editor = document.getElementById('club-team-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="club-team-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj drużynę uczestniczącą</legend><div class="admin-form-grid"><label>Nazwa drużyny<input type="text" name="name" required placeholder="np. Orion Poznań B" /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Dyscyplina<select name="sport" required>${getSportOptions('siatkowka')}</select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label></div><label>Opis drużyny<textarea name="description" placeholder="Opcjonalnie: opis tej konkretnej drużyny, nie opis całego klubu."></textarea></label><label>Skład drużyny<select name="roster" multiple size="6"></select></label><p class="form-hint">Skład wybierasz z zawodników przypisanych do wybranego klubu. Nowych zawodników dodasz w sekcji Zawodnicy.</p><div class="admin-actions"><button type="submit">Zapisz drużynę</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form><div class="admin-table-block"><h4>Drużyny uczestniczące</h4><table><thead><tr><th>Logo</th><th>Drużyna</th><th>Klub</th><th>Dyscyplina</th><th>Poziom</th><th>Skład</th><th>Opis</th><th>Akcje</th></tr></thead><tbody>${leagueData.clubTeams.map(team => `<tr><td>${renderLogo(team.name)}</td><td>${escapeHtml(team.name)}</td><td>${escapeHtml(team.club)}</td><td>${escapeHtml(getSportName(team.sport))}</td><td>${escapeHtml(team.level || '-')}</td><td>${escapeHtml((team.roster || []).join(', ') || '-')}</td><td>${escapeHtml(team.description || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-club-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-club-team" data-id="${team.id}">Usuń</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  editor.innerHTML = `<form id="club-team-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj drużynę uczestniczącą</legend><div class="admin-form-grid"><label>Nazwa drużyny<input type="text" name="name" required placeholder="np. Orion Poznań B" /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Dyscyplina<select name="sport" required>${getSportOptions('siatkowka')}</select></label><label>Poziom<select name="level"></select></label></div><label>Opis drużyny<textarea name="description" placeholder="Opcjonalnie: opis tej konkretnej drużyny, nie opis całego klubu."></textarea></label><label>Skład drużyny<select name="roster" multiple size="6"></select></label><p class="form-hint">Skład wybierasz z zawodników przypisanych do wybranego klubu. Nowych zawodników dodasz w sekcji Zawodnicy.</p><div class="admin-actions"><button type="submit">Zapisz drużynę</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form><div class="admin-table-block"><h4>Drużyny uczestniczące</h4><table><thead><tr><th>Logo</th><th>Drużyna</th><th>Klub</th><th>Dyscyplina</th><th>Poziom</th><th>Skład</th><th>Opis</th><th>Akcje</th></tr></thead><tbody>${leagueData.clubTeams.map(team => `<tr><td>${renderLogo(team.name)}</td><td>${escapeHtml(team.name)}</td><td>${escapeHtml(team.club)}</td><td>${escapeHtml(getSportName(team.sport))}</td><td>${escapeHtml(team.level || '-')}</td><td>${escapeHtml((team.roster || []).join(', ') || '-')}</td><td>${escapeHtml(team.description || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-club-team" data-id="${team.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-club-team" data-id="${team.id}">Usuń</button></div></td></tr>`).join('')}</tbody></table></div>`;
   const form = editor.querySelector('#club-team-form');
   function refreshRosterOptions(selected = []) {
     form.roster.innerHTML = getRosterSelectOptions(form.club.value, selected);
   }
+  function refreshClubTeamLevelOptions(selected = '') {
+    form.level.innerHTML = getLevelOptions(form.sport.value, selected, true);
+  }
+  refreshClubTeamLevelOptions();
   refreshRosterOptions();
   form.club.addEventListener('change', () => refreshRosterOptions());
+  form.sport.addEventListener('change', () => {
+    form.level.value = '';
+    refreshClubTeamLevelOptions();
+  });
   form.addEventListener('submit', event => {
     event.preventDefault();
     const data = new FormData(form);
@@ -734,7 +883,7 @@ function renderAdminClubTeams() {
   editor.querySelectorAll('.edit-club-team').forEach(button => button.addEventListener('click', () => {
     const team = leagueData.clubTeams.find(item => item.id === Number(button.dataset.id));
     if (!team) return;
-    form.id.value = team.id; form.name.value = team.name; form.club.value = team.club; form.sport.value = team.sport; form.level.value = team.level || ''; form.description.value = team.description || ''; refreshRosterOptions(team.roster || []);
+    form.id.value = team.id; form.name.value = team.name; form.club.value = team.club; form.sport.value = team.sport; refreshClubTeamLevelOptions(team.level || ''); form.description.value = team.description || ''; refreshRosterOptions(team.roster || []);
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }));
   editor.querySelectorAll('.delete-club-team').forEach(button => button.addEventListener('click', () => {
@@ -792,7 +941,7 @@ function renderAdminPlayers() {
 function renderAdminResults() {
   const editor = document.getElementById('results-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety = punkty</option></select></label><label>Poziom<input type="text" name="level" placeholder="B, B-, C, D" /></label><label>Uczestnik 1<select name="home" required></select></label><label>Wynik meczu<select name="score" required></select></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="set-fields" id="set-fields"></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
+  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety = punkty</option></select></label><label>Poziom<select name="level"></select></label><label>Uczestnik 1<select name="home" required></select></label><label>Wynik meczu<select name="score" required></select></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="set-fields" id="set-fields"></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
     const sport = leagueData.sports[key];
     const rows = sport.results.length ? sport.results.map(match => `<tr><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(deriveScore(match))}</strong></td><td>${escapeHtml(match.sets || '-')}</td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td><td>${escapeHtml(match.mvp || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-result" data-sport="${key}" data-id="${match.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-result" data-sport="${key}" data-id="${match.id}">Usuń</button></div></td></tr>`).join('') : `<tr><td colspan="10">Brak wyników: ${escapeHtml(sport.name)}</td></tr>`;
     return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>Dyscyplina</th><th>Poziom</th><th>Uczestnik 1</th><th>Logo</th><th>Wynik</th><th>Sety</th><th>Logo</th><th>Uczestnik 2</th><th>MVP</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -805,18 +954,22 @@ function renderAdminResults() {
   function refreshMvpOptions(mvp = '') {
     form.mvp.innerHTML = `<option value="">Brak</option>${getMatchMvpOptions(form.sport.value, form.home.value, form.away.value, mvp)}`;
   }
-  function refreshFormOptions(home = '', away = '', mvp = '', score = '') {
+  function refreshFormOptions(home = '', away = '', mvp = '', score = '', level = '') {
     const sportKey = form.sport.value;
     const defaultScoring = leagueData.sports[sportKey].defaultScoring || 'volleyball';
     form.home.innerHTML = getParticipantOptions(sportKey, home);
     form.away.innerHTML = getParticipantOptions(sportKey, away);
+    form.level.innerHTML = getLevelOptions(sportKey, level || form.level.value || '', true);
     form.scoring.value = defaultScoring;
     form.score.innerHTML = getScoreOptions(defaultScoring, score);
     refreshMvpOptions(mvp);
     refreshScoreFields(form.score.value);
   }
   refreshFormOptions();
-  form.sport.addEventListener('change', () => refreshFormOptions());
+  form.sport.addEventListener('change', () => {
+    form.level.value = '';
+    refreshFormOptions();
+  });
   form.scoring.addEventListener('change', () => {
     form.score.innerHTML = getScoreOptions(form.scoring.value);
     refreshScoreFields(form.score.value);
@@ -854,7 +1007,7 @@ function renderAdminResults() {
     const sportKey = button.dataset.sport;
     const match = leagueData.sports[sportKey].results.find(item => item.id === Number(button.dataset.id));
     if (!match) return;
-    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; refreshFormOptions(match.home, match.away, match.mvp || '', deriveScore(match)); form.level.value = match.level || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.score.innerHTML = getScoreOptions(form.scoring.value, deriveScore(match)); refreshScoreFields(deriveScore(match), match.sets || ''); refreshMvpOptions(match.mvp || ''); form.mvp.value = match.mvp || '';
+    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; refreshFormOptions(match.home, match.away, match.mvp || '', deriveScore(match), match.level || ''); form.level.value = match.level || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.score.innerHTML = getScoreOptions(form.scoring.value, deriveScore(match)); refreshScoreFields(deriveScore(match), match.sets || ''); refreshMvpOptions(match.mvp || ''); form.mvp.value = match.mvp || '';
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }));
   editor.querySelectorAll('.delete-result').forEach(button => button.addEventListener('click', () => {
@@ -930,6 +1083,7 @@ function initPage() {
   if (page === 'players') return renderPlayersPage();
   if (page === 'rankings') return renderPublicRankingsPage();
   if (page === 'sport') {
+    renderSportStandings();
     renderTeams();
     renderResults();
     renderMvp();

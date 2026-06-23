@@ -1037,6 +1037,116 @@ button:hover,
   font-weight: 700;
 }
 
+.standings-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+}
+
+.standings-legend span,
+.standing-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.standings-legend span {
+  min-height: 2rem;
+  padding: 0.45rem 0.7rem;
+}
+
+.legend-champion,
+.standing-champion .standing-status {
+  background: rgba(255, 211, 110, 0.16);
+  border-color: rgba(255, 211, 110, 0.45);
+  color: #ffe7a8;
+}
+
+.legend-promoted,
+.standing-promoted .standing-status {
+  background: rgba(119, 215, 200, 0.16);
+  border-color: rgba(119, 215, 200, 0.44);
+  color: #a8f3e6;
+}
+
+.legend-relegated,
+.standing-relegated .standing-status {
+  background: rgba(255, 159, 154, 0.16);
+  border-color: rgba(255, 159, 154, 0.46);
+  color: #ffc2bd;
+}
+
+.level-standings {
+  margin: 1rem 0 1.35rem;
+  padding: clamp(1rem, 2vw, 1.25rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.level-standings-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.level-standings-header h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.standings-table tr {
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.standings-table .standing-champion {
+  background: linear-gradient(90deg, rgba(255, 211, 110, 0.18), rgba(255, 211, 110, 0.045));
+  box-shadow: inset 4px 0 0 rgba(255, 211, 110, 0.85);
+}
+
+.standings-table .standing-promoted {
+  background: linear-gradient(90deg, rgba(119, 215, 200, 0.14), rgba(119, 215, 200, 0.035));
+  box-shadow: inset 4px 0 0 rgba(119, 215, 200, 0.78);
+}
+
+.standings-table .standing-relegated {
+  background: linear-gradient(90deg, rgba(255, 159, 154, 0.14), rgba(255, 159, 154, 0.035));
+  box-shadow: inset 4px 0 0 rgba(255, 159, 154, 0.78);
+}
+
+.standing-status {
+  margin-top: 0.4rem;
+  padding: 0.34rem 0.5rem;
+}
+
+.head-to-head-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+.head-to-head-card {
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.head-to-head-card h4 {
+  margin: 0 0 0.35rem;
+  color: var(--accent-blue);
+  font-size: 0.9rem;
+}
+
 .club-badge {
   width: 2rem;
   height: 2rem;
