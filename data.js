@@ -16,17 +16,17 @@ const defaultLeagueData = {
     { id: 4, name: 'Volup Warszawa C', club: 'Volup Warszawa', sport: 'siatkowka', level: 'C', description: 'Drużyna siatkarska przypisana do poziomu C.', roster: ['Łukasz Nowak', 'Sebastian Górski'] }
   ],
   players: [
-    { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'] },
-    { id: 2, name: 'Anna Zielińska', club: 'Neon Wrocław', sports: ['siatkowka', 'badminton'] },
-    { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['squash'] },
-    { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'] },
-    { id: 5, name: 'Marta Sokołowska', club: 'Orion Poznań', sports: ['siatkowka'] },
-    { id: 6, name: 'Piotr Maj', club: 'Orion Poznań', sports: ['siatkowka'] },
-    { id: 7, name: 'Tomasz Brzeziński', club: 'Neon Wrocław', sports: ['siatkowka'] },
-    { id: 8, name: 'Julia Wrona', club: 'Neon Wrocław', sports: ['siatkowka'] },
-    { id: 9, name: 'Krzysztof Sobanowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'] },
-    { id: 10, name: 'Michał Wojakowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'] },
-    { id: 11, name: 'Sebastian Górski', club: 'Volup Warszawa', sports: ['siatkowka', 'tenis'] }
+    { id: 1, name: 'Kacper Kowalski', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Rozgrywajacy Orionu, regularny w przyjeciu i spokojnym prowadzeniu zespolu.' },
+    { id: 2, name: 'Anna Zielińska', club: 'Neon Wrocław', sports: ['siatkowka', 'badminton'], bio: 'Wszechstronna zawodniczka Neonu, laczy gre zespolowa z dobrym refleksem w badmintonie.' },
+    { id: 3, name: 'Łukasz Nowak', club: 'Volup Warszawa', sports: ['squash'], bio: 'Dynamiczny zawodnik squashowy z mocnym tempem gry i szybkim doskokiem do pilki.' },
+    { id: 4, name: 'Dariusz Karpuk', club: 'Unicorns Łódź', sports: ['tenis'], bio: 'Tenisista turniejowy, cierpliwy w wymianach i skuteczny przy dluzszych meczach.' },
+    { id: 5, name: 'Marta Sokołowska', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Przyjmujaca Orionu, dobrze czyta ustawienie rywali i utrzymuje tempo w dlugich akcjach.' },
+    { id: 6, name: 'Piotr Maj', club: 'Orion Poznań', sports: ['siatkowka'], bio: 'Srodkowy z dobrym blokiem i duza regularnoscia w krotkich pilkach.' },
+    { id: 7, name: 'Tomasz Brzeziński', club: 'Neon Wrocław', sports: ['siatkowka'], bio: 'Zawodnik Neonu odpowiedzialny za stabilny serwis i komunikacje w obronie.' },
+    { id: 8, name: 'Julia Wrona', club: 'Neon Wrocław', sports: ['siatkowka'], bio: 'Atakujaca z wysoka skutecznoscia w koncowkach setow.' },
+    { id: 9, name: 'Krzysztof Sobanowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'], bio: 'Reprezentant Dragons, gra zarowno zespolowo, jak i w turniejach tenisowych.' },
+    { id: 10, name: 'Michał Wojakowski', club: 'Dragons Kraków', sports: ['siatkowka', 'tenis'], bio: 'Uniwersalny zawodnik z dobra kontrola tempa i doswiadczeniem turniejowym.' },
+    { id: 11, name: 'Sebastian Górski', club: 'Volup Warszawa', sports: ['siatkowka', 'tenis'], bio: 'Zawodnik Volup, aktywny w siatkowce i turniejach singlowych.' }
   ],
   sports: {
     siatkowka: {
@@ -115,6 +115,9 @@ function normalizeLoadedData(data) {
     if (!Array.isArray(team.roster)) {
       team.roster = defaultLeagueData.clubTeams.find(defaultTeam => defaultTeam.name === team.name || defaultTeam.id === team.id)?.roster || [];
     }
+  });
+  data.players.forEach(player => {
+    if (typeof player.bio !== 'string') player.bio = '';
   });
   data.tournaments.forEach(tournament => {
     if (!Array.isArray(tournament.bracket)) tournament.bracket = [];

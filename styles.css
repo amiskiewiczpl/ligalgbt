@@ -438,6 +438,7 @@ strong {
 .team-grid,
 .value-grid,
 .clubs-grid,
+.players-grid,
 .rules-grid,
 .partners-grid,
 .patrons-list,
@@ -473,6 +474,7 @@ strong {
 .info-grid,
 .team-grid,
 .clubs-grid,
+.players-grid,
 .rules-grid,
 .partners-grid,
 .patrons-list {
@@ -571,6 +573,7 @@ button:hover,
 }
 
 .team-card,
+.player-card,
 .admin-card,
 .sport-summary,
 .value-item,
@@ -590,6 +593,7 @@ button:hover,
 }
 
 .team-card:hover,
+.player-card:hover,
 .admin-card:hover,
 .sport-summary:hover,
 .value-item:hover,
@@ -805,6 +809,43 @@ button:hover,
   margin-top: 0;
 }
 
+.player-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.player-card-header {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.player-card-header h3 {
+  margin: 0 0 0.2rem;
+}
+
+.player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.player-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.34rem 0.62rem;
+  border: 1px solid rgba(119, 215, 200, 0.2);
+  border-radius: 999px;
+  background: rgba(119, 215, 200, 0.08);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
 .danger-button {
   background: rgba(255, 111, 111, 0.12);
   border-color: rgba(255, 111, 111, 0.3);
@@ -857,6 +898,7 @@ button:hover,
 
 .sport-box p,
 .team-card p,
+.player-card p,
 .club-description,
 .rule-card p,
 .partner-desc,
