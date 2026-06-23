@@ -33,9 +33,9 @@ const defaultLeagueData = {
       name: 'Siatkówka',
       type: 'team',
       defaultScoring: 'volleyball',
-      levels: ['B', 'B-', 'C', 'D'],
-      headline: 'Poziomy B, B-, C i D',
-      description: 'Rozgrywki siatkarskie są podzielone na cztery poziomy. Klub może wystawić kilka drużyn uczestniczących.',
+      levels: ['A', 'B', 'B-', 'C', 'D'],
+      headline: 'Poziomy A, B, B-, C i D',
+      description: 'Rozgrywki siatkarskie są podzielone na pięć poziomów. Klub może wystawić kilka drużyn uczestniczących.',
       results: [
         { id: 1, home: 'Orion Poznań B', away: 'Neon Wrocław B', sets: '25:20, 25:22, 25:19', score: '3:0', level: 'B', scoring: 'volleyball', mvp: 'Kacper Kowalski' },
         { id: 2, home: 'Dragons Kraków C', away: 'Volup Warszawa C', sets: '25:21, 21:25, 25:19, 22:25, 13:15', score: '2:3', level: 'C', scoring: 'volleyball', mvp: 'Łukasz Nowak' }
@@ -103,8 +103,16 @@ function normalizeLoadedData(data) {
     if (!Array.isArray(data.sports[key].results)) data.sports[key].results = [];
     if (!data.sports[key].type) data.sports[key].type = defaultLeagueData.sports[key].type;
     if (!data.sports[key].defaultScoring) data.sports[key].defaultScoring = defaultLeagueData.sports[key].defaultScoring;
-    if (Array.isArray(defaultLeagueData.sports[key].levels) && !Array.isArray(data.sports[key].levels)) {
-      data.sports[key].levels = structuredClone(defaultLeagueData.sports[key].levels);
+    if (Array.isArray(defaultLeagueData.sports[key].levels)) {
+      if (!Array.isArray(data.sports[key].levels)) {
+        data.sports[key].levels = structuredClone(defaultLeagueData.sports[key].levels);
+      } else {
+        const savedLevels = data.sports[key].levels;
+        data.sports[key].levels = defaultLeagueData.sports[key].levels.filter(level => savedLevels.includes(level) || level === 'A');
+        savedLevels.forEach(level => {
+          if (!data.sports[key].levels.includes(level)) data.sports[key].levels.push(level);
+        });
+      }
     }
     data.sports[key].results.forEach(match => {
       if (!match.scoring) match.scoring = data.sports[key].defaultScoring;

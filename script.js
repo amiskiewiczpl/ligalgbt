@@ -611,8 +611,8 @@ function renderStandingsTable(sportKey) {
 
 function getStandingsRowStatus(row, index, rows, level) {
   if (!level) return '';
-  if (level === 'B' && index === 0) return 'champion';
-  if (level !== 'B' && index === 0) return 'promoted';
+  if (level === 'A' && index === 0) return 'champion';
+  if (level !== 'A' && index === 0) return 'promoted';
   if (rows.length > 1 && index === rows.length - 1) return 'relegated';
   return '';
 }
@@ -629,7 +629,7 @@ function renderStandingsRows(rows, sportKey, level = '') {
   const body = rows.map((row, index) => {
     const status = getStandingsRowStatus(row, index, rows, level);
     const statusLabel = getStandingsStatusLabel(status);
-    return `<tr class="${status ? `standing-${status}` : ''}"><td>${index + 1}</td><td>${renderLogo(row.name)}</td><td><strong>${escapeHtml(row.name)}</strong>${statusLabel ? `<span class="standing-status">${escapeHtml(statusLabel)}</span>` : ''}</td><td>${row.played}</td><td>${row.wins}</td><td>${row.losses}</td><td>${row.setsWon}:${row.setsLost}</td><td>${row.pointsFor}:${row.pointsAgainst}</td><td><strong>${row.points}</strong></td></tr>`;
+    return `<tr class="${status ? `standing-${status}` : ''}"><td>${index + 1}</td><td>${renderLogo(row.name)}</td><td><div class="standing-team-cell"><strong>${escapeHtml(row.name)}</strong>${statusLabel ? `<span class="standing-status">${escapeHtml(statusLabel)}</span>` : ''}</div></td><td>${row.played}</td><td>${row.wins}</td><td>${row.losses}</td><td>${row.setsWon}:${row.setsLost}</td><td>${row.pointsFor}:${row.pointsAgainst}</td><td><strong>${row.points}</strong></td></tr>`;
   }).join('');
   const tieBreakers = renderHeadToHeadBreakers(sportKey, rows, level);
   return `<table class="standings-table"><thead><tr><th>#</th><th>Logo</th><th>Drużyna</th><th>M</th><th>W</th><th>P</th><th>Sety</th><th>Małe punkty</th><th>Punkty</th></tr></thead><tbody>${body}</tbody></table>${tieBreakers}`;
@@ -655,7 +655,7 @@ function renderSportStandings() {
     section.innerHTML = renderStandingsTable(sportKey);
     return;
   }
-  section.innerHTML = `<div class="standings-legend"><span class="legend-champion">Mistrz poziomu B</span><span class="legend-promoted">Awans</span><span class="legend-relegated">Spadek</span></div>${sport.levels.map(level => {
+  section.innerHTML = `<div class="standings-legend"><span class="legend-champion">Mistrz poziomu A</span><span class="legend-promoted">Awans</span><span class="legend-relegated">Spadek</span></div>${sport.levels.map(level => {
     const rows = calculateStandings(sportKey, level);
     const empty = `<p class="empty-state">Brak drużyn zapisanych na poziom ${escapeHtml(level)}.</p>`;
     return `<article class="level-standings"><div class="level-standings-header"><span class="eyebrow">Poziom</span><h3>${escapeHtml(level)}</h3></div>${rows.length ? renderStandingsRows(rows, sportKey, level) : empty}</article>`;
@@ -897,7 +897,7 @@ function renderAdminClubTeams() {
 function renderAdminPlayers() {
   const editor = document.getElementById('players-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="player-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj zawodnika</legend><div class="admin-form-grid"><label>Zawodnik<input type="text" name="name" required /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Sporty<input type="text" name="sports" placeholder="siatkowka,badminton" /></label><label>Dru?yny<select name="teams" multiple size="5"></select></label></div><label>Opis zawodnika<textarea name="bio" placeholder="Kr?tki opis profilu, stylu gry albo roli w klubie."></textarea></label><p class="form-hint">Dru?yny s? zaw??one do wybranego klubu. Odznaczenie dru?yny usuwa zawodnika z jej sk?adu.</p><div class="admin-actions"><button type="submit">Zapisz zawodnika</button><button type="reset" class="button-secondary">Wyczy??</button></div></fieldset></form><div class="admin-table-block"><h4>Zawodnicy</h4><table><thead><tr><th>Logo</th><th>Zawodnik</th><th>Klub</th><th>Dru?yny</th><th>Sporty</th><th>Akcje</th></tr></thead><tbody>${leagueData.players.map(player => `<tr><td>${renderLogo(player.club)}</td><td>${escapeHtml(player.name)}</td><td>${escapeHtml(player.club)}</td><td>${escapeHtml(getPlayerTeamNames(player.name).join(', ') || '-')}</td><td>${escapeHtml((player.sports || []).join(', '))}</td><td><div class="table-actions"><button type="button" class="compact-button edit-player" data-id="${player.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-player" data-id="${player.id}">Usu?</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  editor.innerHTML = `<form id="player-form" class="admin-form"><input type="hidden" name="id" /><fieldset><legend>Dodaj lub edytuj zawodnika</legend><div class="admin-form-grid"><label>Zawodnik<input type="text" name="name" required /></label><label>Klub<select name="club" required>${getClubOptions()}</select></label><label>Sporty<input type="text" name="sports" placeholder="siatkowka,badminton" /></label><label>Drużyny<select name="teams" multiple size="5"></select></label></div><label>Opis zawodnika<textarea name="bio" placeholder="Krótki opis profilu, stylu gry albo roli w klubie."></textarea></label><p class="form-hint">Drużyny są zawężone do wybranego klubu. Odznaczenie drużyny usuwa zawodnika z jej składu.</p><div class="admin-actions"><button type="submit">Zapisz zawodnika</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form><div class="admin-table-block"><h4>Zawodnicy</h4><table><thead><tr><th>Logo</th><th>Zawodnik</th><th>Klub</th><th>Drużyny</th><th>Sporty</th><th>Akcje</th></tr></thead><tbody>${leagueData.players.map(player => `<tr><td>${renderLogo(player.club)}</td><td>${escapeHtml(player.name)}</td><td>${escapeHtml(player.club)}</td><td>${escapeHtml(getPlayerTeamNames(player.name).join(', ') || '-')}</td><td>${escapeHtml((player.sports || []).join(', '))}</td><td><div class="table-actions"><button type="button" class="compact-button edit-player" data-id="${player.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-player" data-id="${player.id}">Usuń</button></div></td></tr>`).join('')}</tbody></table></div>`;
   const form = editor.querySelector('#player-form');
   function refreshPlayerTeamOptions(selected = []) {
     form.teams.innerHTML = getTeamSelectOptions(form.club.value, selected);
@@ -910,14 +910,14 @@ function renderAdminPlayers() {
     const id = Number(data.get('id'));
     const payload = { name: data.get('name').toString().trim(), club: data.get('club').toString(), sports: data.get('sports').toString().split(',').map(item => item.trim()).filter(Boolean), bio: data.get('bio').toString().trim() };
     const teams = data.getAll('teams').map(item => item.toString());
-    if (!payload.name || !payload.club) return showToast('Uzupe?nij zawodnika i klub.', 'error');
+    if (!payload.name || !payload.club) return showToast('Uzupełnij zawodnika i klub.', 'error');
     const existing = leagueData.players.find(player => player.id === id);
     if (existing) {
       const oldName = existing.name;
       Object.assign(existing, payload);
       syncPlayerName(oldName, payload.name);
       setPlayerTeams(payload.name, teams);
-      saveAndRefreshAdmin('Zawodnik zosta? zaktualizowany.');
+      saveAndRefreshAdmin('Zawodnik został zaktualizowany.');
     } else {
       leagueData.players.push({ id: Math.max(0, ...leagueData.players.map(player => player.id)) + 1, ...payload });
       setPlayerTeams(payload.name, teams);
@@ -934,7 +934,7 @@ function renderAdminPlayers() {
     const removed = leagueData.players.find(player => player.id === Number(button.dataset.id));
     leagueData.players = leagueData.players.filter(player => player.id !== Number(button.dataset.id));
     if (removed) removePlayerReferences(removed.name);
-    saveAndRefreshAdmin('Zawodnik zosta? usuni?ty.');
+    saveAndRefreshAdmin('Zawodnik został usunięty.');
   }));
 }
 

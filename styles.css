@@ -1124,8 +1124,47 @@ button:hover,
 }
 
 .standing-status {
-  margin-top: 0.4rem;
   padding: 0.34rem 0.5rem;
+}
+
+.standing-team-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+  min-width: 10rem;
+}
+
+.standing-team-cell strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.standing-team-cell .standing-status {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 680px) {
+  .standings-legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .standings-legend span {
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 0.4rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .standing-team-cell {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 8.5rem;
+  }
 }
 
 .head-to-head-list {
