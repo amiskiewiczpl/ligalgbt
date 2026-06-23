@@ -3,5 +3,5 @@ window.LIGA_CONFIG = {
   supabaseUrl: 'https://bidkdxkgcacadtnyqwhd.supabase.co',
   // Use only the public publishable key or legacy anonymous browser key.
   // Never place a server-side secret in browser code.
-  supabaseAnonKey: ''
+  supabaseAnonKey: 'sb_publishable_FEFtj6B0613OafaB-wMaFA_wfuKhJdD'
 };

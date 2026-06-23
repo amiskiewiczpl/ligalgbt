@@ -507,9 +507,16 @@ async function initLoginPage() {
   if (!form) return;
   const passwordInput = form.querySelector('input[name="password"]');
   const emailInput = form.querySelector('input[name="email"]');
+  const configStatus = form.querySelector('#login-config-status');
   if (!window.leagueStore?.isConfigured) {
-    form.querySelector('button[type="submit"]').disabled = true;
-    showToast('Baza danych nie jest jeszcze skonfigurowana. Uzupełnij config.js.', 'warning', 8000);
+    if (configStatus) {
+      configStatus.hidden = false;
+      configStatus.textContent = 'Brakuje publicznego klucza Supabase w polu supabaseAnonKey w pliku config.js.';
+    }
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      showToast('Uzupełnij publiczny klucz Supabase w config.js.', 'warning', 6000);
+    });
     return;
   }
   form.addEventListener('submit', async event => {

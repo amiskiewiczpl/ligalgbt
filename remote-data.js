@@ -1,6 +1,12 @@
 (function () {
   const config = window.LIGA_CONFIG || {};
-  const isConfigured = Boolean(config.supabaseUrl && config.supabaseAnonKey && window.supabase?.createClient);
+  const key = String(config.supabaseAnonKey || '').trim();
+  const isPublicBrowserKey = key.startsWith('sb_publishable_') || key.split('.').length === 3;
+  const isConfigured = Boolean(
+    config.supabaseUrl
+    && isPublicBrowserKey
+    && window.supabase?.createClient
+  );
   const client = isConfigured
     ? window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey)
     : null;
