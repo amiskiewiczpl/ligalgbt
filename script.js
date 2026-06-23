@@ -344,8 +344,18 @@ function initHeaderScrollState() {
   const header = document.querySelector('.site-header');
   if (!header) return;
   let ticking = false;
+  let condensed = header.classList.contains('is-condensed');
+  const collapseAt = 118;
+  const expandAt = 42;
   function update() {
-    header.classList.toggle('is-condensed', window.scrollY > 80);
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    if (!condensed && scrollTop > collapseAt) {
+      condensed = true;
+      header.classList.add('is-condensed');
+    } else if (condensed && scrollTop < expandAt) {
+      condensed = false;
+      header.classList.remove('is-condensed');
+    }
     ticking = false;
   }
   update();
