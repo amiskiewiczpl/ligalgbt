@@ -228,15 +228,21 @@ function getMatchMvpNames(sportKey, home, away, selected = '') {
   return [...new Set(names)];
 }
 
-function getScoreOptions(scoring = 'volleyball', selected = '') {
-  const scores = scoring === 'sets' ? ['2:0', '2:1', '0:2', '1:2'] : ['3:0', '3:1', '3:2', '0:3', '1:3', '2:3'];
+function getScoreOptions(scoring = 'volleyball', selected = '', options = {}) {
+  const allowDraw = Boolean(options.allowDraw);
+  const allowScheduled = Boolean(options.allowScheduled);
+  const scores = scoring === 'sets'
+    ? ['2:0', '2:1', ...(allowDraw ? ['1:1'] : []), '0:2', '1:2']
+    : ['3:0', '3:1', '3:2', '0:3', '1:3', '2:3'];
+  if (allowScheduled) scores.unshift('0:0');
+  if (selected && !scores.includes(selected)) scores.push(selected);
   return scores.map(score => `<option value="${score}" ${score === selected ? 'selected' : ''}>${score}</option>`).join('');
 }
 
 function getSetCountFromScore(score) {
   const parsed = parseScore(score);
   const count = parsed.home + parsed.away;
-  return count > 0 ? count : 3;
+  return count > 0 ? count : 0;
 }
 
 function renderSetInputs(score, sets = '') {
@@ -298,11 +304,54 @@ function parseScore(score) {
   return { home: Number.isFinite(home) ? home : 0, away: Number.isFinite(away) ? away : 0 };
 }
 
+function validateMatchResult(match, rules = {}) {
+  const score = parseScore(match.score || deriveScore(match));
+  const pairs = parseSetPairs(match.sets);
+  const allowDraw = typeof rules.allowDraw === 'boolean' ? rules.allowDraw : Boolean(match.allowDraw);
+  const allowScheduled = Boolean(rules.allowScheduled);
+  if (score.home === 0 && score.away === 0) {
+    return allowScheduled && !pairs.length
+      ? { valid: true, status: 'scheduled', score: '0:0' }
+      : { valid: false, message: 'Wynik 0:0 jest dozwolony tylko dla zaplanowanego meczu bez wpisanych setów.' };
+  }
+  if (score.home === score.away && !allowDraw) {
+    return { valid: false, message: 'Remis nie jest dozwolony w tej fazie rozgrywek.' };
+  }
+  if (score.home === score.away && `${score.home}:${score.away}` !== '1:1') {
+    return { valid: false, message: 'Dozwolonym remisem w systemie turniejowym jest wyłącznie 1:1.' };
+  }
+  const expectedSetCount = score.home + score.away;
+  if (pairs.length !== expectedSetCount) {
+    return { valid: false, message: `Wynik ${score.home}:${score.away} wymaga ${expectedSetCount} wyników setów.` };
+  }
+  if (pairs.some(([home, away]) => home === away)) {
+    return { valid: false, message: 'Pojedynczy set nie może zakończyć się remisem.' };
+  }
+  const derived = deriveScore({ sets: match.sets, score: '' });
+  if (derived !== `${score.home}:${score.away}`) {
+    return { valid: false, message: 'Punkty setów nie zgadzają się z wynikiem meczu.' };
+  }
+  if (`${score.home}:${score.away}` === '1:1') {
+    const homeSetWins = pairs.filter(([home, away]) => home > away).length;
+    const awaySetWins = pairs.filter(([home, away]) => away > home).length;
+    if (homeSetWins !== 1 || awaySetWins !== 1) {
+      return { valid: false, message: 'Przy remisie 1:1 każdy uczestnik musi wygrać dokładnie jeden set.' };
+    }
+  }
+  return { valid: true, status: 'completed', score: `${score.home}:${score.away}` };
+}
+
 function getMatchPoints(match, side) {
   const scoring = match.scoring || 'volleyball';
   const score = parseScore(deriveScore(match));
   const own = side === 'home' ? score.home : score.away;
   const other = side === 'home' ? score.away : score.home;
+  if (match.phaseType !== 'league' && match.pointsRules) {
+    const rules = match.pointsRules;
+    if (own > other) return Number(rules.win) || 0;
+    if (own === other) return Number(rules.draw) || 0;
+    return Number(rules.loss) || 0;
+  }
   if (scoring === 'sets') return own;
   if (own > other && other <= 1) return 3;
   if (own > other && other === 2) return 2;
@@ -741,9 +790,155 @@ function renderPublicRankingsPage() {
   main.innerHTML = `<section class="page-intro"><span class="eyebrow">Wyniki</span><h2>Klasyfikacje liczone automatycznie</h2><p>Siatkówka: 3:0 i 3:1 dają 3 punkty, 3:2 daje 2 punkty, porażka 2:3 daje 1 punkt. Tryb turniejowy może liczyć wygrane sety jako punkty.</p></section><section class="legend-strip" aria-label="Legenda klubów">${legend}</section>${sportSections}${tournaments}`;
 }
 
+function getTournamentFormatLabel(format) {
+  return {
+    knockout: 'Play-off',
+    groups_knockout: 'Grupy + play-off',
+    groups_final_group: 'Grupy + grupa finałowa'
+  }[format] || 'Turniej';
+}
+
+function getTournamentStatusLabel(status) {
+  return {
+    planned: 'Planowany',
+    ongoing: 'W trakcie',
+    completed: 'Zakończony'
+  }[status] || status || 'Planowany';
+}
+
+function getTournamentParticipantName(tournament, reference, fallback = '') {
+  return getParticipantNameFromReference(leagueData, reference)
+    || fallback
+    || tournament.participants?.find(name => getParticipantReference(leagueData, tournament.sport, name) === reference)
+    || '';
+}
+
+function renderTournamentClassification(tournament, compact = false) {
+  const rows = tournament.finalClassification || [];
+  if (!rows.length) return '<p class="empty-state">Klasyfikacja końcowa pojawi się po zakończeniu turnieju.</p>';
+  const visibleRows = compact ? rows.slice(0, 4) : rows;
+  return `<div class="tournament-table-scroll"><table class="tournament-classification"><thead><tr><th>Miejsce</th><th>Uczestnik</th><th>Klub</th><th>Logo</th></tr></thead><tbody>${visibleRows.map(row => `<tr><td><strong>${escapeHtml(row.place)}</strong></td><td>${escapeHtml(row.participant)}</td><td>${escapeHtml(row.club || getParticipantClubName(row.participant))}</td><td>${renderLogo(row.participant)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderTournamentGroupTable(tournament, group, isFinalGroup = false) {
+  const standings = globalThis.tournamentEngine
+    ? globalThis.tournamentEngine.calculateGroupStandings(group, {
+      tieBreakOrder: tournament.groupConfig?.tieBreakOrder,
+      manualTieBreaks: group.manualTieBreaks
+    })
+    : [];
+  if (!standings.length) return '<p class="empty-state">Brak uczestników w grupie.</p>';
+  const qualifiers = isFinalGroup ? 0 : Number(tournament.groupConfig?.qualifiersPerGroup) || 0;
+  return `<div class="tournament-table-scroll"><table class="tournament-group-table"><thead><tr><th>#</th><th>Uczestnik</th><th>M</th><th>W</th><th>R</th><th>P</th><th>Sety</th><th>Małe punkty</th><th>Pkt</th></tr></thead><tbody>${standings.map(row => {
+    const name = getTournamentParticipantName(tournament, row.participantId);
+    return `<tr class="${row.position <= qualifiers ? 'is-qualified' : ''}"><td>${row.position}</td><td><div class="tournament-participant">${renderLogo(name)}<strong>${escapeHtml(name)}</strong></div></td><td>${row.played}</td><td>${row.wins}</td><td>${row.draws}</td><td>${row.losses}</td><td>${row.setsWon}:${row.setsLost}</td><td>${row.pointsFor}:${row.pointsAgainst}</td><td><strong>${row.points}</strong></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function renderTournamentMatchRows(tournament, matches) {
+  if (!matches?.length) return '<p class="empty-state">Terminarz nie został jeszcze wygenerowany.</p>';
+  return `<div class="tournament-match-list">${matches.map(match => {
+    const home = getTournamentParticipantName(tournament, match.homeId, match.home);
+    const away = getTournamentParticipantName(tournament, match.awayId, match.away);
+    const score = match.status === 'completed' ? (match.score || deriveScore(match)) : '–';
+    const status = match.status === 'completed' ? 'Zakończony' : match.status === 'bye' ? 'Wolny los' : 'Zaplanowany';
+    return `<article class="tournament-match-row"><span class="tournament-match-status">${status}</span><div class="tournament-match-side">${home ? renderLogo(home) : ''}<strong>${escapeHtml(home || 'Do ustalenia')}</strong></div><span class="tournament-match-score">${escapeHtml(score)}</span><div class="tournament-match-side tournament-match-side-away"><strong>${escapeHtml(away || 'Do ustalenia')}</strong>${away ? renderLogo(away) : ''}</div>${match.sets ? `<small>${escapeHtml(match.sets)}</small>` : ''}</article>`;
+  }).join('')}</div>`;
+}
+
+function renderTournamentGroups(tournament) {
+  const groups = [...(tournament.groups || [])];
+  if (tournament.finalGroup) groups.push(tournament.finalGroup);
+  if (!groups.length) return '';
+  return `<section class="tournament-stage"><div class="tournament-stage-heading"><div><span class="eyebrow">Faza grupowa</span><h3>Grupy i tabele</h3></div><span class="tournament-stage-note">${Number(tournament.groupConfig?.matchesPerPair) === 2 ? 'Mecz i rewanż' : 'Jeden mecz każdej pary'}</span></div><div class="tournament-groups-grid">${groups.map(group => {
+    const isFinalGroup = group === tournament.finalGroup;
+    return `<article class="tournament-group${isFinalGroup ? ' is-final-group' : ''}"><div class="tournament-group-header"><h4>${escapeHtml(group.name)}</h4><span>${group.participantIds?.length || group.participants?.length || 0} uczestników</span></div>${renderTournamentGroupTable(tournament, group, isFinalGroup)}<div class="tournament-group-matches"><h5>Mecze</h5>${renderTournamentMatchRows(tournament, group.matches)}</div></article>`;
+  }).join('')}</div></section>`;
+}
+
+function getBracketSideScore(match, side) {
+  if (match.status === 'bye') return side === 'home' ? 'BYE' : '–';
+  if (match.status !== 'completed') return '–';
+  const score = parseScore(match.score || deriveScore(match));
+  return side === 'home' ? String(score.home) : String(score.away);
+}
+
+function renderTournamentBracket(tournament) {
+  const matches = (tournament.bracket || []).filter(match => !match.isThirdPlace);
+  const thirdPlace = (tournament.bracket || []).find(match => match.isThirdPlace);
+  if (!matches.length) return '';
+  const rounds = [...new Set(matches.map(match => match.roundIndex))]
+    .sort((a, b) => a - b)
+    .map(roundIndex => ({
+      roundIndex,
+      name: matches.find(match => match.roundIndex === roundIndex)?.round || `Runda ${roundIndex + 1}`,
+      matches: matches.filter(match => match.roundIndex === roundIndex).sort((a, b) => a.matchIndex - b.matchIndex)
+    }));
+  return `<section class="tournament-stage"><div class="tournament-stage-heading"><div><span class="eyebrow">Faza finałowa</span><h3>Drabinka turnieju</h3></div><span class="tournament-stage-note">Przewiń poziomo, aby zobaczyć kolejne rundy</span></div><div class="tournament-bracket-scroll" role="region" aria-label="Drabinka turnieju" tabindex="0"><div class="tournament-bracket" style="--round-count:${rounds.length}">${rounds.map(round => `<section class="tournament-round"><h4>${escapeHtml(round.name)}</h4><div class="tournament-round-matches">${round.matches.map(match => {
+    const home = getTournamentParticipantName(tournament, match.homeId, match.home);
+    const away = getTournamentParticipantName(tournament, match.awayId, match.away);
+    const score = match.status === 'bye' ? 'BYE' : match.status === 'completed' ? (match.score || deriveScore(match)) : '–';
+    return `<article class="bracket-game ${match.status === 'completed' || match.status === 'bye' ? 'is-complete' : ''}"><span class="bracket-game-number">Mecz ${match.matchIndex + 1}</span><div class="${match.winnerId && match.winnerId === match.homeId ? 'is-winner' : ''}"><span>${home ? renderLogo(home) : ''}${escapeHtml(home || 'Do ustalenia')}</span><strong>${escapeHtml(getBracketSideScore(match, 'home'))}</strong></div><div class="${match.winnerId && match.winnerId === match.awayId ? 'is-winner' : ''}"><span>${away ? renderLogo(away) : ''}${escapeHtml(away || 'Do ustalenia')}</span><strong>${escapeHtml(getBracketSideScore(match, 'away'))}</strong></div>${match.sets ? `<small>${escapeHtml(match.sets)}</small>` : ''}</article>`;
+  }).join('')}</div></section>`).join('')}</div></div>${thirdPlace ? `<div class="tournament-third-place"><h4>Mecz o 3. miejsce</h4>${renderTournamentMatchRows(tournament, [thirdPlace])}</div>` : ''}</section>`;
+}
+
+function renderTournamentFlow(tournament) {
+  if (tournament.format === 'knockout') return '';
+  const finalLabel = tournament.format === 'groups_final_group' ? 'Grupa finałowa' : 'Drabinka play-off';
+  const groupCount = tournament.groups?.length || tournament.groupConfig?.groupCount || 0;
+  return `<div class="tournament-flow" aria-label="Przebieg turnieju"><span>${groupCount} ${groupCount === 1 ? 'grupa' : 'grupy'}</span><i aria-hidden="true"></i><span>${Number(tournament.groupConfig?.qualifiersPerGroup) || 1} awansujących z grupy</span><i aria-hidden="true"></i><strong>${finalLabel}</strong></div>`;
+}
+
+function renderTournamentFull(tournament) {
+  return `<article class="tournament-detail-view"><header class="tournament-detail-header"><div><span class="eyebrow">${escapeHtml(getSportName(tournament.sport))}</span><h2>${escapeHtml(tournament.name)}</h2><p>${escapeHtml(getTournamentFormatLabel(tournament.format))} · ${escapeHtml(getTournamentStatusLabel(tournament.status))}</p></div><div class="tournament-meta"><span>${tournament.participants?.length || 0} uczestników</span><span>${tournament.allowDraws ? 'Remis 1:1 dozwolony' : 'Bez remisów'}</span></div></header>${renderTournamentFlow(tournament)}${renderTournamentGroups(tournament)}${renderTournamentBracket(tournament)}<section class="tournament-stage"><div class="tournament-stage-heading"><div><span class="eyebrow">Podsumowanie</span><h3>Klasyfikacja końcowa</h3></div></div>${renderTournamentClassification(tournament)}</section></article>`;
+}
+
+function renderTournamentSummary(tournament) {
+  const completedMatches = [
+    ...(tournament.groups || []).flatMap(group => group.matches || []),
+    ...(tournament.finalGroup?.matches || []),
+    ...(tournament.bracket || [])
+  ].filter(match => match.status === 'completed').length;
+  return `<article class="tournament-summary"><div class="tournament-summary-header"><div><span class="eyebrow">${escapeHtml(getSportName(tournament.sport))}</span><h3>${escapeHtml(tournament.name)}</h3></div><span class="tournament-status tournament-status-${escapeHtml(tournament.status)}">${escapeHtml(getTournamentStatusLabel(tournament.status))}</span></div><div class="tournament-summary-meta"><span>${escapeHtml(getTournamentFormatLabel(tournament.format))}</span><span>${tournament.participants?.length || 0} uczestników</span><span>${completedMatches} rozegranych meczów</span></div>${renderTournamentClassification(tournament, true)}<a class="button button-alt compact-button" href="turniej.html?id=${encodeURIComponent(tournament.id)}">Zobacz grupy i drabinkę</a></article>`;
+}
+
 function renderTournamentSections() {
   if (!leagueData.tournaments.length) return '';
-  return `<section class="rankings-section"><h2>Turnieje</h2>${leagueData.tournaments.map(tournament => `<div class="ranking-view"><h3>${escapeHtml(tournament.name)}</h3><p class="empty-state">Na stronie publicznej pokazujemy końcową klasyfikację, a poniżej osobno przebieg drabinki.</p><table><thead><tr><th>Miejsce</th><th>Uczestnik</th><th>Klub</th><th>Logo</th></tr></thead><tbody>${tournament.finalClassification.map(row => `<tr><td>${row.place}</td><td>${escapeHtml(row.participant)}</td><td>${escapeHtml(row.club)}</td><td>${renderLogo(row.club)}</td></tr>`).join('')}</tbody></table><div class="bracket-grid">${tournament.bracket.map(match => `<article class="bracket-match"><span>${escapeHtml(match.round)}</span><strong>${escapeHtml(match.home)} ${escapeHtml(match.score)} ${escapeHtml(match.away)}</strong></article>`).join('')}</div></div>`).join('')}</section>`;
+  return `<section class="rankings-section"><div class="section-lead"><span class="eyebrow">Turnieje</span><h2>Końcowe klasyfikacje</h2><p>Pełne grupy, wyniki i drabinki są dostępne w szczegółach każdego turnieju.</p></div><div class="tournament-summary-list">${leagueData.tournaments.map(renderTournamentSummary).join('')}</div></section>`;
+}
+
+function renderSportTournaments() {
+  const container = document.getElementById('sport-tournaments');
+  const sportKey = getSportKey();
+  if (!container || !sportKey) return;
+  const tournaments = leagueData.tournaments.filter(tournament => tournament.sport === sportKey);
+  container.innerHTML = tournaments.length
+    ? `<div class="tournament-detail-list">${tournaments.map(renderTournamentFull).join('')}</div>`
+    : '<p class="empty-state">Brak turniejów dla tej dyscypliny.</p>';
+}
+
+function renderHomeTournaments() {
+  const container = document.getElementById('home-tournaments');
+  const section = document.getElementById('home-tournaments-section');
+  if (!container) return;
+  if (!leagueData.tournaments.length) {
+    if (section) section.hidden = true;
+    return;
+  }
+  container.innerHTML = `<div class="tournament-summary-list">${leagueData.tournaments.map(renderTournamentSummary).join('')}</div>`;
+}
+
+function renderTournamentDetailPage() {
+  const container = document.getElementById('tournament-detail');
+  if (!container) return;
+  const tournamentId = new URLSearchParams(window.location.search).get('id');
+  const tournament = leagueData.tournaments.find(item => String(item.id) === String(tournamentId));
+  if (!tournament) {
+    container.innerHTML = '<section class="page-intro"><span class="eyebrow">Turniej</span><h2>Nie znaleziono turnieju</h2><p>Sprawdź adres albo wróć do listy wyników.</p><a class="button compact-button" href="klasyfikacje.html">Wróć do wyników</a></section>';
+    return;
+  }
+  document.title = `${tournament.name} | Liga LGBT`;
+  container.innerHTML = renderTournamentFull(tournament);
 }
 
 function saveAndRefreshAdmin(message) {
@@ -888,6 +1083,27 @@ function renderAdminDashboard() {
   Object.entries(fields).forEach(([id, value]) => {
     const node = document.getElementById(id);
     if (node) node.textContent = value;
+  });
+}
+
+function initAdminNavigation() {
+  const navigation = document.getElementById('admin-navigation');
+  const toggle = document.getElementById('admin-nav-toggle');
+  if (!navigation) return;
+  const page = document.body.dataset.page || document.documentElement.dataset.page;
+  navigation.querySelectorAll('[data-admin-page]').forEach(link => {
+    if (link.dataset.adminPage === page) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  if (!toggle) return;
+  toggle.addEventListener('click', () => {
+    const isOpen = navigation.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  navigation.addEventListener('click', event => {
+    if (!event.target.closest('a')) return;
+    navigation.classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
   });
 }
 
@@ -1065,7 +1281,7 @@ function renderAdminPlayers() {
 function renderAdminResults() {
   const editor = document.getElementById('results-editor');
   if (!editor) return;
-  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety = punkty</option></select></label><label>Poziom<select name="level"></select></label><label>Uczestnik 1<select name="home" required></select></label><label>Wynik meczu<select name="score" required></select></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="set-fields" id="set-fields"></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
+  editor.innerHTML = `<form id="result-form" class="admin-form"><input type="hidden" name="id" /><input type="hidden" name="originalSport" /><fieldset><legend>Dodaj lub edytuj wynik</legend><div class="admin-form-grid"><label>Dyscyplina<select name="sport" required>${getSportOptions()}</select></label><label>Tryb punktacji<select name="scoring"><option value="volleyball">Liga 3/2/1</option><option value="sets">Turniej: sety, możliwy remis 1:1</option></select></label><label>Poziom<select name="level"></select></label><label>Uczestnik 1<select name="home" required></select></label><label>Wynik meczu<select name="score" required></select></label><label>Uczestnik 2<select name="away" required></select></label><label>MVP meczu<select name="mvp"><option value="">Brak</option></select></label></div><div class="set-fields" id="set-fields"></div><div class="admin-actions"><button type="submit">Zapisz wynik</button><button type="reset" class="button-secondary">Wyczyść</button></div></fieldset></form>${Object.keys(leagueData.sports).map(key => {
     const sport = leagueData.sports[key];
     const rows = sport.results.length ? sport.results.map(match => `<tr><td>${escapeHtml(sport.name)}</td><td>${escapeHtml(match.level || '-')}</td><td>${escapeHtml(match.home)}</td><td>${renderLogo(match.home)}</td><td><strong>${escapeHtml(deriveScore(match))}</strong></td><td>${escapeHtml(match.sets || '-')}</td><td>${renderLogo(match.away)}</td><td>${escapeHtml(match.away)}</td><td>${escapeHtml(match.mvp || '-')}</td><td><div class="table-actions"><button type="button" class="compact-button edit-result" data-sport="${key}" data-id="${match.id}">Edytuj</button><button type="button" class="compact-button danger-button delete-result" data-sport="${key}" data-id="${match.id}">Usuń</button></div></td></tr>`).join('') : `<tr><td colspan="10">Brak wyników: ${escapeHtml(sport.name)}</td></tr>`;
     return `<div class="admin-table-block"><h4>${escapeHtml(sport.name)}</h4><table><thead><tr><th>Dyscyplina</th><th>Poziom</th><th>Uczestnik 1</th><th>Logo</th><th>Wynik</th><th>Sety</th><th>Logo</th><th>Uczestnik 2</th><th>MVP</th><th>Akcje</th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -1085,7 +1301,7 @@ function renderAdminResults() {
     form.away.innerHTML = getParticipantOptions(sportKey, away);
     form.level.innerHTML = getLevelOptions(sportKey, level || form.level.value || '', true);
     form.scoring.value = defaultScoring;
-    form.score.innerHTML = getScoreOptions(defaultScoring, score);
+    form.score.innerHTML = getScoreOptions(defaultScoring, score, { allowDraw: defaultScoring === 'sets' });
     refreshMvpOptions(mvp);
     refreshScoreFields(form.score.value);
   }
@@ -1095,7 +1311,7 @@ function renderAdminResults() {
     refreshFormOptions();
   });
   form.scoring.addEventListener('change', () => {
-    form.score.innerHTML = getScoreOptions(form.scoring.value);
+    form.score.innerHTML = getScoreOptions(form.scoring.value, '', { allowDraw: form.scoring.value === 'sets' });
     refreshScoreFields(form.score.value);
     refreshMvpOptions();
   });
@@ -1108,13 +1324,28 @@ function renderAdminResults() {
     const sportKey = data.get('sport').toString();
     const originalSport = data.get('originalSport').toString();
     const id = Number(data.get('id'));
-    const payload = { level: data.get('level').toString().trim(), home: data.get('home').toString(), away: data.get('away').toString(), score: data.get('score').toString(), sets: collectSetScores(form), scoring: data.get('scoring').toString(), mvp: data.get('mvp').toString() };
+    const scoring = data.get('scoring').toString();
+    const payload = {
+      level: data.get('level').toString().trim(),
+      home: data.get('home').toString(),
+      away: data.get('away').toString(),
+      score: data.get('score').toString(),
+      sets: collectSetScores(form),
+      scoring,
+      phaseType: scoring === 'sets' ? 'tournament' : 'league',
+      allowDraw: scoring === 'sets',
+      pointsRules: scoring === 'sets'
+        ? { win: 3, draw: 1, loss: 0 }
+        : { win: 3, draw: 0, loss: 0 },
+      status: 'completed',
+      mvp: data.get('mvp').toString()
+    };
     if (!isEligibleParticipant(sportKey, payload.home) || !isEligibleParticipant(sportKey, payload.away)) {
       return showToast('Obaj uczestnicy muszą być zapisani do wybranej dyscypliny.', 'warning');
     }
     if (payload.home === payload.away) return showToast('Uczestnicy meczu muszą być różni.', 'warning');
-    if (!parseSetPairs(payload.sets).length) return showToast('Uzupełnij punkty setów.', 'warning');
-    if (deriveScore(payload) !== payload.score) return showToast('Punkty setów nie zgadzają się z wybranym wynikiem meczu.', 'warning');
+    const resultValidation = validateMatchResult(payload, { allowDraw: payload.allowDraw });
+    if (!resultValidation.valid) return showToast(resultValidation.message, 'warning', 6000);
     const allowedMvp = getMatchMvpNames(sportKey, payload.home, payload.away);
     if (payload.mvp && !allowedMvp.includes(payload.mvp)) return showToast('MVP musi być zawodnikiem jednej z grających drużyn.', 'warning');
     if (id && originalSport && originalSport !== sportKey && leagueData.sports[originalSport]) {
@@ -1134,7 +1365,7 @@ function renderAdminResults() {
     const sportKey = button.dataset.sport;
     const match = leagueData.sports[sportKey].results.find(item => item.id === Number(button.dataset.id));
     if (!match) return;
-    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; refreshFormOptions(match.home, match.away, match.mvp || '', deriveScore(match), match.level || ''); form.level.value = match.level || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.score.innerHTML = getScoreOptions(form.scoring.value, deriveScore(match)); refreshScoreFields(deriveScore(match), match.sets || ''); refreshMvpOptions(match.mvp || ''); form.mvp.value = match.mvp || '';
+    form.id.value = match.id; form.originalSport.value = sportKey; form.sport.value = sportKey; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; refreshFormOptions(match.home, match.away, match.mvp || '', deriveScore(match), match.level || ''); form.level.value = match.level || ''; form.scoring.value = match.scoring || leagueData.sports[sportKey].defaultScoring || 'volleyball'; form.score.innerHTML = getScoreOptions(form.scoring.value, deriveScore(match), { allowDraw: Boolean(match.allowDraw) || form.scoring.value === 'sets' }); refreshScoreFields(deriveScore(match), match.sets || ''); refreshMvpOptions(match.mvp || ''); form.mvp.value = match.mvp || '';
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }));
   editor.querySelectorAll('.delete-result').forEach(button => button.addEventListener('click', () => {
@@ -1161,6 +1392,7 @@ function renderAdminTournaments() {
     event.preventDefault();
     const data = new FormData(form);
     const id = Number(data.get('id'));
+    const existing = leagueData.tournaments.find(tournament => tournament.id === id);
     const sportKey = data.get('sport').toString();
     const participants = data.getAll('participants').map(item => item.toString());
     const participantSet = new Set(participants);
@@ -1171,11 +1403,24 @@ function renderAdminTournaments() {
     const invalidBracket = bracket.some(match => !participantSet.has(match.home) || !participantSet.has(match.away));
     const duplicateClassification = new Set(finalClassification.map(row => row.participant)).size !== finalClassification.length;
     const selfMatch = bracket.some(match => match.home === match.away);
+    const format = existing?.format || 'knockout';
+    const allowDraws = typeof existing?.allowDraws === 'boolean'
+      ? existing.allowDraws
+      : format !== 'knockout';
+    const invalidDraw = bracket.some(match => match.score === '1:1' && !allowDraws);
     const payload = {
       name: data.get('name').toString().trim(),
       sport: sportKey,
+      format,
+      participantType: leagueData.sports[sportKey]?.type === 'team' ? 'team' : 'player',
       scoring: 'sets',
+      seeding: existing?.seeding || 'manual',
       status: data.get('status').toString().trim() || 'completed',
+      allowDraws,
+      pointsRules: existing?.pointsRules || { win: 3, draw: 1, loss: 0 },
+      groupConfig: existing?.groupConfig || structuredClone(DEFAULT_GROUP_CONFIG),
+      finalStageConfig: existing?.finalStageConfig || structuredClone(DEFAULT_FINAL_STAGE_CONFIG),
+      groups: existing?.groups || [],
       participants,
       finalClassification,
       bracket
@@ -1189,13 +1434,18 @@ function renderAdminTournaments() {
     }
     if (duplicateClassification) return showToast('Zawodnik może wystąpić w klasyfikacji tylko raz.', 'warning');
     if (selfMatch) return showToast('Uczestnik turnieju nie może grać przeciwko sobie.', 'warning');
+    if (invalidDraw) return showToast('Remis 1:1 nie jest dozwolony w fazie play-off.', 'warning');
     if (!payload.name || !payload.finalClassification.length || !payload.bracket.length) return showToast('Uzupełnij nazwę, klasyfikację i drabinkę turnieju.', 'warning');
-    const existing = leagueData.tournaments.find(tournament => tournament.id === id);
     if (existing) {
       Object.assign(existing, payload);
+      normalizeTournament(existing, leagueData);
       saveAndRefreshAdmin('Turniej został zaktualizowany.');
     } else {
-      leagueData.tournaments.push({ id: Math.max(0, ...leagueData.tournaments.map(tournament => tournament.id)) + 1, ...payload });
+      const tournament = normalizeTournament({
+        id: Math.max(0, ...leagueData.tournaments.map(item => item.id)) + 1,
+        ...payload
+      }, leagueData);
+      leagueData.tournaments.push(tournament);
       saveAndRefreshAdmin('Dodano turniej.');
     }
   });
@@ -1219,6 +1469,7 @@ function renderAdminTournaments() {
 
 function initAdminPanel() {
   if (!document.getElementById('admin-content')) return;
+  initAdminNavigation();
   const logoutButton = document.getElementById('admin-logout');
   if (logoutButton) logoutButton.addEventListener('click', async () => {
     try {
@@ -1243,18 +1494,21 @@ function initAdminPanel() {
 async function initPage() {
   await window.leagueDataReady;
   const page = document.body.dataset.page || document.documentElement.dataset.page;
+  if (page === 'home') return renderHomeTournaments();
   if (page === 'login') return initLoginPage();
-  if (page === 'admin') {
+  if (page?.startsWith('admin')) {
     if (!await requireAdminAuth()) return;
     return initAdminPanel();
   }
   if (page === 'clubs') return renderClubsPage();
   if (page === 'players') return renderPlayersPage();
   if (page === 'rankings') return renderPublicRankingsPage();
+  if (page === 'tournament') return renderTournamentDetailPage();
   if (page === 'sport') {
     renderSportStandings();
     renderTeams();
     renderResults();
+    renderSportTournaments();
     renderMvp();
   }
 }

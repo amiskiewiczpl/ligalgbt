@@ -10,24 +10,27 @@
   <header class="site-header admin-header">
     <div class="brand">
       <p class="eyebrow">Panel administratora</p>
-      <h1>Zarządzanie ligą</h1>
-      <p>Kluby, drużyny, zawodnicy, wyniki, klasyfikacje i loga w jednym miejscu.</p>
+      <h1>Centrum zarządzania ligą</h1>
+      <p>Wybierz obszar pracy. Dane są wspólne i synchronizowane przez Supabase.</p>
     </div>
-    <nav class="main-nav admin-nav" aria-label="Nawigacja administratora">
-      <a class="nav-link" href="index.html">Start</a>
-      <a class="nav-link" href="klasyfikacje.html">Wyniki</a>
-      <a class="nav-link" href="kluby.html">Kluby</a>
-      <a class="nav-link" href="zawodnicy.html">Zawodnicy</a>
-      <a class="nav-link" href="kontakt.html">Kontakt</a>
+    <button id="admin-nav-toggle" class="admin-nav-toggle" type="button" aria-expanded="false" aria-controls="admin-navigation">Menu panelu</button>
+    <nav class="main-nav admin-nav" id="admin-navigation" aria-label="Nawigacja administratora">
+      <a class="nav-link" data-admin-page="admin" href="admin.html">Dashboard</a>
+      <a class="nav-link" data-admin-page="admin-clubs" href="admin-kluby.html">Kluby</a>
+      <a class="nav-link" data-admin-page="admin-teams" href="admin-druzyny.html">Drużyny</a>
+      <a class="nav-link" data-admin-page="admin-players" href="admin-zawodnicy.html">Zawodnicy</a>
+      <a class="nav-link" data-admin-page="admin-results" href="admin-wyniki.html">Wyniki</a>
+      <a class="nav-link" data-admin-page="admin-tournaments" href="admin-turnieje.html">Turnieje</a>
+      <a class="nav-link" data-admin-page="admin-standings" href="admin-klasyfikacje.html">Tabele</a>
       <button id="admin-logout" class="button-secondary compact-button" type="button">Wyloguj</button>
     </nav>
   </header>
 
   <main class="container admin-container">
-    <section class="page-intro">
+    <section class="page-intro admin-page-intro">
       <span class="eyebrow">Dashboard</span>
       <h2>Panel operacyjny ligi</h2>
-      <p>Zmiany zapisują się lokalnie w przeglądarce. Formularze są na górze, a pełne tabele danych pod nimi, żeby łatwo kontrolować stan ligi.</p>
+      <p>Każdy obszar ma osobną podstronę. Zmiany zapisane w jednym miejscu są od razu dostępne w pozostałych widokach.</p>
     </section>
 
     <section class="admin-dashboard" aria-label="Podsumowanie panelu">
@@ -39,82 +42,23 @@
     </section>
 
     <section class="admin-panel" id="admin-content">
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Klasyfikacje</span>
-            <h3>Podgląd tabel</h3>
-          </div>
-          <a class="button button-alt compact-button" href="klasyfikacje.html">Zobacz publicznie</a>
-        </div>
-        <div id="admin-standings-preview"></div>
-      </article>
-
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Kluby</span>
-            <h3>Kluby i loga</h3>
-            <p>Logo może być adresem URL. Jeśli go nie podasz, strona pokaże kolorowy znak klubu.</p>
-          </div>
-        </div>
-        <div id="team-editor"></div>
-      </article>
-
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Drużyny</span>
-            <h3>Drużyny uczestniczące</h3>
-            <p>W siatkówce klub wystawia konkretne drużyny na poziomach B, B-, C i D.</p>
-          </div>
-        </div>
-        <div id="club-team-editor"></div>
-      </article>
-
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Wyniki</span>
-            <h3>Mecze i rezultaty</h3>
-            <p>Dodawaj, edytuj i usuwaj wyniki dla każdej dyscypliny.</p>
-          </div>
-        </div>
-        <div id="results-editor"></div>
-      </article>
-
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Turnieje</span>
-            <h3>Klasyfikacje i drabinki</h3>
-            <p>Na stronie publicznej pokazujemy końcową klasyfikację oraz osobny przebieg drabinki.</p>
-          </div>
-        </div>
-        <div id="tournaments-editor"></div>
-      </article>
-
-      <article class="admin-card admin-card-wide">
-        <div class="admin-card-header">
-          <div>
-            <span class="eyebrow">Zawodnicy</span>
-            <h3>Ranking MVP i zawodnicy</h3>
-            <p>Zarządzaj zawodnikami przypisanymi do dyscyplin i drużyn.</p>
-          </div>
-        </div>
-        <div id="players-editor"></div>
-      </article>
+      <div class="admin-module-grid">
+        <a class="admin-module-link" href="admin-kluby.html"><span>Kluby</span><strong>Logotypy i dane organizacji</strong><small>Dodawanie, edycja i usuwanie klubów.</small></a>
+        <a class="admin-module-link" href="admin-druzyny.html"><span>Drużyny</span><strong>Poziomy i składy</strong><small>Zgłoszenia drużyn do konkretnych rozgrywek.</small></a>
+        <a class="admin-module-link" href="admin-zawodnicy.html"><span>Zawodnicy</span><strong>Profile i dyscypliny</strong><small>Kluby, sporty oraz przypisania do drużyn.</small></a>
+        <a class="admin-module-link" href="admin-wyniki.html"><span>Wyniki</span><strong>Mecze i MVP</strong><small>Wyniki ligowe, sety i zawodnicy meczu.</small></a>
+        <a class="admin-module-link" href="admin-turnieje.html"><span>Turnieje</span><strong>Grupy i drabinki</strong><small>Format rozgrywek, uczestnicy i klasyfikacje.</small></a>
+        <a class="admin-module-link" href="admin-klasyfikacje.html"><span>Tabele</span><strong>Kontrola klasyfikacji</strong><small>Podgląd automatycznie liczonych pozycji.</small></a>
+      </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>Panel administratora jest dostępny tylko dla zalogowanych użytkowników.</p>
-  </footer>
-
+  <footer class="site-footer"><p>Panel administratora jest dostępny tylko dla zalogowanych organizatorów.</p></footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="data.js"></script>
   <script src="remote-data.js"></script>
+  <script src="tournament-engine.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

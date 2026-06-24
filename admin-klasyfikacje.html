@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="admin-standings">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klasyfikacje | Panel administratora</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand"><p class="eyebrow">Panel administratora</p><h1>Klasyfikacje</h1><p>Kontrola tabel liczonych automatycznie z wyników.</p></div>
+    <button id="admin-nav-toggle" class="admin-nav-toggle" type="button" aria-expanded="false" aria-controls="admin-navigation">Menu panelu</button>
+    <nav class="main-nav admin-nav" id="admin-navigation" aria-label="Nawigacja administratora">
+      <a class="nav-link" data-admin-page="admin" href="admin.html">Dashboard</a><a class="nav-link" data-admin-page="admin-clubs" href="admin-kluby.html">Kluby</a><a class="nav-link" data-admin-page="admin-teams" href="admin-druzyny.html">Drużyny</a><a class="nav-link" data-admin-page="admin-players" href="admin-zawodnicy.html">Zawodnicy</a><a class="nav-link" data-admin-page="admin-results" href="admin-wyniki.html">Wyniki</a><a class="nav-link" data-admin-page="admin-tournaments" href="admin-turnieje.html">Turnieje</a><a class="nav-link" data-admin-page="admin-standings" href="admin-klasyfikacje.html">Tabele</a><button id="admin-logout" class="button-secondary compact-button" type="button">Wyloguj</button>
+    </nav>
+  </header>
+  <main class="container admin-container"><section class="page-intro admin-page-intro"><span class="eyebrow">Klasyfikacje</span><h2>Podgląd tabel</h2><p>Weryfikuj punkty, zwycięstwa, sety i małe punkty przed publikacją.</p></section><section class="admin-panel" id="admin-content"><article class="admin-card admin-card-wide"><div class="admin-card-header"><div><h3>Aktualne klasyfikacje</h3></div><a class="button button-alt compact-button" href="klasyfikacje.html">Zobacz publicznie</a></div><div id="admin-standings-preview"></div></article></section></main>
+  <footer class="site-footer"><p>Tabele aktualizują się po każdym zapisanym wyniku.</p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="data.js"></script><script src="remote-data.js"></script><script src="tournament-engine.js"></script><script src="script.js"></script>
+</body>
+</html>

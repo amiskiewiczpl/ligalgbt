@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd turnieju</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <main class="container" id="preview"></main>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    const source = structuredClone(leagueData.tournaments[0]);
+    const names = Object.fromEntries(source.participantIds.map(reference => [
+      reference,
+      getParticipantNameFromReference(leagueData, reference)
+    ]));
+    source.id = 'preview';
+    source.name = 'Puchar testowy';
+    source.format = 'groups_knockout';
+    source.status = 'ongoing';
+    source.allowDraws = true;
+    source.groupConfig = {
+      groupCount: 1,
+      participantsPerGroup: 4,
+      matchesPerPair: 1,
+      qualifiersPerGroup: 2,
+      tieBreakOrder: ['points', 'wins', 'setsWon', 'setDifference', 'pointsFor', 'pointDifference', 'headToHead']
+    };
+    source.finalStageConfig = {
+      type: 'knockout',
+      participantCount: 2,
+      pairingRule: 'high_low',
+      thirdPlaceMatch: false,
+      carryGroupResults: false
+    };
+    tournamentEngine.generateTournamentStructure(source, {
+      names,
+      manualGroups: [source.participantIds]
+    });
+    const results = [
+      { score: '2:0', sets: '21:15, 21:17' },
+      { score: '1:1', sets: '21:18, 17:21' },
+      { score: '2:1', sets: '21:18, 18:21, 21:19' }
+    ];
+    source.groups[0].matches.forEach((match, index) => {
+      tournamentEngine.recordGroupResult(source.groups[0], match.id, results[index % results.length]);
+    });
+    source.bracket = tournamentEngine.createFinalStageFromGroups(source, { names }).bracket;
+    document.getElementById('preview').innerHTML = renderTournamentFull(source);
+    requestAnimationFrame(() => {
+      document.body.dataset.pageOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      const tableScroll = document.querySelector('.tournament-table-scroll');
+      document.body.dataset.tableScroll = tableScroll.scrollWidth > tableScroll.clientWidth;
+      const bracketScroll = document.querySelector('.tournament-bracket-scroll');
+      document.body.dataset.bracketScroll = bracketScroll.scrollWidth > bracketScroll.clientWidth;
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,29 @@
+const CURRENT_SCHEMA_VERSION = 2;
+
+const DEFAULT_TOURNAMENT_POINTS_RULES = {
+  win: 3,
+  draw: 1,
+  loss: 0
+};
+
+const DEFAULT_GROUP_CONFIG = {
+  groupCount: 0,
+  participantsPerGroup: 0,
+  matchesPerPair: 1,
+  qualifiersPerGroup: 1,
+  tieBreakOrder: ['points', 'wins', 'setsWon', 'setDifference', 'pointsFor', 'pointDifference', 'headToHead']
+};
+
+const DEFAULT_FINAL_STAGE_CONFIG = {
+  type: 'knockout',
+  participantCount: 0,
+  pairingRule: 'manual',
+  thirdPlaceMatch: false,
+  carryGroupResults: false
+};
+
 const defaultLeagueData = {
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   admin: {
     password: ''
   },
@@ -71,8 +96,16 @@ const defaultLeagueData = {
       id: 1,
       name: 'Letni Puchar Tenisa',
       sport: 'tenis',
+      format: 'knockout',
+      participantType: 'player',
       scoring: 'sets',
+      seeding: 'manual',
       status: 'completed',
+      allowDraws: false,
+      pointsRules: { ...DEFAULT_TOURNAMENT_POINTS_RULES },
+      groupConfig: { ...DEFAULT_GROUP_CONFIG },
+      finalStageConfig: { ...DEFAULT_FINAL_STAGE_CONFIG, participantCount: 4 },
+      groups: [],
       bracket: [
         { round: 'Półfinał', home: 'Dariusz Karpuk', away: 'Sebastian Górski', score: '2:0' },
         { round: 'Półfinał', home: 'Krzysztof Sobanowski', away: 'Michał Wojakowski', score: '2:1' },
@@ -87,11 +120,264 @@ const defaultLeagueData = {
   ]
 };
 
+function getParticipantTypeForSport(data, sportKey) {
+  return data.sports?.[sportKey]?.type === 'team' ? 'team' : 'player';
+}
+
+function getParticipantReference(data, sportKey, name) {
+  const type = getParticipantTypeForSport(data, sportKey);
+  const source = type === 'team' ? data.clubTeams : data.players;
+  const participant = source.find(item => item.name === name);
+  return participant ? `${type}:${participant.id}` : '';
+}
+
+function getParticipantNameFromReference(data, reference) {
+  const [type, rawId] = String(reference || '').split(':');
+  const id = Number(rawId);
+  if (!Number.isFinite(id)) return '';
+  const source = type === 'team' ? data.clubTeams : type === 'player' ? data.players : [];
+  return source.find(item => item.id === id)?.name || '';
+}
+
+function getEligibleParticipantNames(data, sportKey) {
+  const type = getParticipantTypeForSport(data, sportKey);
+  return type === 'team'
+    ? data.clubTeams.filter(team => team.sport === sportKey).map(team => team.name)
+    : data.players.filter(player => player.sports.includes(sportKey)).map(player => player.name);
+}
+
+function normalizePointsRules(pointsRules) {
+  const source = pointsRules && typeof pointsRules === 'object' ? pointsRules : {};
+  return {
+    win: Number.isFinite(Number(source.win)) ? Number(source.win) : DEFAULT_TOURNAMENT_POINTS_RULES.win,
+    draw: Number.isFinite(Number(source.draw)) ? Number(source.draw) : DEFAULT_TOURNAMENT_POINTS_RULES.draw,
+    loss: Number.isFinite(Number(source.loss)) ? Number(source.loss) : DEFAULT_TOURNAMENT_POINTS_RULES.loss
+  };
+}
+
+function normalizeMatchRecord(match, defaults = {}) {
+  const normalized = match && typeof match === 'object' ? match : {};
+  if (!normalized.id && defaults.id) normalized.id = defaults.id;
+  if (!normalized.scoring) normalized.scoring = defaults.scoring || 'sets';
+  if (typeof normalized.sets !== 'string') normalized.sets = '';
+  if (typeof normalized.score !== 'string') normalized.score = '';
+  if (typeof normalized.mvp !== 'string') normalized.mvp = '';
+  if (!normalized.status) {
+    normalized.status = (normalized.score && normalized.score !== '0:0') || normalized.sets
+      ? 'completed'
+      : 'scheduled';
+  }
+  if (!normalized.phaseType) normalized.phaseType = defaults.phaseType || 'league';
+  if (typeof normalized.allowDraw !== 'boolean') normalized.allowDraw = Boolean(defaults.allowDraw);
+  normalized.pointsRules = normalizePointsRules(normalized.pointsRules || defaults.pointsRules);
+  return normalized;
+}
+
+function normalizeTournamentMatch(match, tournament, data, index, roundIndex, matchIndex) {
+  const normalized = normalizeMatchRecord(match, {
+    scoring: tournament.scoring,
+    phaseType: 'knockout',
+    allowDraw: false,
+    pointsRules: tournament.pointsRules
+  });
+  if (!normalized.id) normalized.id = `legacy-bracket-${tournament.id}-${index + 1}`;
+  if (!Number.isInteger(normalized.roundIndex)) normalized.roundIndex = roundIndex;
+  if (!Number.isInteger(normalized.matchIndex)) normalized.matchIndex = matchIndex;
+  if (typeof normalized.winner !== 'string') normalized.winner = '';
+  if (!normalized.home && normalized.homeId) normalized.home = getParticipantNameFromReference(data, normalized.homeId);
+  if (!normalized.away && normalized.awayId) normalized.away = getParticipantNameFromReference(data, normalized.awayId);
+  if (!normalized.winner && normalized.winnerId) normalized.winner = getParticipantNameFromReference(data, normalized.winnerId);
+  if (!normalized.winner && normalized.home && normalized.away && normalized.score) {
+    const [homeScore, awayScore] = normalized.score.split(':').map(Number);
+    if (Number.isFinite(homeScore) && Number.isFinite(awayScore) && homeScore !== awayScore) {
+      normalized.winner = homeScore > awayScore ? normalized.home : normalized.away;
+    }
+  }
+  normalized.homeId = getParticipantReference(data, tournament.sport, normalized.home);
+  normalized.awayId = getParticipantReference(data, tournament.sport, normalized.away);
+  normalized.winnerId = getParticipantReference(data, tournament.sport, normalized.winner);
+  return normalized;
+}
+
+function normalizeTournament(tournament, data) {
+  if (!tournament || typeof tournament !== 'object') return null;
+  if (!tournament.sport || !data.sports[tournament.sport]) return null;
+  if (!Array.isArray(tournament.bracket)) tournament.bracket = [];
+  if (!Array.isArray(tournament.finalClassification)) tournament.finalClassification = [];
+  if (!Array.isArray(tournament.groups)) tournament.groups = [];
+  if (!tournament.scoring) tournament.scoring = 'sets';
+  if (!tournament.format) tournament.format = tournament.groups.length ? 'groups_knockout' : 'knockout';
+  if (!['knockout', 'groups_knockout', 'groups_final_group'].includes(tournament.format)) {
+    tournament.format = 'knockout';
+  }
+  tournament.participantType = getParticipantTypeForSport(data, tournament.sport);
+  if (!tournament.seeding) tournament.seeding = tournament.bracket.length ? 'manual' : 'random';
+  if (!['random', 'manual', 'group_result'].includes(tournament.seeding)) tournament.seeding = 'manual';
+  if (!['planned', 'ongoing', 'completed'].includes(tournament.status)) tournament.status = 'planned';
+  tournament.allowDraws = typeof tournament.allowDraws === 'boolean'
+    ? tournament.allowDraws
+    : tournament.format !== 'knockout';
+  tournament.pointsRules = normalizePointsRules(tournament.pointsRules);
+  tournament.groupConfig = {
+    ...structuredClone(DEFAULT_GROUP_CONFIG),
+    ...(tournament.groupConfig && typeof tournament.groupConfig === 'object' ? tournament.groupConfig : {})
+  };
+  tournament.groupConfig.matchesPerPair = [1, 2].includes(Number(tournament.groupConfig.matchesPerPair))
+    ? Number(tournament.groupConfig.matchesPerPair)
+    : 1;
+  ['groupCount', 'participantsPerGroup', 'qualifiersPerGroup'].forEach(key => {
+    tournament.groupConfig[key] = Math.max(0, Number.parseInt(tournament.groupConfig[key], 10) || 0);
+  });
+  if (!Array.isArray(tournament.groupConfig.tieBreakOrder)) {
+    tournament.groupConfig.tieBreakOrder = [...DEFAULT_GROUP_CONFIG.tieBreakOrder];
+  }
+  tournament.finalStageConfig = {
+    ...structuredClone(DEFAULT_FINAL_STAGE_CONFIG),
+    ...(tournament.finalStageConfig && typeof tournament.finalStageConfig === 'object' ? tournament.finalStageConfig : {})
+  };
+  if (!['knockout', 'final_group'].includes(tournament.finalStageConfig.type)) {
+    tournament.finalStageConfig.type = tournament.format === 'groups_final_group' ? 'final_group' : 'knockout';
+  }
+  tournament.finalStageConfig.participantCount = Math.max(
+    0,
+    Number.parseInt(tournament.finalStageConfig.participantCount, 10) || 0
+  );
+  if (!Array.isArray(tournament.participants)) {
+    tournament.participants = Array.isArray(tournament.participantIds) && tournament.participantIds.length
+      ? tournament.participantIds.map(reference => getParticipantNameFromReference(data, reference))
+      : [
+        ...tournament.finalClassification.map(row => row.participant),
+        ...tournament.bracket.flatMap(match => [match.home, match.away])
+      ];
+  }
+  const eligibleNames = getEligibleParticipantNames(data, tournament.sport);
+  tournament.participants = [...new Set(tournament.participants)].filter(name => eligibleNames.includes(name));
+  tournament.participantIds = tournament.participants
+    .map(name => getParticipantReference(data, tournament.sport, name))
+    .filter(Boolean);
+  if (!tournament.finalStageConfig.participantCount && tournament.format === 'knockout') {
+    tournament.finalStageConfig.participantCount = tournament.participants.length;
+  }
+  const roundOrder = [...new Set(tournament.bracket.map(match => match.round || 'Runda'))];
+  const roundMatchCounts = new Map();
+  tournament.bracket = tournament.bracket.map((match, index) => {
+    const roundName = match.round || 'Runda';
+    const roundIndex = roundOrder.indexOf(roundName);
+    const matchIndex = roundMatchCounts.get(roundName) || 0;
+    roundMatchCounts.set(roundName, matchIndex + 1);
+    return normalizeTournamentMatch(match, tournament, data, index, roundIndex, matchIndex);
+  });
+  tournament.groups = tournament.groups.map((group, groupIndex) => {
+    const groupParticipants = Array.isArray(group.participants) && group.participants.length
+      ? group.participants
+      : (group.participantIds || []).map(reference => getParticipantNameFromReference(data, reference));
+    const participants = [...new Set(groupParticipants)].filter(name => tournament.participants.includes(name));
+    return {
+      id: group.id || `group-${tournament.id}-${groupIndex + 1}`,
+      name: group.name || `Grupa ${groupIndex + 1}`,
+      participantIds: participants
+        .map(name => getParticipantReference(data, tournament.sport, name))
+        .filter(Boolean),
+      participants,
+      matches: Array.isArray(group.matches)
+        ? group.matches.map((match, matchIndex) => {
+          const normalizedMatch = normalizeMatchRecord(match, {
+            scoring: tournament.scoring,
+            phaseType: 'group',
+            allowDraw: tournament.allowDraws,
+            pointsRules: tournament.pointsRules,
+            id: `group-match-${tournament.id}-${groupIndex + 1}-${matchIndex + 1}`
+          });
+          if (!normalizedMatch.home && normalizedMatch.homeId) {
+            normalizedMatch.home = getParticipantNameFromReference(data, normalizedMatch.homeId);
+          }
+          if (!normalizedMatch.away && normalizedMatch.awayId) {
+            normalizedMatch.away = getParticipantNameFromReference(data, normalizedMatch.awayId);
+          }
+          normalizedMatch.homeId = getParticipantReference(data, tournament.sport, normalizedMatch.home);
+          normalizedMatch.awayId = getParticipantReference(data, tournament.sport, normalizedMatch.away);
+          return normalizedMatch;
+        })
+        : []
+    };
+  });
+  if (!tournament.groupConfig.groupCount && tournament.groups.length) {
+    tournament.groupConfig.groupCount = tournament.groups.length;
+  }
+  if (tournament.finalGroup && typeof tournament.finalGroup === 'object') {
+    const finalParticipants = Array.isArray(tournament.finalGroup.participants)
+      ? tournament.finalGroup.participants
+      : (tournament.finalGroup.participantIds || [])
+        .map(reference => getParticipantNameFromReference(data, reference));
+    tournament.finalGroup = {
+      id: tournament.finalGroup.id || `final-group-${tournament.id}`,
+      name: tournament.finalGroup.name || 'Grupa finałowa',
+      participants: [...new Set(finalParticipants)].filter(name => tournament.participants.includes(name)),
+      participantIds: [],
+      matches: Array.isArray(tournament.finalGroup.matches)
+        ? tournament.finalGroup.matches.map((match, matchIndex) => {
+          const normalizedMatch = normalizeMatchRecord(match, {
+            scoring: tournament.scoring,
+            phaseType: 'final_group',
+            allowDraw: tournament.allowDraws,
+            pointsRules: tournament.pointsRules,
+            id: `final-group-match-${tournament.id}-${matchIndex + 1}`
+          });
+          if (!normalizedMatch.home && normalizedMatch.homeId) {
+            normalizedMatch.home = getParticipantNameFromReference(data, normalizedMatch.homeId);
+          }
+          if (!normalizedMatch.away && normalizedMatch.awayId) {
+            normalizedMatch.away = getParticipantNameFromReference(data, normalizedMatch.awayId);
+          }
+          normalizedMatch.homeId = getParticipantReference(data, tournament.sport, normalizedMatch.home);
+          normalizedMatch.awayId = getParticipantReference(data, tournament.sport, normalizedMatch.away);
+          return normalizedMatch;
+        })
+        : []
+    };
+    tournament.finalGroup.participantIds = tournament.finalGroup.participants
+      .map(name => getParticipantReference(data, tournament.sport, name))
+      .filter(Boolean);
+  } else {
+    tournament.finalGroup = null;
+  }
+  return tournament;
+}
+
+function migrateV0ToV1(data) {
+  data.schemaVersion = 1;
+  return data;
+}
+
+function migrateV1ToV2(data) {
+  if (!Array.isArray(data.tournaments)) data.tournaments = [];
+  data.tournaments = data.tournaments
+    .map(tournament => normalizeTournament(tournament, data))
+    .filter(Boolean);
+  data.schemaVersion = 2;
+  return data;
+}
+
+function migrateLeagueData(input) {
+  const data = input && typeof input === 'object' ? input : structuredClone(defaultLeagueData);
+  let version = Number.isInteger(data.schemaVersion) ? data.schemaVersion : 0;
+  if (version > CURRENT_SCHEMA_VERSION) {
+    console.warn(`Dane ligi mają nowszą wersję schematu (${version}) niż aplikacja (${CURRENT_SCHEMA_VERSION}).`);
+    return data;
+  }
+  while (version < CURRENT_SCHEMA_VERSION) {
+    if (version === 0) migrateV0ToV1(data);
+    if (version === 1) migrateV1ToV2(data);
+    version = data.schemaVersion;
+  }
+  return data;
+}
+
 function normalizeLoadedData(data) {
   if (!data) data = structuredClone(defaultLeagueData);
   const serialized = JSON.stringify(data);
   const damagedMarkers = ['\uFFFD', '\u0107\u017C\u02DD', '\u0139', '\u0102', '\u00E2', '\u0111'];
-  if (damagedMarkers.some(marker => serialized.includes(marker))) return structuredClone(defaultLeagueData);
+  if (damagedMarkers.some(marker => serialized.includes(marker))) data = structuredClone(defaultLeagueData);
   if (!data.admin) data.admin = defaultLeagueData.admin;
   if (!Array.isArray(data.teams)) data.teams = structuredClone(defaultLeagueData.teams);
   if (!Array.isArray(data.clubTeams)) data.clubTeams = structuredClone(defaultLeagueData.clubTeams);
@@ -114,11 +400,14 @@ function normalizeLoadedData(data) {
         });
       }
     }
-    data.sports[key].results.forEach(match => {
-      if (!match.scoring) match.scoring = data.sports[key].defaultScoring;
-      if (!match.sets && match.score) match.sets = '';
-      if (typeof match.mvp !== 'string') match.mvp = '';
-    });
+    data.sports[key].results = data.sports[key].results.map(match => normalizeMatchRecord(match, {
+      scoring: data.sports[key].defaultScoring,
+      phaseType: 'league',
+      allowDraw: false,
+      pointsRules: data.sports[key].defaultScoring === 'sets'
+        ? DEFAULT_TOURNAMENT_POINTS_RULES
+        : { win: 3, draw: 0, loss: 0 }
+    }));
     delete data.sports[key].mvp;
   });
   data.clubTeams.forEach(team => {
@@ -137,22 +426,11 @@ function normalizeLoadedData(data) {
         if (team.sport && !player.sports.includes(team.sport)) player.sports.push(team.sport);
       });
   });
-  data.tournaments.forEach(tournament => {
-    if (!Array.isArray(tournament.bracket)) tournament.bracket = [];
-    if (!Array.isArray(tournament.finalClassification)) tournament.finalClassification = [];
-    if (!tournament.scoring) tournament.scoring = 'sets';
-    if (!Array.isArray(tournament.participants)) {
-      tournament.participants = [
-        ...tournament.finalClassification.map(row => row.participant),
-        ...tournament.bracket.flatMap(match => [match.home, match.away])
-      ];
-    }
-    const sport = data.sports[tournament.sport];
-    const eligibleNames = sport?.type === 'team'
-      ? data.clubTeams.filter(team => team.sport === tournament.sport).map(team => team.name)
-      : data.players.filter(player => player.sports.includes(tournament.sport)).map(player => player.name);
-    tournament.participants = [...new Set(tournament.participants)].filter(name => eligibleNames.includes(name));
-  });
+  data = migrateLeagueData(data);
+  data.tournaments = data.tournaments
+    .map(tournament => normalizeTournament(tournament, data))
+    .filter(Boolean);
+  data.schemaVersion = Math.max(Number(data.schemaVersion) || 0, CURRENT_SCHEMA_VERSION);
   return data;
 }
 
@@ -177,8 +455,9 @@ function loadLeagueData() {
 }
 
 function saveLeagueData(data) {
-  localStorage.setItem('ligaLgbtData', JSON.stringify(data));
-  if (window.leagueStore) return window.leagueStore.saveRemoteData(data);
+  const normalized = normalizeLoadedData(data);
+  localStorage.setItem('ligaLgbtData', JSON.stringify(normalized));
+  if (window.leagueStore) return window.leagueStore.saveRemoteData(normalized);
   return Promise.resolve({ remote: false });
 }
 

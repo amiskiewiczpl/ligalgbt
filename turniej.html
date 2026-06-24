@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="tournament">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turniej | Liga LGBT</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Turniej</h1>
+      <p>Grupy, mecze, klasyfikacja i droga do finału.</p>
+    </div>
+    <nav class="main-nav" aria-label="Główna nawigacja">
+      <a class="nav-link" href="index.html">Start</a>
+      <a class="nav-link" href="klasyfikacje.html">Wyniki</a>
+      <a class="nav-link" href="zawodnicy.html">Zawodnicy</a>
+      <a class="nav-link" href="kluby.html">Kluby</a>
+      <a class="nav-link" href="kontakt.html">Kontakt</a>
+    </nav>
+  </header>
+
+  <main class="container" id="tournament-detail"></main>
+
+  <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="data.js"></script>
+  <script src="remote-data.js"></script>
+  <script src="tournament-engine.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
