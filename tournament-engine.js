@@ -281,6 +281,50 @@
     return match;
   }
 
+  function resetMatchResult(match) {
+    match.score = '';
+    match.sets = '';
+    match.status = 'scheduled';
+    match.winnerId = '';
+    match.winner = '';
+    match.loserId = '';
+    match.mvp = '';
+    return match;
+  }
+
+  function clearKnockoutResult(bracket, matchId, options = {}) {
+    const match = getMatchById(bracket, matchId);
+    if (!match) throw new Error('Nie znaleziono meczu w drabince.');
+    if (match.status === 'bye') throw new Error('Nie można wyczyścić wyniku wolnego losu.');
+    const names = options.names || {};
+    const nextMatch = match.nextMatchId ? getMatchById(bracket, match.nextMatchId) : null;
+    const thirdPlace = match.round === 'Półfinał'
+      ? bracket.find(item => item.isThirdPlace)
+      : null;
+    if (nextMatch && nextMatch.status !== 'scheduled') {
+      throw new Error('Nie można wyczyścić wyniku, ponieważ kolejna runda została już rozstrzygnięta.');
+    }
+    if (thirdPlace && thirdPlace.status !== 'scheduled') {
+      throw new Error('Nie można wyczyścić półfinału, ponieważ mecz o trzecie miejsce został już rozstrzygnięty.');
+    }
+    if (nextMatch && match.winnerId) {
+      const slotId = match.nextSlot === 'home' ? nextMatch.homeId : nextMatch.awayId;
+      if (slotId === match.winnerId) setMatchSlot(nextMatch, match.nextSlot, '', names);
+    }
+    if (thirdPlace && match.loserId) {
+      const semifinals = bracket
+        .filter(item => !item.isThirdPlace && item.round === 'Półfinał')
+        .sort((a, b) => a.matchIndex - b.matchIndex);
+      const semifinalIndex = semifinals.findIndex(item => item.id === match.id);
+      const slot = semifinalIndex === 0 ? 'home' : semifinalIndex === 1 ? 'away' : '';
+      if (slot) {
+        const slotId = slot === 'home' ? thirdPlace.homeId : thirdPlace.awayId;
+        if (slotId === match.loserId) setMatchSlot(thirdPlace, slot, '', names);
+      }
+    }
+    return resetMatchResult(match);
+  }
+
   function distributeParticipants(participantIds, groupCount, options = {}) {
     const participants = unique(participantIds);
     if (groupCount < 1 || groupCount > participants.length) {
@@ -408,6 +452,12 @@
       ? ''
       : score.home > score.away ? match.homeId : match.awayId;
     return match;
+  }
+
+  function clearGroupResult(group, matchId) {
+    const match = group.matches.find(item => item.id === matchId);
+    if (!match) throw new Error('Nie znaleziono meczu grupowego.');
+    return resetMatchResult(match);
   }
 
   function createStandingRow(participantId) {
@@ -668,9 +718,11 @@
     deriveScore,
     createKnockoutBracket,
     recordKnockoutResult,
+    clearKnockoutResult,
     createGroupStage,
     createRoundRobinMatches,
     recordGroupResult,
+    clearGroupResult,
     calculateGroupStandings,
     rankQualifiedParticipants,
     orderQualifiedParticipants,

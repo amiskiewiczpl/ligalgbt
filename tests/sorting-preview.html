@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="sorting-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd sortowania drużyn</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <p class="eyebrow">Panel administratora</p>
+      <h1>Drużyny</h1>
+      <p>Sortowanie bez zmiany kolejności danych zapisanych w bazie.</p>
+    </div>
+  </header>
+  <main class="container admin-container">
+    <section class="page-intro admin-page-intro">
+      <span class="eyebrow">Drużyny</span>
+      <h2>Lista uczestników</h2>
+      <p>Widok można porządkować po nazwie, klubie, dyscyplinie albo poziomie.</p>
+    </section>
+    <section class="admin-panel">
+      <article class="admin-card admin-card-wide">
+        <div id="club-team-editor"></div>
+      </article>
+    </section>
+  </main>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderAdminClubTeams();
+    const requestedSort = new URLSearchParams(location.search).get('sort');
+    if (requestedSort) {
+      const select = document.getElementById('club-team-sort');
+      select.value = requestedSort;
+      select.dispatchEvent(new Event('change'));
+    }
+    if (new URLSearchParams(location.search).get('focus') === 'list') {
+      document.querySelector('.admin-form').hidden = true;
+      document.querySelector('.page-intro').hidden = true;
+    }
+  </script>
+</body>
+</html>

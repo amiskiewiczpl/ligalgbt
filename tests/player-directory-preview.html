@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="player-directory-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd kartoteki zawodników</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <p class="eyebrow">Panel administratora</p>
+      <h1>Zawodnicy</h1>
+      <p>Filtrowanie, grupowanie i dynamiczna numeracja.</p>
+    </div>
+  </header>
+  <main class="container admin-container">
+    <section class="page-intro admin-page-intro">
+      <span class="eyebrow">Zawodnicy</span>
+      <h2>Kartoteka zawodników</h2>
+      <p>Łącz filtry klubu, dyscypliny i drużyny bez przeładowania strony.</p>
+    </section>
+    <section class="admin-panel">
+      <article class="admin-card admin-card-wide">
+        <div id="players-editor"></div>
+      </article>
+    </section>
+  </main>
+  <script>localStorage.removeItem('ligaLgbtData');</script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderAdminPlayers();
+    document.getElementById('player-form').hidden = true;
+    const params = new URLSearchParams(location.search);
+    const sort = document.getElementById('player-sort');
+    sort.value = params.get('sort') || 'club';
+    sort.dispatchEvent(new Event('change'));
+    if (params.get('sport')) {
+      const sport = document.getElementById('player-sport-filter');
+      sport.value = params.get('sport');
+      sport.dispatchEvent(new Event('change'));
+    }
+    if (params.get('mobile') === '1') {
+      document.querySelector('.page-intro').hidden = true;
+    }
+  </script>
+</body>
+</html>

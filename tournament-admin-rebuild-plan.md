@@ -6,11 +6,17 @@
 - [x] Etap 2. Silnik formatów turniejowych.
 - [x] Etap 3. Graficzna prezentacja turniejów.
 - [x] Etap 4. Rozdzielenie panelu administratora.
-- [ ] Etap 5. Formularz wyników z filtrowaniem.
-- [ ] Etap 6. Sortowanie wszystkich encji.
-- [ ] Etap 7. Lista zawodników: filtry, liczniki i sortowanie.
-- [ ] Etap 8. Numerowane składy drużyn.
+- [x] Etap 5. Formularz wyników z filtrowaniem.
+- [x] Etap 6. Sortowanie wszystkich encji.
+- [x] Etap 7. Lista zawodników: filtry, liczniki i sortowanie.
+- [x] Etap 8. Numerowane składy drużyn.
 - [ ] Etap 9. Testy końcowe i migracja.
+
+Etap 9 ma zakończoną część automatyczną: pełną regresję, test migracji,
+symulację dwóch sesji, audyt wizualny 360/768/1440 px, skan sekretów i kontrolę
+składni. Do zamknięcia etapu pozostaje ręczny zapis po zalogowaniu do
+produkcyjnego Supabase i potwierdzenie odczytu w drugiej, prywatnej sesji;
+zgodnie z punktem 9.4 commit i push następują dopiero po tym sprawdzeniu.
 
 ## Cel
 

@@ -802,6 +802,141 @@ button:hover,
   margin: 0 0 0.35rem;
 }
 
+.admin-list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-list-toolbar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.admin-list-toolbar label {
+  width: min(100%, 220px);
+  margin: 0;
+}
+
+.admin-list-toolbar select {
+  margin-top: 0.25rem;
+}
+
+.player-directory-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.player-directory-heading h4,
+.player-directory-heading p {
+  margin: 0;
+}
+
+.player-directory-heading p {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.player-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+
+.player-filter-grid label {
+  min-width: 0;
+  margin: 0;
+}
+
+.player-list-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 180px));
+  gap: 0.65rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.player-list-summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.player-list-summary span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.player-list-summary strong {
+  font-size: 1.3rem;
+}
+
+.player-group-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+}
+
+.player-group-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-size: 0.78rem;
+}
+
+.player-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.player-admin-table {
+  min-width: 900px;
+}
+
+.player-group-row th {
+  padding: 0.55rem 0.75rem;
+  background: rgba(119, 215, 200, 0.09);
+  color: var(--accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.player-group-row span {
+  margin-left: 0.35rem;
+  color: var(--muted);
+}
+
+.player-club-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 9rem;
+}
+
 .admin-table-block td,
 .admin-table-block th {
   white-space: normal;
@@ -812,6 +947,25 @@ button:hover,
   margin: 0.55rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.admin-form [hidden] {
+  display: none !important;
+}
+
+.result-context-note {
+  min-height: 1.5rem;
+  margin: 0.85rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.result-form-flow select[aria-readonly="true"] {
+  pointer-events: none;
+  border-color: rgba(119, 215, 200, 0.28);
+  background: rgba(119, 215, 200, 0.07);
 }
 
 .set-fields {
@@ -1300,28 +1454,79 @@ button:hover,
   text-transform: uppercase;
 }
 
-.team-roster {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+.team-roster-block > strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--muted-strong);
+  font-size: 0.8rem;
 }
 
-.team-roster span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  padding: 0.35rem 0.65rem;
+.team-roster {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.55rem;
+}
+
+.team-roster li {
+  min-width: 0;
+  padding: 0.45rem 0.55rem;
   border: 1px solid rgba(137, 200, 255, 0.22);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: rgba(137, 200, 255, 0.08);
   color: var(--text);
   font-size: 0.86rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.35;
+}
+
+.team-roster li::marker {
+  color: var(--accent-blue);
+  font-weight: 900;
+}
+
+.team-roster li span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.team-roster-block.is-compact {
+  min-width: 12rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.team-roster.is-compact {
+  gap: 0.25rem;
+  padding-left: 1.35rem;
+}
+
+.team-roster.is-compact li {
+  padding: 0.25rem 0.35rem;
+  border: 0;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .team-roster-empty {
   margin-top: 0;
+}
+
+.admin-roster-preview {
+  margin-top: 0.85rem;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-roster-preview .team-roster-block {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .player-card {
@@ -1792,10 +1997,15 @@ button:hover,
 .head-to-head-list {
   display: grid;
   gap: 0.8rem;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 0.9rem;
 }
 
 .head-to-head-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1806,6 +2016,7 @@ button:hover,
   margin: 0 0 0.35rem;
   color: var(--accent-blue);
   font-size: 0.9rem;
+  overflow-wrap: anywhere;
 }
 
 .club-badge {
@@ -2274,6 +2485,31 @@ legend {
 
   .admin-module-link {
     min-height: 0;
+  }
+
+  .admin-list-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-list-toolbar label {
+    width: 100%;
+  }
+
+  .player-directory-heading {
+    align-items: stretch;
+  }
+
+  .player-directory-heading .compact-button {
+    width: 100%;
+  }
+
+  .player-filter-grid {
+    grid-template-columns: 1fr;
+    padding: 0.8rem;
+  }
+
+  .player-list-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .nav-group,

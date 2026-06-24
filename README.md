@@ -37,3 +37,37 @@ do `config.js` żadnego klucza serwerowego ani sekretu.
 Jeśli Supabase nie jest skonfigurowany lub chwilowo niedostępny, publiczna
 strona korzysta z lokalnej kopii awaryjnej. Panel administratora nie pozwala
 wtedy na logowanie i zapis, aby nie tworzyć rozbieżnych wyników.
+
+## Testy przed publikacją
+
+Pełna regresja danych i interfejsu:
+
+```powershell
+node tests/run-all.js
+```
+
+Publiczny odczyt produkcyjnego rekordu Supabase bez wypisywania klucza lub
+pełnych danych:
+
+```powershell
+node tests/live-supabase-read.js
+```
+
+Audyt wizualny wymaga lokalnego serwera oraz Chrome lub Edge:
+
+```powershell
+$env:PORT = "4179"
+node tests/static-server.js
+```
+
+W drugim terminalu:
+
+```powershell
+$env:VISUAL_BASE_URL = "http://127.0.0.1:4179"
+$env:VISUAL_OUTPUT_DIR = "tests/visual-output"
+node tests/visual-audit.js
+```
+
+Przed `commit` i `push` zaloguj się jako administrator, zapisz niewielką zmianę
+i potwierdź jej widoczność w drugiej, prywatnej sesji przeglądarki. To jest
+końcowy test rzeczywistej sesji Auth i polityk zapisu RLS.

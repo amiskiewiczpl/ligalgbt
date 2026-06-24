@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="result-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd formularza wyników</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <p class="eyebrow">Panel administratora</p>
+      <h1>Wyniki</h1>
+      <p>Mecze ligowe i turniejowe, sety oraz MVP.</p>
+    </div>
+  </header>
+  <main class="container admin-container">
+    <section class="page-intro admin-page-intro">
+      <span class="eyebrow">Wyniki</span>
+      <h2>Mecze i rezultaty</h2>
+      <p>Formularz pokazuje wyłącznie uczestników właściwego poziomu lub meczu turniejowego.</p>
+    </section>
+    <section class="admin-panel">
+      <article class="admin-card admin-card-wide">
+        <div id="results-editor"></div>
+      </article>
+    </section>
+  </main>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderAdminResults();
+    const params = new URLSearchParams(location.search);
+    if (params.get('mode') === 'tournament') {
+      const form = document.getElementById('result-form');
+      const competition = form.elements.namedItem('competition');
+      const sport = form.elements.namedItem('sport');
+      sport.value = 'tenis';
+      sport.dispatchEvent(new Event('change'));
+      competition.value = 'tournament';
+      competition.dispatchEvent(new Event('change'));
+      const tournament = form.elements.namedItem('tournament');
+      tournament.value = [...tournament.options].find(option => option.value)?.value || '';
+      tournament.dispatchEvent(new Event('change'));
+      const phase = form.elements.namedItem('phase');
+      phase.value = [...phase.options].find(option => option.value)?.value || '';
+      phase.dispatchEvent(new Event('change'));
+      const match = form.elements.namedItem('match');
+      match.value = [...match.options].find(option => option.value && !option.disabled)?.value || '';
+      match.dispatchEvent(new Event('change'));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="roster-preview" data-sport="siatkowka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd składów drużyn</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <p class="eyebrow">Składy drużyn</p>
+      <h1>Numerowane składy</h1>
+      <p>Ten sam układ w panelu administratora i na stronie publicznej.</p>
+    </div>
+  </header>
+  <main class="container admin-container">
+    <section class="page-intro">
+      <span class="eyebrow">Strona publiczna</span>
+      <h2>Drużyny siatkarskie</h2>
+      <p>Każda karta pokazuje liczbę zawodników oraz skład uporządkowany po nazwisku.</p>
+    </section>
+    <section id="sport-teams" class="team-grid"></section>
+    <section class="admin-panel">
+      <article class="admin-card admin-card-wide">
+        <div id="club-team-editor"></div>
+      </article>
+    </section>
+  </main>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderTeams();
+    renderAdminClubTeams();
+    if (new URLSearchParams(location.search).get('view') === 'admin') {
+      document.querySelector('.page-intro').hidden = true;
+      document.getElementById('sport-teams').hidden = true;
+      document.getElementById('club-team-form').hidden = true;
+    } else {
+      document.querySelector('.admin-panel').hidden = true;
+    }
+  </script>
+</body>
+</html>
