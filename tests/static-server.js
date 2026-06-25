@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const root = path.resolve(process.cwd());
 const port = Number(process.env.PORT) || 4173;
+const idleShutdownMs = Number(process.env.STATIC_SERVER_IDLE_MS) || 0;
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -12,7 +13,15 @@ const contentTypes = {
   '.png': 'image/png'
 };
 
-http.createServer((request, response) => {
+let idleTimer = null;
+function scheduleIdleShutdown() {
+  if (!idleShutdownMs) return;
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => server.close(), idleShutdownMs);
+}
+
+const server = http.createServer((request, response) => {
+  if (idleTimer) clearTimeout(idleTimer);
   const requestPath = decodeURIComponent(new URL(request.url, `http://${request.headers.host}`).pathname);
   const relativePath = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/, '');
   const filePath = path.resolve(root, relativePath);
@@ -31,6 +40,9 @@ http.createServer((request, response) => {
     });
     response.end(content);
   });
-}).listen(port, '127.0.0.1', () => {
+  response.once('finish', scheduleIdleShutdown);
+});
+
+server.listen(port, '127.0.0.1', () => {
   console.log(`Static server: http://127.0.0.1:${port}`);
 });

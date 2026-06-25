@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
+const competitionModelSource = fs.readFileSync('competition-model.js', 'utf8');
 const dataSource = fs.readFileSync('data.js', 'utf8');
 const remoteSource = fs.readFileSync('remote-data.js', 'utf8');
 
@@ -17,8 +18,9 @@ function createLegacyRemoteState() {
     window: { leagueStore: null }
   };
   vm.createContext(context);
+  vm.runInContext(competitionModelSource, context);
   vm.runInContext(dataSource, context);
-  const legacy = vm.runInContext('structuredClone(leagueData)', context);
+  const legacy = vm.runInContext('structuredClone(defaultLeagueData)', context);
   delete legacy.schemaVersion;
   legacy.sports.siatkowka.results.forEach(match => {
     delete match.phaseType;
@@ -119,6 +121,7 @@ async function createBrowserSession(backend, session) {
     }
   };
   vm.createContext(context);
+  vm.runInContext(competitionModelSource, context);
   vm.runInContext(dataSource, context);
   vm.runInContext(remoteSource, context);
   await context.window.leagueDataReady;
@@ -140,7 +143,7 @@ async function run() {
   const firstSession = await createBrowserSession(backend, adminSession);
   assert.equal(firstSession.store.isConfigured, true);
   assert.equal(firstSession.store.loadState, 'loaded');
-  assert.equal(firstSession.getData().schemaVersion, 2);
+  assert.equal(firstSession.getData().schemaVersion, 3);
   assert.ok(firstSession.getData().tournaments[0].format);
   assert.ok(firstSession.getData().tournaments[0].participantIds.length > 0);
   assert.equal((await firstSession.store.getSession()).user.id, 'admin-1');
@@ -166,7 +169,7 @@ async function run() {
   const secondSession = await createBrowserSession(backend, adminSession);
   assert.equal(secondSession.store.loadState, 'loaded');
   assert.ok(secondSession.getData().teams.some(team => team.id === 999));
-  assert.equal(secondSession.getData().schemaVersion, 2);
+  assert.equal(secondSession.getData().schemaVersion, 3);
 
   const publicSession = await createBrowserSession(backend, null);
   assert.equal(await publicSession.store.getSession(), null);

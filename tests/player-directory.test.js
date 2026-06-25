@@ -37,6 +37,7 @@ const context = {
 };
 
 vm.createContext(context);
+vm.runInContext(fs.readFileSync('competition-model.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('data.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('tournament-engine.js', 'utf8'), context);
 vm.runInContext(

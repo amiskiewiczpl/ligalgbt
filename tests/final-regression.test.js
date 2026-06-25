@@ -18,6 +18,7 @@ for (const file of htmlFiles) {
 
 for (const file of publicPages) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
+  assert.match(source, /src="competition-model\.js"/, `${file}: brak modelu rozgrywek V3`);
   assert.match(source, /src="data\.js"/, `${file}: brak danych`);
   assert.match(source, /src="remote-data\.js"/, `${file}: brak synchronizacji Supabase`);
   assert.match(source, /src="tournament-engine\.js"/, `${file}: brak silnika turniejowego`);
@@ -26,6 +27,7 @@ for (const file of publicPages) {
 
 for (const file of adminPages) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
+  assert.match(source, /src="competition-model\.js"/, `${file}: brak modelu rozgrywek V3`);
   assert.match(source, /data-page="admin/, `${file}: brak administracyjnego data-page`);
   assert.match(source, /id="admin-logout"/, `${file}: brak wylogowania`);
 }
@@ -54,6 +56,7 @@ assert.match(styles, /@media \(max-width: 680px\)/);
 assert.match(styles, /\.admin-header \.admin-nav\.is-open/);
 
 const dataSource = fs.readFileSync(path.join(root, 'data.js'), 'utf8');
+const competitionModelSource = fs.readFileSync(path.join(root, 'competition-model.js'), 'utf8');
 const scriptSource = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const storage = new Map();
 const context = {
@@ -88,6 +91,7 @@ const context = {
   clearTimeout() {}
 };
 vm.createContext(context);
+vm.runInContext(competitionModelSource, context);
 vm.runInContext(dataSource, context);
 vm.runInContext(
   scriptSource + ';globalThis.finalApi={leagueData,calculateStandings,calculateMvpRows,getTeamRosterNames};',
@@ -97,7 +101,7 @@ const leagueData = context.finalApi.leagueData;
 assert.deepEqual(JSON.parse(JSON.stringify(leagueData.sports.siatkowka.levels)), ['A', 'B', 'B-', 'C', 'D']);
 assert.ok(leagueData.players.some(player => player.sports.length > 1));
 assert.ok(leagueData.teams.every(team => Object.hasOwn(team, 'logo')));
-assert.ok(context.finalApi.calculateStandings('siatkowka').length > 0);
+assert.ok(context.finalApi.calculateStandings('siatkowka', 'B').length > 0);
 assert.ok(context.finalApi.calculateMvpRows('siatkowka').length > 0);
 assert.ok(leagueData.clubTeams.every(team => (
   context.finalApi.getTeamRosterNames(team).every(name => {

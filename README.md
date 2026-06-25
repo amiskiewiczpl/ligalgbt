@@ -22,6 +22,50 @@ Po każdym pushu do gałęzi `main` GitHub Actions uruchomi workflow `.github/wo
 Strona używa Supabase jako wspólnej bazy. Publiczne podstrony mogą odczytywać
 wyniki, a zapis jest dostępny wyłącznie dla zalogowanego administratora.
 
+Dane rozgrywek używają schematu V3. Rozgrywki i etapy znajdują się w
+`competitions`, a wszystkie mecze ligowe i turniejowe w jednej tablicy
+`matches`. Stare rekordy V2 są migrowane bez utraty wyników, setów, MVP ani
+klasyfikacji. Po pierwszym zapisie administratora wersja V3 zostaje utrwalona
+w Supabase.
+
+Silnik obsługuje turnieje od jednego do trzech etapów: każdy-z-każdym, grupy
+oraz play-off. Awans i klasyfikacja końcowa są wyliczane z wyników, a zmiana
+wcześniejszego rezultatu kontroluje zależne mecze kolejnych rund i etapów.
+
+Administrator tworzy turniej w sześciu krokach: dane, uczestnicy, etapy,
+zasady, terminarz i podgląd. Kreator filtruje uczestników według dyscypliny,
+obsługuje rozstawienie, remisy i awans między etapami oraz generuje grupy,
+mecze i drabinkę bez pól tekstowych. Zapisanym turniejem zarządza się na
+osobnej stronie `admin-turniej.html?id=...`.
+
+Panel wyników rozdziela tworzenie terminarza od wpisywania rezultatów.
+Administrator najpierw zapisuje ligowy mecz z sezonem, poziomem, kolejką i
+datą, a następnie wybiera istniejący mecz. Uczestnicy, profil setów i lista MVP
+są ustalane automatycznie. Z administracyjnej drabinki turnieju można przejść
+bezpośrednio do właściwego formularza wyniku. Panel pokazuje też osobną listę
+aktywnych meczów bez daty, które nie trafią do publicznego kalendarza do czasu
+uzupełnienia terminu.
+
+Tabele ligowe są rozdzielone na poziomy A, B, B-, C i D. Pokazują mecze,
+wygrane, remisy, porażki, sety, małe punkty, oba bilanse i punkty tabeli.
+Każdą kolumnę można sortować, ale awans, spadek, mistrzostwo i numer oficjalnej
+pozycji nadal wynikają z tie-breaków ligi. Pod tabelą widoczny jest najnowszy
+ukończony mecz każdej drużyny.
+
+Publiczne rozgrywki mają oddzielne adresy:
+
+- `klasyfikacje.html` - filtrowane wyniki i tabele ligi albo karty turniejów;
+- `turnieje.html` - lista opublikowanych turniejów;
+- `turniej.html?id=...` - daty, uczestnicy, etapy, grupy, wyniki, drabinka i
+  klasyfikacja jednego wydarzenia;
+- `kalendarz.html` - wspólny terminarz ligi i turniejów, grupowany według
+  miesiąca i dnia, z filtrami dyscypliny, rodzaju rozgrywek, poziomu, statusu
+  oraz zakresu dat.
+
+Strony dyscyplin pokazują tylko karty turniejów. Szkice administratora nie są
+widoczne publicznie. Każdy datowany mecz występuje w kalendarzu raz i prowadzi
+do strony turnieju albo tabeli właściwego poziomu ligowego.
+
 1. Utwórz projekt w Supabase.
 2. W SQL Editor uruchom cały plik `supabase/schema.sql`.
 3. W Authentication utwórz konto administratora e-mail + hasło i wyłącz

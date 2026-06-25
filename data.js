@@ -1,4 +1,4 @@
-const CURRENT_SCHEMA_VERSION = 2;
+const CURRENT_SCHEMA_VERSION = 3;
 
 const DEFAULT_TOURNAMENT_POINTS_RULES = {
   win: 3,
@@ -23,7 +23,7 @@ const DEFAULT_FINAL_STAGE_CONFIG = {
 };
 
 const defaultLeagueData = {
-  schemaVersion: CURRENT_SCHEMA_VERSION,
+  schemaVersion: 2,
   admin: {
     password: ''
   },
@@ -358,6 +358,13 @@ function migrateV1ToV2(data) {
   return data;
 }
 
+function migrateV2ToV3(data) {
+  if (!globalThis.competitionModel) {
+    throw new Error('Brak modułu modelu rozgrywek V3.');
+  }
+  return globalThis.competitionModel.migrateV2ToV3(data);
+}
+
 function migrateLeagueData(input) {
   const data = input && typeof input === 'object' ? input : structuredClone(defaultLeagueData);
   let version = Number.isInteger(data.schemaVersion) ? data.schemaVersion : 0;
@@ -368,6 +375,7 @@ function migrateLeagueData(input) {
   while (version < CURRENT_SCHEMA_VERSION) {
     if (version === 0) migrateV0ToV1(data);
     if (version === 1) migrateV1ToV2(data);
+    if (version === 2) migrateV2ToV3(data);
     version = data.schemaVersion;
   }
   return data;
@@ -375,6 +383,7 @@ function migrateLeagueData(input) {
 
 function normalizeLoadedData(data) {
   if (!data) data = structuredClone(defaultLeagueData);
+  const isLegacyData = (Number(data.schemaVersion) || 0) < 3;
   const serialized = JSON.stringify(data);
   const damagedMarkers = ['\uFFFD', '\u0107\u017C\u02DD', '\u0139', '\u0102', '\u00E2', '\u0111'];
   if (damagedMarkers.some(marker => serialized.includes(marker))) data = structuredClone(defaultLeagueData);
@@ -382,11 +391,11 @@ function normalizeLoadedData(data) {
   if (!Array.isArray(data.teams)) data.teams = structuredClone(defaultLeagueData.teams);
   if (!Array.isArray(data.clubTeams)) data.clubTeams = structuredClone(defaultLeagueData.clubTeams);
   if (!Array.isArray(data.players)) data.players = structuredClone(defaultLeagueData.players);
-  if (!Array.isArray(data.tournaments)) data.tournaments = structuredClone(defaultLeagueData.tournaments);
+  if (isLegacyData && !Array.isArray(data.tournaments)) data.tournaments = structuredClone(defaultLeagueData.tournaments);
   if (!data.sports) data.sports = structuredClone(defaultLeagueData.sports);
   Object.keys(defaultLeagueData.sports).forEach(key => {
     if (!data.sports[key]) data.sports[key] = structuredClone(defaultLeagueData.sports[key]);
-    if (!Array.isArray(data.sports[key].results)) data.sports[key].results = [];
+    if (isLegacyData && !Array.isArray(data.sports[key].results)) data.sports[key].results = [];
     if (!data.sports[key].type) data.sports[key].type = defaultLeagueData.sports[key].type;
     if (!data.sports[key].defaultScoring) data.sports[key].defaultScoring = defaultLeagueData.sports[key].defaultScoring;
     if (Array.isArray(defaultLeagueData.sports[key].levels)) {
@@ -400,14 +409,16 @@ function normalizeLoadedData(data) {
         });
       }
     }
-    data.sports[key].results = data.sports[key].results.map(match => normalizeMatchRecord(match, {
-      scoring: data.sports[key].defaultScoring,
-      phaseType: 'league',
-      allowDraw: false,
-      pointsRules: data.sports[key].defaultScoring === 'sets'
-        ? DEFAULT_TOURNAMENT_POINTS_RULES
-        : { win: 3, draw: 0, loss: 0 }
-    }));
+    if (isLegacyData) {
+      data.sports[key].results = data.sports[key].results.map(match => normalizeMatchRecord(match, {
+        scoring: data.sports[key].defaultScoring,
+        phaseType: 'league',
+        allowDraw: false,
+        pointsRules: data.sports[key].defaultScoring === 'sets'
+          ? DEFAULT_TOURNAMENT_POINTS_RULES
+          : { win: 3, draw: 0, loss: 0 }
+      }));
+    }
     delete data.sports[key].mvp;
   });
   data.clubTeams.forEach(team => {
@@ -427,10 +438,11 @@ function normalizeLoadedData(data) {
       });
   });
   data = migrateLeagueData(data);
-  data.tournaments = data.tournaments
-    .map(tournament => normalizeTournament(tournament, data))
-    .filter(Boolean);
-  data.schemaVersion = Math.max(Number(data.schemaVersion) || 0, CURRENT_SCHEMA_VERSION);
+  data = globalThis.competitionModel.normalizeData(data);
+  const modelErrors = globalThis.competitionModel.validateData(data);
+  if (modelErrors.length) {
+    console.warn('Wykryto niespójności modelu rozgrywek.', modelErrors);
+  }
   return data;
 }
 

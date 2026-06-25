@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="tournaments-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd listy turniejów</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Turnieje</h1>
+      <p>Opublikowane wydarzenia i systemy rozgrywek.</p>
+    </div>
+  </header>
+  <main class="container" id="public-tournaments"></main>
+  <script src="../competition-model.js"></script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderPublicTournamentsPage();
+  </script>
+</body>
+</html>

@@ -27,7 +27,7 @@ async function run() {
     updatedAt: row?.updated_at ?? null
   };
   console.log(JSON.stringify(result, null, 2));
-  if (!response.ok || !row || row.data?.schemaVersion !== 2) process.exitCode = 1;
+  if (!response.ok || !row || Number(row.data?.schemaVersion) < 2) process.exitCode = 1;
 }
 
 run().catch(error => {

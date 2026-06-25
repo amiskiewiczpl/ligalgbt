@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="calendar-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd kalendarza</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Kalendarz</h1>
+      <p>Terminy ligi i turniejów.</p>
+    </div>
+  </header>
+  <main class="container" id="calendar-view"></main>
+  <script src="../competition-model.js"></script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    leagueData.competitions = [
+      {
+        id: 'preview-league',
+        name: 'Liga siatkówki 2026 · B',
+        kind: 'league',
+        sport: 'siatkowka',
+        season: '2026',
+        status: 'published',
+        stages: [{ id: 'preview-league-b', name: 'Poziom B', type: 'league', order: 1, level: 'B' }]
+      },
+      {
+        id: 'preview-tournament',
+        name: 'Letni Puchar Tenisa',
+        kind: 'tournament',
+        sport: 'tenis',
+        season: '2026',
+        status: 'published',
+        stages: [{ id: 'preview-final', name: 'Faza finałowa', type: 'knockout', order: 1, level: '' }]
+      }
+    ];
+    leagueData.matches = [
+      {
+        id: 'preview-1',
+        competitionId: 'preview-league',
+        stageId: 'preview-league-b',
+        scheduledAt: '2026-07-03T18:00:00+02:00',
+        status: 'completed',
+        home: 'Orion Poznań B',
+        away: 'Neon Wrocław B',
+        score: '3:1',
+        sets: '25:20, 21:25, 25:18, 25:19',
+        roundLabel: 'Kolejka 1',
+        venue: 'Hala Centrum'
+      },
+      {
+        id: 'preview-2',
+        competitionId: 'preview-tournament',
+        stageId: 'preview-final',
+        scheduledAt: '2026-07-03T20:15:00+02:00',
+        status: 'scheduled',
+        home: 'Dariusz Karpuk',
+        away: 'Krzysztof Sobanowski',
+        roundLabel: 'Półfinał',
+        venue: 'Kort centralny'
+      },
+      {
+        id: 'preview-3',
+        competitionId: 'preview-league',
+        stageId: 'preview-league-b',
+        scheduledAt: '2026-07-10T19:30:00+02:00',
+        status: 'scheduled',
+        home: 'Neon Wrocław B',
+        away: 'Orion Poznań B',
+        roundLabel: 'Kolejka 2',
+        venue: 'Arena Zachód'
+      },
+      {
+        id: 'preview-4',
+        competitionId: 'preview-tournament',
+        stageId: 'preview-final',
+        scheduledAt: '2026-08-02T17:00:00+02:00',
+        status: 'scheduled',
+        home: 'Sebastian Górski',
+        away: 'Michał Wojakowski',
+        roundLabel: 'Półfinał',
+        venue: ''
+      }
+    ];
+    renderCalendarPage();
+  </script>
+</body>
+</html>

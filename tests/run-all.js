@@ -2,6 +2,14 @@ const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 const tests = [
+  'competition-contract.test.js',
+  'competition-model-v3.test.js',
+  'competition-stage-engine.test.js',
+  'tournament-wizard.test.js',
+  'match-scheduling.test.js',
+  'standings-stage5.test.js',
+  'public-competition-pages.test.js',
+  'calendar-stage7.test.js',
   'data-model.test.js',
   'tournament-engine.test.js',
   'tournament-render.test.js',

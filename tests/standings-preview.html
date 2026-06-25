@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="standings-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd tabel poziomów</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body data-sport="siatkowka">
+  <header class="site-header">
+    <div class="brand">
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Tabele poziomów</h1>
+      <p>Oficjalna kolejność, sortowanie i ostatnie mecze.</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="page-intro">
+      <span class="eyebrow">Siatkówka</span>
+      <h2>Klasyfikacja ligowa</h2>
+      <p>Każdy poziom ma własną tabelę i własne oznaczenia awansu oraz spadku.</p>
+    </section>
+    <section class="section-overview">
+      <div id="sport-standings"></div>
+    </section>
+  </main>
+  <script src="../competition-model.js"></script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    const completed = leagueData.sports.siatkowka.results.filter(match => match.status === 'completed');
+    completed.forEach((match, index) => {
+      match.scheduledAt = new Date(2027, 2, 15 - index, 18, 0).toISOString();
+    });
+    renderSportStandings();
+  </script>
+</body>
+</html>

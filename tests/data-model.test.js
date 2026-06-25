@@ -28,10 +28,11 @@ function createContext(storedData = null) {
     clearTimeout() {}
   };
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync('competition-model.js', 'utf8'), context);
   vm.runInContext(fs.readFileSync('data.js', 'utf8'), context);
   vm.runInContext(
     fs.readFileSync('script.js', 'utf8')
-      + ';globalThis.testApi={normalizeLoadedData,normalizeTournament,validateMatchResult,getMatchPoints,getScoreOptions,getSetCountFromScore,CURRENT_SCHEMA_VERSION,leagueData};',
+      + ';globalThis.testApi={normalizeLoadedData,normalizeTournament,validateMatchResult,getMatchPoints,getScoreOptions,getSetCountFromScore,CURRENT_SCHEMA_VERSION,defaultLeagueData,leagueData};',
     context
   );
   return { context, storage, api: context.testApi };
@@ -39,7 +40,7 @@ function createContext(storedData = null) {
 
 function createLegacySnapshot() {
   const { api } = createContext();
-  const legacy = structuredClone(api.leagueData);
+  const legacy = structuredClone(api.defaultLeagueData);
   delete legacy.schemaVersion;
   legacy.sports.siatkowka.results.forEach(match => {
     delete match.phaseType;
@@ -184,11 +185,9 @@ function run() {
   assert.ok(groupTournament.groups[0].participantIds.length > 0);
   assert.ok(groupTournament.groups[0].matches[0].homeId);
 
-  const roundTrip = api.normalizeLoadedData(JSON.parse(JSON.stringify({
-    ...migrated,
-    tournaments: [...migrated.tournaments, groupTournament]
-  })));
-  const restored = roundTrip.tournaments.find(item => item.id === 99);
+  migrated.tournaments = [...migrated.tournaments, groupTournament];
+  const roundTrip = api.normalizeLoadedData(JSON.parse(JSON.stringify(migrated)));
+  const restored = roundTrip.tournaments.find(item => item.legacyId === 99);
   assert.equal(restored.format, 'groups_knockout');
   assert.equal(restored.pointsRules.draw, 2);
   assert.equal(restored.groups[0].matches[0].score, '1:1');
@@ -207,10 +206,8 @@ function run() {
       sets: '21:18, 17:21'
     }]
   };
-  const finalGroupRoundTrip = api.normalizeLoadedData(JSON.parse(JSON.stringify({
-    ...migrated,
-    tournaments: [groupTournament]
-  }))).tournaments[0];
+  migrated.tournaments = [groupTournament];
+  const finalGroupRoundTrip = api.normalizeLoadedData(JSON.parse(JSON.stringify(migrated))).tournaments[0];
   assert.equal(finalGroupRoundTrip.finalGroup.name, 'Grupa finałowa');
   assert.equal(finalGroupRoundTrip.finalGroup.matches[0].phaseType, 'final_group');
   assert.ok(finalGroupRoundTrip.finalGroup.matches[0].homeId);

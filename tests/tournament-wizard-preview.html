@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="tournament-wizard-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd kreatora turnieju</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header admin-header">
+    <div class="brand">
+      <p class="eyebrow">Panel administratora</p>
+      <h1>Kreator turnieju</h1>
+      <p>Podgląd etapów i drabinki przed publikacją.</p>
+    </div>
+  </header>
+  <main class="container admin-container">
+    <section class="admin-panel">
+      <article class="admin-card admin-card-wide">
+        <div id="tournaments-editor"></div>
+      </article>
+    </section>
+  </main>
+  <script>localStorage.removeItem('ligaLgbtData');</script>
+  <script src="../competition-model.js"></script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    const draft = createTournamentWizardDraft();
+    draft.name = 'Puchar Wieloetapowy';
+    draft.sport = 'tenis';
+    draft.status = 'published';
+    draft.startDate = '2026-08-01';
+    draft.endDate = '2026-08-10';
+    draft.scheduleStart = '2026-08-01T10:00';
+    draft.matchesPerDay = 3;
+    draft.intervalDays = 1;
+    draft.venue = 'Kort Centralny';
+    draft.participantIds = getTournamentWizardParticipants('tenis')
+      .slice(0, 4)
+      .map(participant => participant.reference);
+    ensureTournamentWizardStages(draft, 3);
+    draft.stages[0].name = 'Grupy';
+    draft.stages[0].type = 'groups';
+    draft.stages[0].groupConfig.groupCount = 2;
+    draft.stages[1].name = 'Grupa finałowa';
+    draft.stages[1].type = 'round_robin';
+    draft.stages[1].qualificationRule = {
+      type: 'group_winners',
+      count: 1,
+      pairingRule: 'group_result',
+      positions: [],
+      participantIds: []
+    };
+    draft.stages[2].name = 'Faza medalowa';
+    draft.stages[2].type = 'knockout';
+    draft.stages[2].thirdPlaceMatch = true;
+    draft.stages[2].qualificationRule = {
+      type: 'stage_positions',
+      count: 2,
+      pairingRule: 'high_low',
+      positions: [1, 2],
+      participantIds: []
+    };
+    draft.step = Number(new URLSearchParams(location.search).get('step')) || 5;
+    adminTournamentWizardState = draft;
+    renderAdminTournaments();
+  </script>
+</body>
+</html>

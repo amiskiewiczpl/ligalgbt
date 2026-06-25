@@ -949,6 +949,301 @@ button:hover,
   font-size: 0.9rem;
 }
 
+.admin-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tournament-admin-list table {
+  min-width: 940px;
+}
+
+.tournament-wizard {
+  min-width: 0;
+}
+
+.tournament-wizard-header,
+.wizard-review-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tournament-wizard-header h2,
+.wizard-review-header h3,
+.wizard-review-header p {
+  margin: 0;
+}
+
+.wizard-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  gap: 0;
+  margin: 1.25rem 0 1rem;
+  overflow-x: auto;
+  border-block: 1px solid var(--border);
+}
+
+.wizard-stepper button {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 3.4rem;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.wizard-stepper button:last-child {
+  border-right: 0;
+}
+
+.wizard-stepper button span {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--muted-strong);
+  font-weight: 900;
+}
+
+.wizard-stepper button.is-current {
+  background: rgba(119, 215, 200, 0.09);
+  color: var(--text);
+}
+
+.wizard-stepper button.is-current span,
+.wizard-stepper button.is-complete span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #071513;
+}
+
+.tournament-wizard-form {
+  margin-bottom: 0;
+}
+
+.wizard-step-content {
+  min-height: 260px;
+}
+
+.wizard-actions {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.wizard-actions-spacer {
+  flex: 1 1 auto;
+}
+
+.wizard-participant-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 0.55rem;
+}
+
+.wizard-participant-option {
+  margin: 0;
+}
+
+.wizard-participant-option > input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wizard-participant-option > span {
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 0.1rem 0.65rem;
+  align-items: center;
+  min-height: 4rem;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+}
+
+.wizard-participant-option .club-badge,
+.wizard-participant-option .club-logo {
+  grid-row: 1 / 3;
+}
+
+.wizard-participant-option small {
+  color: var(--muted);
+}
+
+.wizard-participant-option > input:checked + span {
+  border-color: var(--accent);
+  background: rgba(119, 215, 200, 0.1);
+}
+
+.wizard-participant-option > input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.wizard-selection-count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  color: var(--muted);
+}
+
+.wizard-selection-count strong {
+  color: var(--text);
+  font-size: 1.35rem;
+}
+
+.wizard-stage-count {
+  max-width: 240px;
+  margin-bottom: 1rem;
+}
+
+.wizard-stage-type-grid,
+.wizard-stage-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 0.75rem;
+}
+
+.wizard-stage-type {
+  padding: 0.85rem 0;
+  border-top: 3px solid var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+
+.wizard-stage-type > span,
+.wizard-stage-summary > span {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.wizard-stage-config-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.wizard-stage-config {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-strong);
+}
+
+.wizard-stage-config header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.wizard-stage-config header span,
+.wizard-stage-config header small {
+  color: var(--muted);
+}
+
+.wizard-stage-config header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.toggle-field {
+  display: flex !important;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3rem;
+  padding-top: 1.5rem;
+}
+
+.toggle-field input {
+  width: auto;
+  margin: 0;
+}
+
+.wizard-qualification {
+  margin-top: 1rem;
+  padding: 0.9rem 0 0;
+  border-top: 1px dashed var(--border);
+}
+
+.wizard-qualification h4 {
+  margin: 0 0 0.7rem;
+}
+
+.wizard-review {
+  display: grid;
+  gap: 1rem;
+}
+
+.wizard-stage-summary {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.wizard-stage-summary small {
+  color: var(--muted);
+}
+
+.wizard-preview-surface {
+  min-width: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-strong);
+}
+
+.wizard-group-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.75rem;
+}
+
+.wizard-group-preview article {
+  min-width: 0;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.wizard-group-preview h4 {
+  margin: 0;
+}
+
+.wizard-group-preview ol {
+  margin: 0.6rem 0;
+  padding-left: 1.4rem;
+}
+
+.wizard-group-preview span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.wizard-bracket-preview {
+  margin-top: 0.75rem;
+}
+
+.wizard-error {
+  padding: 0.8rem;
+  border-left: 3px solid var(--danger);
+  color: var(--danger);
+}
+
 .admin-form [hidden] {
   display: none !important;
 }
@@ -962,10 +1257,79 @@ button:hover,
   font-size: 0.9rem;
 }
 
+.results-workspace {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.results-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.result-editor-panel {
+  min-width: 0;
+  margin: 0;
+}
+
+.result-editor-panel fieldset {
+  min-width: 0;
+  margin: 0;
+}
+
+.result-form-flow input[readonly],
 .result-form-flow select[aria-readonly="true"] {
   pointer-events: none;
   border-color: rgba(119, 215, 200, 0.28);
   background: rgba(119, 215, 200, 0.07);
+}
+
+.match-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-size: 0.76rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.match-status-completed {
+  border-color: rgba(119, 215, 200, 0.38);
+  background: rgba(119, 215, 200, 0.1);
+  color: var(--accent);
+}
+
+.match-status-scheduled {
+  border-color: rgba(137, 200, 255, 0.34);
+  background: rgba(137, 200, 255, 0.09);
+  color: var(--accent-blue);
+}
+
+.bracket-result-action {
+  width: calc(100% - 1rem);
+  margin: 0.55rem;
+  justify-content: center;
+  text-align: center;
+}
+
+.tournament-match-row .bracket-result-action {
+  grid-column: 1 / -1;
+  width: auto;
+  margin: 0.35rem 0 0;
+}
+
+.tournament-management-results {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 }
 
 .set-fields {
@@ -1023,6 +1387,7 @@ button:hover,
 
 .tournament-summary-list {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 1rem;
 }
 
@@ -1087,6 +1452,18 @@ button:hover,
   color: #ffe7a8;
 }
 
+.tournament-status-draft {
+  border-color: rgba(190, 197, 209, 0.32);
+  background: rgba(190, 197, 209, 0.08);
+  color: var(--muted-strong);
+}
+
+.tournament-status-published {
+  border-color: rgba(119, 215, 200, 0.35);
+  background: rgba(119, 215, 200, 0.1);
+  color: var(--accent);
+}
+
 .tournament-summary-meta,
 .tournament-meta {
   display: flex;
@@ -1096,6 +1473,16 @@ button:hover,
 
 .tournament-summary .button {
   justify-self: start;
+}
+
+.tournament-card-date {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.tournament-list-link {
+  margin-top: 1rem;
 }
 
 .tournament-detail-view {
@@ -1123,6 +1510,369 @@ button:hover,
 .tournament-detail-header p {
   margin: 0.45rem 0 0;
   color: var(--muted);
+}
+
+.tournament-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.tournament-overview-grid h3 {
+  margin: 0.3rem 0 0.9rem;
+}
+
+.tournament-stage-roadmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 0.75rem;
+}
+
+.tournament-stage-roadmap article {
+  min-width: 0;
+  padding: 0.8rem 0;
+  border-block: 1px solid var(--border);
+}
+
+.tournament-stage-roadmap span,
+.tournament-stage-roadmap small {
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.tournament-stage-roadmap h4 {
+  margin: 0.35rem 0 0;
+}
+
+.tournament-stage-roadmap p {
+  margin: 0.25rem 0 0.55rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.tournament-participant-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tournament-participant-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tournament-participant-list li:first-child {
+  border-top: 1px solid var(--border);
+}
+
+.tournament-participant-list span {
+  display: grid;
+  min-width: 0;
+}
+
+.tournament-participant-list strong,
+.tournament-participant-list small {
+  overflow-wrap: anywhere;
+}
+
+.tournament-participant-list small {
+  color: var(--muted);
+}
+
+.public-results-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.public-results-filters label {
+  min-width: 0;
+  margin: 0;
+}
+
+.public-results-block {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.public-results-block > *,
+.public-match-results,
+.public-match-results > *,
+.public-match-results .admin-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-match-results {
+  margin-top: 0.5rem;
+}
+
+.calendar-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+
+.calendar-filter-reset {
+  grid-column: 1 / -1;
+  justify-self: end;
+  width: auto;
+  margin: 0;
+}
+
+.calendar-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+}
+
+.calendar-summary strong {
+  color: var(--accent-warm);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.calendar-stream,
+.calendar-month,
+.calendar-day,
+.calendar-day-events {
+  display: grid;
+  min-width: 0;
+}
+
+.calendar-stream {
+  gap: 2.5rem;
+}
+
+.calendar-month {
+  gap: 1rem;
+}
+
+.calendar-month > header {
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+.calendar-month > header h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  text-transform: capitalize;
+}
+
+.calendar-day {
+  grid-template-columns: minmax(140px, 0.24fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: 0.75rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.calendar-day:last-child {
+  border-bottom: 0;
+}
+
+.calendar-day > h3 {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.96rem;
+  line-height: 1.45;
+  text-transform: capitalize;
+}
+
+.calendar-day-events {
+  gap: 0.75rem;
+}
+
+.calendar-event {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.calendar-event > time {
+  color: var(--accent-warm);
+  font-size: 1.05rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.calendar-event-main {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.calendar-event-context,
+.calendar-event-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.calendar-event-context span {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.calendar-event-context strong,
+.calendar-event-context small {
+  overflow-wrap: anywhere;
+}
+
+.calendar-event-context small,
+.calendar-event-details {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.calendar-event-opponents {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.calendar-event-opponents > span {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.calendar-event-opponents > span:last-child {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.calendar-event-opponents strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.calendar-event-opponents .club-badge,
+.calendar-event-opponents .club-logo {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+}
+
+.calendar-event-score {
+  min-width: 3rem;
+  color: var(--accent-pink);
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.calendar-event-link {
+  width: auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.calendar-empty {
+  min-height: 12rem;
+}
+
+.admin-undated-matches {
+  min-width: 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-undated-count {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(255, 159, 154, 0.42);
+  border-radius: 50%;
+  background: rgba(255, 159, 154, 0.09);
+  color: var(--danger);
+  font-weight: 900;
+}
+
+.admin-undated-matches ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-undated-matches li {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.75fr) minmax(220px, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.admin-undated-matches li > div {
+  display: grid;
+  min-width: 0;
+}
+
+.admin-undated-matches li strong,
+.admin-undated-matches li small,
+.admin-undated-matches li p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-undated-matches li small,
+.admin-undated-matches li p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.admin-undated-matches li .compact-button {
+  width: auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.match-status-cancelled {
+  border-color: rgba(255, 159, 154, 0.36);
+  background: rgba(255, 159, 154, 0.09);
+  color: var(--danger);
+}
+
+.match-status-postponed,
+.match-status-in_progress {
+  border-color: rgba(255, 211, 110, 0.36);
+  background: rgba(255, 211, 110, 0.09);
+  color: var(--accent-warm);
 }
 
 .tournament-flow {
@@ -1888,6 +2638,79 @@ button:hover,
   font-size: clamp(1.35rem, 2vw, 1.8rem);
 }
 
+.level-standings-header > span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.standings-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.standings-table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.standings-table-scroll table {
+  min-width: 950px;
+  margin: 0;
+  border: 0;
+}
+
+.standings-table th {
+  padding: 0;
+}
+
+.standings-sort-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 2.9rem;
+  margin: 0;
+  padding: 0.65rem 0.7rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.standings-sort-button:hover,
+.standings-sort-button:focus-visible {
+  transform: none;
+  background: rgba(137, 200, 255, 0.1);
+  box-shadow: none;
+}
+
+.sort-indicator {
+  color: var(--accent);
+  font-size: 0.82rem;
+}
+
+.standings-display-number {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.standings-table td:first-child small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
 .standings-table tr {
   transition: background 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1928,11 +2751,225 @@ button:hover,
   flex: 0 0 auto;
 }
 
+.standings-latest {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.standings-latest-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.standings-latest-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.standings-latest-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.standings-latest-list li {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.28fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.standings-latest-list li:last-child {
+  border-bottom: 0;
+}
+
+.standings-latest-list li > span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.standings-latest-list li > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.standings-latest-list strong:last-of-type {
+  text-align: right;
+}
+
+.standings-latest-list b {
+  min-width: 2.7rem;
+  color: var(--accent);
+  text-align: center;
+}
+
+.standings-latest-empty {
+  margin-top: 1rem;
+}
+
+.ranking-view-standings {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .results-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-results-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-event {
+    grid-template-columns: 4rem minmax(0, 1fr);
+  }
+
+  .calendar-event-link {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .admin-undated-matches li {
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .admin-undated-matches li .compact-button {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 @media (max-width: 680px) {
+  .tournament-wizard-header,
+  .wizard-review-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wizard-stepper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+
+  .wizard-stepper button {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    min-height: 3rem;
+    padding-inline: 0.55rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .wizard-stepper button:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .wizard-stepper button:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .wizard-stepper button span {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .wizard-step-content {
+    min-height: 0;
+  }
+
+  .wizard-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wizard-actions-spacer {
+    display: none;
+  }
+
+  .wizard-actions button:only-child {
+    grid-column: 1 / -1;
+  }
+
   .tournament-detail-header,
   .tournament-stage-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .tournament-overview-grid,
+  .public-results-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-filter-reset {
+    justify-self: stretch;
+  }
+
+  .calendar-day {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .calendar-event {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 0.85rem;
+  }
+
+  .calendar-event > time {
+    text-align: left;
+  }
+
+  .calendar-event-opponents {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .calendar-event-opponents > span:last-child {
+    grid-column: 1;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .calendar-event-opponents > span:last-child .club-badge,
+  .calendar-event-opponents > span:last-child .club-logo {
+    order: -1;
+  }
+
+  .calendar-event-score,
+  .calendar-event-opponents > .match-status {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .calendar-event-link {
+    grid-column: 1;
+    justify-self: stretch;
+  }
+
+  .admin-undated-matches li {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .admin-undated-matches li .compact-button {
+    grid-column: 1;
+    justify-self: stretch;
   }
 
   .tournament-stage-note {
@@ -1991,6 +3028,38 @@ button:hover,
     flex-direction: column;
     gap: 0.35rem;
     min-width: 8.5rem;
+  }
+
+  .standings-latest-heading,
+  .standings-latest-list li {
+    align-items: flex-start;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .standings-latest-heading {
+    display: grid;
+  }
+
+  .standings-latest-list li > div {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .standings-latest-list li > div strong:last-of-type {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .standings-latest-list li > div .club-badge:last-child,
+  .standings-latest-list li > div .club-logo:last-child {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .standings-latest-list b {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
   }
 }
 

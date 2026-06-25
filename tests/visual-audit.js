@@ -34,13 +34,14 @@ async function waitForDebugger(port) {
 }
 
 async function waitForPage(cdp, sessionId, expectedUrl) {
+  const expectedPathname = new URL(expectedUrl).pathname;
   for (let attempt = 0; attempt < 60; attempt += 1) {
     const evaluation = await cdp.send('Runtime.evaluate', {
       expression: `({ ready: document.readyState, url: location.href })`,
       returnByValue: true
     }, sessionId);
     const value = evaluation.result.value;
-    if (value.ready === 'complete' && value.url === expectedUrl) return;
+    if (value.ready === 'complete' && new URL(value.url).pathname === expectedPathname) return;
     await delay(100);
   }
   throw new Error(`Strona nie zakończyła nawigacji: ${expectedUrl}`);
@@ -85,14 +86,27 @@ function createCdpClient(webSocketUrl) {
   }
 
   return new Promise((resolve, reject) => {
-    socket.addEventListener('open', () => resolve({ socket, send, once }));
-    socket.addEventListener('error', reject);
+    const timeout = setTimeout(() => reject(new Error('Timeout połączenia z Chrome DevTools Protocol.')), 5000);
+    socket.addEventListener('open', () => {
+      clearTimeout(timeout);
+      resolve({ socket, send, once });
+    });
+    socket.addEventListener('error', error => {
+      clearTimeout(timeout);
+      reject(error);
+    });
   });
 }
 
 const scenarios = [
   { name: 'sport', path: '/siatkowka.html' },
   { name: 'tournament', path: '/tests/tournament-preview.html' },
+  { name: 'tournament-wizard', path: '/tests/tournament-wizard-preview.html?step=5' },
+  { name: 'admin-results', path: '/tests/result-form-preview.html?mode=tournament' },
+  { name: 'standings', path: '/tests/standings-preview.html' },
+  { name: 'public-results', path: '/tests/public-results-preview.html?sport=siatkowka&season=2026&rozgrywki=league&level=B' },
+  { name: 'public-tournaments', path: '/tests/public-tournaments-preview.html' },
+  { name: 'calendar', path: '/tests/calendar-preview.html' },
   { name: 'admin-players', path: '/tests/player-directory-preview.html?sort=club&mobile=1' }
 ];
 const viewports = [
@@ -102,7 +116,7 @@ const viewports = [
 ];
 
 const auditExpression = `(() => {
-  const ignored = '.tournament-flow, .tournament-bracket-scroll, .tournament-table-scroll, .player-table-scroll, table';
+  const ignored = '.tournament-flow, .tournament-bracket-scroll, .tournament-table-scroll, .player-table-scroll, .admin-table-scroll, .standings-table-scroll, .wizard-stepper, table';
   const elements = [...document.body.querySelectorAll('*')];
   const unexpectedOverflow = elements.filter(element => {
     if (element.closest(ignored)) return false;

@@ -16,6 +16,7 @@ const editorIds = pages.map(([, , editorId]) => editorId).filter(Boolean);
 const expectedLinks = pages.map(([file]) => file);
 const expectedScripts = [
   'config.js',
+  'competition-model.js',
   'data.js',
   'remote-data.js',
   'tournament-engine.js',
@@ -48,6 +49,13 @@ for (const [file, page, expectedEditor] of pages) {
     previousIndex = index;
   }
 }
+
+const detailPage = fs.readFileSync(path.join(root, 'admin-turniej.html'), 'utf8');
+assert.match(detailPage, /data-page="admin-tournament"/);
+assert.match(detailPage, /id="admin-content"/);
+assert.match(detailPage, /id="admin-tournament-editor"/);
+assert.match(detailPage, /href="admin-turnieje\.html"/);
+assert.match(detailPage, /id="admin-logout"/);
 
 const script = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 assert.match(script, /page\?\.startsWith\('admin'\)/, 'initPage musi chronić wszystkie strony administracyjne');

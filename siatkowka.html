@@ -11,7 +11,7 @@
     <div class="brand">
       <p class="eyebrow">Liga LGBT</p>
       <h1>Siatkówka</h1>
-      <p>Gra zespołowa z poziomami B, B-, C i D, nastawiona na równe mecze i dobrą komunikację.</p>
+      <p>Gra zespołowa z poziomami A, B, B-, C i D, nastawiona na równe mecze i dobrą komunikację.</p>
     </div>
     <nav class="main-nav" aria-label="Główna nawigacja">
       <a class="nav-link" href="index.html">Start</a>
@@ -29,6 +29,8 @@
         <div class="nav-menu" id="nav-league">
           <a href="kluby.html">Kluby <span>Drużyny</span></a>
           <a href="zawodnicy.html">Zawodnicy <span>Profile</span></a>
+          <a href="turnieje.html">Turnieje <span>Grupy i drabinki</span></a>
+          <a href="kalendarz.html">Kalendarz <span>Terminy meczów</span></a>
           <a href="zasady.html">Zasady <span>Fair play</span></a>
           <a href="partnerzy.html">Partnerzy <span>Współpraca</span></a>
         </div>
@@ -56,14 +58,14 @@
     </section>
 
     <section class="sport-details">
-      <article class="sport-summary"><h3>Poziomy</h3><p>B, B-, C i D pozwalają dopasować tempo gry do doświadczenia drużyny.</p></article>
+      <article class="sport-summary"><h3>Poziomy</h3><p>A, B, B-, C i D pozwalają dopasować tempo gry do doświadczenia drużyny.</p></article>
       <article class="sport-summary"><h3>Format</h3><p>Mecze zespołowe, rotacje i punktacja zgodna z ustalonym regulaminem ligi.</p></article>
     </section>
 
     <section id="tabele" class="section-overview"><div class="section-lead"><h2>Tabele i klasyfikacja</h2><p>Aktualny uklad rozgrywek jest liczony automatycznie z zapisanych wynikow. Wyniki, MVP i druzyny sa ponizej na tej samej stronie.</p></div><div id="sport-standings"></div></section>
 
     <section id="wyniki" class="section-overview"><div class="section-lead"><h2>Ostatnie wyniki</h2><p>Najświeższe mecze zapisane w systemie.</p></div><div id="sport-results"></div></section>
-    <section id="turnieje" class="section-overview"><div class="section-lead"><h2>Turnieje</h2><p>Fazy grupowe, klasyfikacje i drabinki tej dyscypliny.</p></div><div id="sport-tournaments"></div></section>
+    <section id="turnieje" class="section-overview"><div class="section-lead"><h2>Turnieje</h2><p>Opublikowane wydarzenia tej dyscypliny. Pełne etapy i drabinki są na osobnych stronach turniejów.</p></div><div id="sport-tournaments"></div></section>
     <section id="mvp" class="section-overview"><div class="section-lead"><h2>Ranking MVP</h2><p>Zawodnicy z najwyższą liczbą punktów.</p></div><div id="sport-mvp"></div></section>
     <section id="druzyny" class="team-list"><div class="section-lead"><h2>Drużyny</h2><p>Kluby występujące w rozgrywkach ligowych.</p></div><div class="team-grid" id="sport-teams"></div></section>
   </main>
@@ -71,6 +73,7 @@
   <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="competition-model.js"></script>
   <script src="data.js"></script>
   <script src="remote-data.js"></script>
   <script src="tournament-engine.js"></script>

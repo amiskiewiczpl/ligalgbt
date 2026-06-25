@@ -710,6 +710,567 @@
     return tournament;
   }
 
+  function canonicalSetScores(sets) {
+    if (Array.isArray(sets)) {
+      return sets.map(set => ({
+        home: Number(set.home) || 0,
+        away: Number(set.away) || 0
+      }));
+    }
+    return parseSetPairs(sets).map(([home, away]) => ({ home, away }));
+  }
+
+  function canonicalSetsString(match) {
+    if (typeof match.sets === 'string') return match.sets;
+    return (match.setScores || [])
+      .map(set => `${Number(set.home) || 0}:${Number(set.away) || 0}`)
+      .join(', ');
+  }
+
+  function validateCompetitionStages(competition) {
+    const stages = [...(competition.stages || [])].sort((a, b) => a.order - b.order);
+    if (stages.length < 1 || stages.length > 3) {
+      throw new Error('Rozgrywki muszą zawierać od jednego do trzech etapów.');
+    }
+    const allowedTypes = new Set(['round_robin', 'groups', 'knockout']);
+    const ids = new Set();
+    stages.forEach((stage, index) => {
+      if (!stage.id || ids.has(stage.id)) throw new Error('Każdy etap musi mieć unikalny identyfikator.');
+      ids.add(stage.id);
+      if (!allowedTypes.has(stage.type)) throw new Error(`Nieobsługiwany typ etapu: ${stage.type}.`);
+      if (Number(stage.order) !== index + 1) {
+        throw new Error('Kolejność etapów musi być ciągła i zaczynać się od 1.');
+      }
+      if (index > 0 && !stage.qualificationRule) {
+        throw new Error('Każdy kolejny etap wymaga jawnej reguły awansu.');
+      }
+    });
+    return stages;
+  }
+
+  function competitionStageMatches(matches, stageId) {
+    return (matches || []).filter(match => String(match.stageId) === String(stageId));
+  }
+
+  function toCanonicalMatch(match, competition, stage) {
+    return {
+      id: String(match.id),
+      legacyId: null,
+      competitionId: String(competition.id),
+      stageId: String(stage.id),
+      groupId: match.groupId ? String(match.groupId) : null,
+      roundNumber: Number.isInteger(match.roundIndex) ? match.roundIndex + 1 : null,
+      roundLabel: String(match.round || ''),
+      matchIndex: Number(match.matchIndex) || 0,
+      scheduledAt: null,
+      venue: '',
+      homeId: String(match.homeId || ''),
+      awayId: String(match.awayId || ''),
+      status: String(match.status || 'scheduled'),
+      score: String(match.score || ''),
+      setScores: canonicalSetScores(match.sets),
+      winnerId: String(match.winnerId || ''),
+      loserId: String(match.loserId || ''),
+      mvpId: String(match.mvpId || ''),
+      nextMatchId: String(match.nextMatchId || ''),
+      nextSlot: String(match.nextSlot || ''),
+      sourceHomeMatchId: String(match.sourceHomeMatchId || ''),
+      sourceAwayMatchId: String(match.sourceAwayMatchId || ''),
+      isThirdPlace: Boolean(match.isThirdPlace),
+      allowDraw: typeof match.allowDraw === 'boolean' ? match.allowDraw : Boolean(stage.allowDraws),
+      pointsRules: { ...(match.pointsRules || stage.pointsRules || { win: 3, draw: 1, loss: 0 }) },
+      scoringProfile: String(match.scoring || stage.scoringProfile || 'sets')
+    };
+  }
+
+  function toLegacyMatch(match, names = {}) {
+    return {
+      id: String(match.id),
+      round: String(match.roundLabel || ''),
+      roundIndex: match.roundNumber === null || match.roundNumber === undefined
+        ? 0
+        : Math.max(0, Number(match.roundNumber) - 1),
+      matchIndex: Number(match.matchIndex) || 0,
+      groupId: match.groupId || '',
+      homeId: String(match.homeId || ''),
+      awayId: String(match.awayId || ''),
+      home: participantName(match.homeId, names),
+      away: participantName(match.awayId, names),
+      score: String(match.score || ''),
+      sets: canonicalSetsString(match),
+      status: String(match.status || 'scheduled'),
+      phaseType: match.phaseType || '',
+      allowDraw: Boolean(match.allowDraw),
+      pointsRules: { ...(match.pointsRules || { win: 3, draw: 1, loss: 0 }) },
+      winnerId: String(match.winnerId || ''),
+      winner: participantName(match.winnerId, names),
+      loserId: String(match.loserId || ''),
+      nextMatchId: String(match.nextMatchId || ''),
+      nextSlot: String(match.nextSlot || ''),
+      sourceHomeMatchId: String(match.sourceHomeMatchId || ''),
+      sourceAwayMatchId: String(match.sourceAwayMatchId || ''),
+      isThirdPlace: Boolean(match.isThirdPlace),
+      mvp: String(match.mvpId || '')
+    };
+  }
+
+  function syncCanonicalMatches(canonicalMatches, legacyMatches) {
+    const canonicalById = new Map(canonicalMatches.map(match => [String(match.id), match]));
+    legacyMatches.forEach(legacy => {
+      const match = canonicalById.get(String(legacy.id));
+      if (!match) return;
+      match.roundNumber = Number(legacy.roundIndex) + 1;
+      match.roundLabel = String(legacy.round || '');
+      match.matchIndex = Number(legacy.matchIndex) || 0;
+      match.groupId = legacy.groupId || null;
+      match.homeId = String(legacy.homeId || '');
+      match.awayId = String(legacy.awayId || '');
+      match.status = String(legacy.status || 'scheduled');
+      match.score = String(legacy.score || '');
+      match.setScores = canonicalSetScores(legacy.sets);
+      match.winnerId = String(legacy.winnerId || '');
+      match.loserId = String(legacy.loserId || '');
+      match.mvpId = String(legacy.mvp || '');
+      match.nextMatchId = String(legacy.nextMatchId || '');
+      match.nextSlot = String(legacy.nextSlot || '');
+      match.sourceHomeMatchId = String(legacy.sourceHomeMatchId || '');
+      match.sourceAwayMatchId = String(legacy.sourceAwayMatchId || '');
+      match.isThirdPlace = Boolean(legacy.isThirdPlace);
+    });
+  }
+
+  function generateStageMatches(competition, stage, participantIds, options = {}) {
+    const participants = unique(participantIds);
+    if (participants.length < 2) throw new Error('Etap wymaga co najmniej dwóch uczestników.');
+    stage.participantIds = [...participants];
+    stage.status = 'ongoing';
+    const names = options.names || {};
+    if (stage.type === 'knockout') {
+      stage.groups = [];
+      return createKnockoutBracket(participants, {
+        tournamentId: stage.id,
+        names,
+        seeding: options.seeding || stage.seeding || 'manual',
+        random: options.random,
+        thirdPlaceMatch: Boolean(stage.groupConfig?.thirdPlaceMatch || stage.thirdPlaceMatch)
+      }).map(match => toCanonicalMatch(match, competition, stage));
+    }
+
+    const isRoundRobin = stage.type === 'round_robin';
+    const groupConfig = isRoundRobin
+      ? {
+        groupCount: 1,
+        participantsPerGroup: participants.length,
+        matchesPerPair: Number(stage.groupConfig?.matchesPerPair) === 2 ? 2 : 1
+      }
+      : {
+        ...(stage.groupConfig || {}),
+        groupCount: Number(stage.groupConfig?.groupCount) || 1,
+        matchesPerPair: Number(stage.groupConfig?.matchesPerPair) === 2 ? 2 : 1
+      };
+    const manualGroups = isRoundRobin
+      ? [participants]
+      : options.manualGroups;
+    const groups = createGroupStage(participants, groupConfig, {
+      tournamentId: stage.id,
+      names,
+      seeding: options.seeding || stage.seeding || 'manual',
+      random: options.random,
+      manualGroups,
+      allowDraws: Boolean(stage.allowDraws),
+      pointsRules: stage.pointsRules
+    });
+    stage.groups = groups.map(group => ({
+      id: group.id,
+      name: group.name,
+      participantIds: [...group.participantIds],
+      manualTieBreaks: {}
+    }));
+    return groups.flatMap(group => group.matches.map(match => toCanonicalMatch(match, competition, stage)));
+  }
+
+  function generateCompetitionStructure(competition, matches, options = {}) {
+    const stages = validateCompetitionStages(competition);
+    const retained = (matches || []).filter(match => String(match.competitionId) !== String(competition.id));
+    matches.splice(0, matches.length, ...retained);
+    stages.forEach((stage, index) => {
+      stage.status = index === 0 ? 'ongoing' : 'draft';
+      stage.participantIds = index === 0 ? unique(competition.participantIds) : [];
+      stage.groups = [];
+    });
+    const generated = generateStageMatches(
+      competition,
+      stages[0],
+      competition.participantIds,
+      {
+        ...options,
+        manualGroups: options.manualGroups?.[stages[0].id] || options.manualGroups
+      }
+    );
+    matches.push(...generated);
+    competition.finalClassification = [];
+    return generated;
+  }
+
+  function groupViewForStage(stage, matches, group) {
+    return {
+      id: group.id,
+      name: group.name,
+      participantIds: [...group.participantIds],
+      manualTieBreaks: { ...(group.manualTieBreaks || {}) },
+      matches: competitionStageMatches(matches, stage.id)
+        .filter(match => String(match.groupId) === String(group.id))
+        .map(match => toLegacyMatch(match))
+    };
+  }
+
+  function calculateStageStandings(stage, matches) {
+    if (stage.type === 'knockout') return [];
+    return (stage.groups || []).map((group, groupIndex) => {
+      const view = groupViewForStage(stage, matches, group);
+      return {
+        groupId: group.id,
+        groupIndex,
+        rows: calculateGroupStandings(view, {
+          tieBreakOrder: stage.tieBreakOrder,
+          manualTieBreaks: group.manualTieBreaks
+        })
+      };
+    });
+  }
+
+  function isTerminalMatch(match) {
+    return ['completed', 'walkover', 'bye', 'cancelled'].includes(match.status);
+  }
+
+  function isStageComplete(stage, matches) {
+    const stageMatches = competitionStageMatches(matches, stage.id);
+    return stageMatches.length > 0 && stageMatches.every(isTerminalMatch);
+  }
+
+  function calculateKnockoutClassification(stage, matches) {
+    const stageMatches = competitionStageMatches(matches, stage.id);
+    if (!stageMatches.length || !isStageComplete(stage, matches)) return [];
+    const mainMatches = stageMatches.filter(match => !match.isThirdPlace);
+    const finalRound = Math.max(...mainMatches.map(match => Number(match.roundNumber) || 0));
+    const final = mainMatches.find(match => Number(match.roundNumber) === finalRound);
+    if (!final?.winnerId || !final?.loserId) return [];
+    const ordered = [final.winnerId, final.loserId];
+    const thirdPlace = stageMatches.find(match => match.isThirdPlace);
+    if (thirdPlace?.winnerId) ordered.push(thirdPlace.winnerId);
+    if (thirdPlace?.loserId) ordered.push(thirdPlace.loserId);
+    mainMatches
+      .filter(match => match.id !== final.id && match.loserId)
+      .sort((left, right) => (
+        (Number(right.roundNumber) || 0) - (Number(left.roundNumber) || 0)
+        || (Number(left.matchIndex) || 0) - (Number(right.matchIndex) || 0)
+      ))
+      .forEach(match => ordered.push(match.loserId));
+    stage.participantIds.forEach(participantId => ordered.push(participantId));
+    return unique(ordered).map((participantId, index) => ({
+      participantId,
+      position: index + 1,
+      groupPosition: index + 1,
+      points: 0,
+      wins: 0,
+      setDifference: 0,
+      pointDifference: 0
+    }));
+  }
+
+  function rankStageParticipants(stage, matches) {
+    if (stage.type === 'knockout') return calculateKnockoutClassification(stage, matches);
+    return calculateStageStandings(stage, matches)
+      .flatMap(group => group.rows.map(row => ({
+        ...row,
+        groupId: group.groupId,
+        groupIndex: group.groupIndex,
+        groupPosition: row.position
+      })));
+  }
+
+  function sortOverallRank(rows) {
+    return [...rows].sort((left, right) => (
+      (right.points || 0) - (left.points || 0)
+      || (right.wins || 0) - (left.wins || 0)
+      || (right.setDifference || 0) - (left.setDifference || 0)
+      || (right.pointDifference || 0) - (left.pointDifference || 0)
+      || String(left.participantId).localeCompare(String(right.participantId), 'pl')
+    ));
+  }
+
+  function resolveQualifiedParticipants(previousStage, nextStage, matches, options = {}) {
+    if (!isStageComplete(previousStage, matches)) {
+      throw new Error('Nie można wygenerować kolejnego etapu przed zakończeniem poprzedniego.');
+    }
+    const ranked = rankStageParticipants(previousStage, matches);
+    const rule = nextStage.qualificationRule || {};
+    let qualified;
+    if (rule.type === 'manual') {
+      qualified = unique(options.manualOrder || rule.participantIds);
+      const eligible = new Set(previousStage.participantIds);
+      if (!qualified.length || qualified.some(participantId => !eligible.has(participantId))) {
+        throw new Error('Ręczny awans zawiera uczestnika spoza poprzedniego etapu.');
+      }
+      return qualified;
+    }
+    if (rule.type === 'places_per_group') {
+      const count = Math.max(1, Number(rule.count) || 1);
+      qualified = ranked.filter(row => row.groupPosition <= count);
+    } else if (rule.type === 'group_winners') {
+      qualified = ranked.filter(row => row.groupPosition === 1);
+    } else if (rule.type === 'best_overall') {
+      qualified = sortOverallRank(ranked).slice(0, Math.max(1, Number(rule.count) || 1));
+    } else if (rule.type === 'stage_positions') {
+      const positions = new Set((rule.positions || []).map(Number));
+      const overall = previousStage.type === 'knockout'
+        ? ranked
+        : sortOverallRank(ranked).map((row, index) => ({ ...row, position: index + 1 }));
+      qualified = overall.filter(row => positions.has(Number(row.position)));
+    } else if (rule.type === 'all') {
+      qualified = ranked;
+    } else {
+      throw new Error(`Nieobsługiwana reguła awansu: ${rule.type || 'brak'}.`);
+    }
+    if (!qualified.length) throw new Error('Reguła awansu nie wyłoniła żadnego uczestnika.');
+
+    const pairingRule = rule.pairingRule || nextStage.seeding || 'group_result';
+    if (pairingRule === 'random') {
+      return shuffle(qualified.map(row => row.participantId), options.random);
+    }
+    if (pairingRule === 'manual') {
+      return orderQualifiedParticipants(qualified, 'manual', options.manualOrder || rule.manualOrder);
+    }
+    if (nextStage.type === 'knockout') {
+      return orderQualifiedParticipants(qualified, pairingRule, options.manualOrder);
+    }
+    return qualified.map(row => row.participantId);
+  }
+
+  function resetLaterStages(competition, matches, stageOrder) {
+    const laterStageIds = new Set(
+      competition.stages
+        .filter(stage => Number(stage.order) > Number(stageOrder))
+        .map(stage => String(stage.id))
+    );
+    const removed = matches.filter(match => laterStageIds.has(String(match.stageId)));
+    const retained = matches.filter(match => !laterStageIds.has(String(match.stageId)));
+    matches.splice(0, matches.length, ...retained);
+    competition.stages
+      .filter(stage => laterStageIds.has(String(stage.id)))
+      .forEach(stage => {
+        stage.status = 'draft';
+        stage.participantIds = [];
+        stage.groups = [];
+      });
+    competition.finalClassification = [];
+    return removed.map(match => match.id);
+  }
+
+  function dependencyClosure(matches, matchId) {
+    const result = new Set();
+    const queue = [String(matchId)];
+    while (queue.length) {
+      const sourceId = queue.shift();
+      matches.forEach(match => {
+        const depends = String(match.sourceHomeMatchId || '') === sourceId
+          || String(match.sourceAwayMatchId || '') === sourceId
+          || String(matches.find(source => String(source.id) === sourceId)?.nextMatchId || '') === String(match.id);
+        if (!depends || result.has(String(match.id))) return;
+        result.add(String(match.id));
+        queue.push(String(match.id));
+      });
+    }
+    return result;
+  }
+
+  function inspectMatchChange(competition, matches, matchId, result = {}) {
+    const match = matches.find(item => String(item.id) === String(matchId));
+    if (!match) throw new Error('Nie znaleziono meczu.');
+    const stage = competition.stages.find(item => String(item.id) === String(match.stageId));
+    if (!stage) throw new Error('Mecz nie ma prawidłowego etapu.');
+    const nextScore = String(result.score ?? match.score ?? '');
+    const nextSets = result.setScores
+      ? canonicalSetsString({ setScores: result.setScores })
+      : String(result.sets ?? canonicalSetsString(match));
+    const changed = nextScore !== String(match.score || '')
+      || nextSets !== canonicalSetsString(match);
+    const directIds = dependencyClosure(competitionStageMatches(matches, stage.id), match.id);
+    const laterStageIds = new Set(competition.stages
+      .filter(item => Number(item.order) > Number(stage.order))
+      .map(item => String(item.id)));
+    const dependentMatches = matches.filter(item => (
+      directIds.has(String(item.id))
+      || laterStageIds.has(String(item.stageId))
+    ));
+    const completedDependencies = dependentMatches.filter(item => (
+      ['completed', 'walkover'].includes(item.status)
+    ));
+    return {
+      match,
+      stage,
+      changed,
+      dependentMatches,
+      completedDependencies,
+      requiresReset: changed && dependentMatches.length > 0,
+      blocked: changed && completedDependencies.length > 0
+    };
+  }
+
+  function resetKnockoutDependencies(matches, sourceMatchId) {
+    const stageMatches = matches.filter(match => match.stageId === matches
+      .find(item => String(item.id) === String(sourceMatchId))?.stageId);
+    const affectedIds = dependencyClosure(stageMatches, sourceMatchId);
+    const affectedSources = new Set([String(sourceMatchId), ...affectedIds]);
+    stageMatches
+      .filter(match => affectedIds.has(String(match.id)))
+      .sort((left, right) => (Number(right.roundNumber) || 0) - (Number(left.roundNumber) || 0))
+      .forEach(match => {
+        if (affectedSources.has(String(match.sourceHomeMatchId || ''))) match.homeId = '';
+        if (affectedSources.has(String(match.sourceAwayMatchId || ''))) match.awayId = '';
+        match.score = '';
+        match.setScores = [];
+        match.status = 'scheduled';
+        match.winnerId = '';
+        match.loserId = '';
+        match.mvpId = '';
+      });
+    return [...affectedIds];
+  }
+
+  function generateNextStage(competition, matches, completedStageId, options = {}) {
+    const stages = validateCompetitionStages(competition);
+    const currentIndex = stages.findIndex(stage => String(stage.id) === String(completedStageId));
+    if (currentIndex < 0) throw new Error('Nie znaleziono zakończonego etapu.');
+    const currentStage = stages[currentIndex];
+    if (!isStageComplete(currentStage, matches)) {
+      throw new Error('Nie można wygenerować kolejnego etapu przed zakończeniem poprzedniego.');
+    }
+    currentStage.status = 'completed';
+    const nextStage = stages[currentIndex + 1];
+    if (!nextStage) return [];
+    const existing = competitionStageMatches(matches, nextStage.id);
+    if (existing.length) return existing;
+    const participantIds = resolveQualifiedParticipants(currentStage, nextStage, matches, options);
+    const generated = generateStageMatches(competition, nextStage, participantIds, {
+      ...options,
+      manualGroups: options.manualGroups?.[nextStage.id] || options.manualGroups
+    });
+    matches.push(...generated);
+    return generated;
+  }
+
+  function calculateFinalClassification(competition, matches, options = {}) {
+    const stages = validateCompetitionStages(competition);
+    const finalStage = stages[stages.length - 1];
+    if (!isStageComplete(finalStage, matches)) return [];
+    let ranked = rankStageParticipants(finalStage, matches);
+    if (finalStage.type !== 'knockout') {
+      if ((finalStage.groups || []).length === 1) {
+        ranked = ranked.sort((left, right) => left.groupPosition - right.groupPosition);
+      } else {
+        ranked = [...ranked].sort((left, right) => (
+          left.groupPosition - right.groupPosition
+          || (right.points || 0) - (left.points || 0)
+          || (right.wins || 0) - (left.wins || 0)
+          || (right.setDifference || 0) - (left.setDifference || 0)
+          || (right.pointDifference || 0) - (left.pointDifference || 0)
+        ));
+      }
+    }
+    const names = options.names || {};
+    const clubs = options.clubs || {};
+    competition.finalClassification = ranked.map((row, index) => ({
+      place: index + 1,
+      participantId: row.participantId,
+      participant: names[row.participantId] || row.participantId,
+      club: clubs[row.participantId] || ''
+    }));
+    competition.status = 'completed';
+    finalStage.status = 'completed';
+    return competition.finalClassification;
+  }
+
+  function applyCompetitionResult(competition, matches, matchId, result, options = {}) {
+    const inspection = inspectMatchChange(competition, matches, matchId, result);
+    if (inspection.blocked && !options.forceResetDownstream) {
+      const error = new Error('Nie można zmienić wyniku, ponieważ zależny mecz lub etap ma już rezultat.');
+      error.code = 'DOWNSTREAM_COMPLETED';
+      error.dependencies = inspection.completedDependencies.map(match => match.id);
+      throw error;
+    }
+    const resetMatchIds = [];
+    if (inspection.changed && inspection.dependentMatches.length) {
+      if (inspection.stage.type === 'knockout') {
+        resetMatchIds.push(...resetKnockoutDependencies(matches, matchId));
+      }
+      resetMatchIds.push(...resetLaterStages(competition, matches, inspection.stage.order));
+    }
+
+    const stageMatches = competitionStageMatches(matches, inspection.stage.id);
+    const names = options.names || {};
+    const normalizedResult = {
+      ...result,
+      sets: result.sets || canonicalSetsString({ setScores: result.setScores || [] }),
+      mvp: result.mvpId || result.mvp || ''
+    };
+    if (inspection.stage.type === 'knockout') {
+      const legacyMatches = stageMatches.map(match => toLegacyMatch(match, names));
+      recordKnockoutResult(legacyMatches, matchId, normalizedResult, { names });
+      syncCanonicalMatches(stageMatches, legacyMatches);
+    } else {
+      const groupMatches = stageMatches.filter(match => String(match.groupId) === String(inspection.match.groupId));
+      const legacyMatches = groupMatches.map(match => toLegacyMatch(match, names));
+      recordGroupResult({ matches: legacyMatches }, matchId, normalizedResult);
+      syncCanonicalMatches(groupMatches, legacyMatches);
+    }
+
+    const updated = matches.find(match => String(match.id) === String(matchId));
+    if (result.mvpId !== undefined) updated.mvpId = String(result.mvpId || '');
+    let generatedMatches = [];
+    let finalClassification = [];
+    if (isStageComplete(inspection.stage, matches)) {
+      generatedMatches = generateNextStage(competition, matches, inspection.stage.id, options);
+      if (!generatedMatches.length
+          && Number(inspection.stage.order) === Math.max(...competition.stages.map(stage => Number(stage.order)))) {
+        finalClassification = calculateFinalClassification(competition, matches, options);
+      }
+    }
+    return { match: updated, resetMatchIds: unique(resetMatchIds), generatedMatches, finalClassification };
+  }
+
+  function clearCompetitionMatchResult(competition, matches, matchId, options = {}) {
+    const inspection = inspectMatchChange(competition, matches, matchId, { score: '', sets: '' });
+    if (inspection.blocked && !options.forceResetDownstream) {
+      const error = new Error('Nie można wycofać wyniku, ponieważ zależny mecz lub etap ma już rezultat.');
+      error.code = 'DOWNSTREAM_COMPLETED';
+      error.dependencies = inspection.completedDependencies.map(match => match.id);
+      throw error;
+    }
+    const resetMatchIds = [];
+    if (inspection.stage.type === 'knockout') {
+      resetMatchIds.push(...resetKnockoutDependencies(matches, matchId));
+      const stageMatches = competitionStageMatches(matches, inspection.stage.id);
+      const legacyMatches = stageMatches.map(match => toLegacyMatch(match, options.names));
+      clearKnockoutResult(legacyMatches, matchId, { names: options.names });
+      syncCanonicalMatches(stageMatches, legacyMatches);
+    } else {
+      const groupMatches = competitionStageMatches(matches, inspection.stage.id)
+        .filter(match => String(match.groupId) === String(inspection.match.groupId));
+      const legacyMatches = groupMatches.map(match => toLegacyMatch(match, options.names));
+      clearGroupResult({ matches: legacyMatches }, matchId);
+      syncCanonicalMatches(groupMatches, legacyMatches);
+    }
+    resetMatchIds.push(...resetLaterStages(competition, matches, inspection.stage.order));
+    inspection.stage.status = 'ongoing';
+    competition.status = 'ongoing';
+    competition.finalClassification = [];
+    return {
+      match: matches.find(match => String(match.id) === String(matchId)),
+      resetMatchIds: unique(resetMatchIds)
+    };
+  }
+
   const api = {
     shuffle,
     nextPowerOfTwo,
@@ -727,7 +1288,20 @@
     rankQualifiedParticipants,
     orderQualifiedParticipants,
     createFinalStageFromGroups,
-    generateTournamentStructure
+    generateTournamentStructure,
+    validateCompetitionStages,
+    competitionStageMatches,
+    generateStageMatches,
+    generateCompetitionStructure,
+    calculateStageStandings,
+    isStageComplete,
+    rankStageParticipants,
+    resolveQualifiedParticipants,
+    inspectMatchChange,
+    generateNextStage,
+    calculateFinalClassification,
+    applyCompetitionResult,
+    clearCompetitionMatchResult
   };
 
   root.tournamentEngine = api;

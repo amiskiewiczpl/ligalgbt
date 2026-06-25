@@ -36,6 +36,7 @@ const context = {
 };
 
 vm.createContext(context);
+vm.runInContext(fs.readFileSync('competition-model.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('data.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('tournament-engine.js', 'utf8'), context);
 vm.runInContext(
@@ -89,7 +90,13 @@ assert.equal(api.getTournamentMatchSelection(tournament, phase.key, match.id).ma
 assert.equal(api.validateTournamentMatchSelection(tournament, phase.key, match.id).valid, true);
 assert.equal(api.validateTournamentMatchSelection(tournament, 'group:missing', match.id).valid, false);
 
-const invalidRegistration = structuredClone(tournament);
+const invalidRegistration = structuredClone({
+  ...tournament,
+  participants: tournament.participants,
+  groups: tournament.groups,
+  bracket: tournament.bracket,
+  finalGroup: tournament.finalGroup
+});
 invalidRegistration.participants = invalidRegistration.participants.filter(name => name !== match.home);
 assert.equal(api.validateTournamentMatchSelection(invalidRegistration, phase.key, match.id).valid, false);
 

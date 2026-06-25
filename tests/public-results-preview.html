@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pl" data-page="rankings-preview">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Podgląd wyników publicznych</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <p class="eyebrow">Liga LGBT</p>
+      <h1>Wyniki i tabele</h1>
+      <p>Filtry dyscypliny, sezonu, rozgrywek i poziomu.</p>
+    </div>
+  </header>
+  <main class="container"></main>
+  <script src="../competition-model.js"></script>
+  <script src="../data.js"></script>
+  <script src="../tournament-engine.js"></script>
+  <script src="../script.js"></script>
+  <script>
+    renderPublicRankingsPage();
+  </script>
+</body>
+</html>

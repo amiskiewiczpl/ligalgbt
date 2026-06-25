@@ -1,5 +1,10 @@
 # Plan przebudowy turniejów i panelu administratora
 
+> Ten dokument opisuje pierwszą iterację. Audyt po wdrożeniu wykazał, że
+> formularz turniejowy i architektura wyników nadal wymagają przebudowy.
+> Aktualnym backlogiem jest
+> [competition-system-rebuild-plan.md](competition-system-rebuild-plan.md).
+
 ## Status realizacji
 
 - [x] Etap 1. Porządek w modelu danych.

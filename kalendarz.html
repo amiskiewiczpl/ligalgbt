@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="pl" data-page="players">
+<html lang="pl" data-page="calendar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zawodnicy | Liga LGBT</title>
+  <title>Kalendarz | Liga LGBT</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="brand">
       <p class="eyebrow">Liga LGBT</p>
-      <h1>Zawodnicy ligi</h1>
-      <p>Profile osób reprezentujących kluby w drużynach, ligach i turniejach.</p>
+      <h1>Kalendarz</h1>
+      <p>Terminy ligi i turniejów w jednym, czytelnym widoku.</p>
     </div>
     <nav class="main-nav" aria-label="Główna nawigacja">
       <a class="nav-link" href="index.html">Start</a>
@@ -28,41 +28,24 @@
         <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-league">Liga</button>
         <div class="nav-menu" id="nav-league">
           <a href="kluby.html">Kluby <span>Drużyny</span></a>
-          <a href="zawodnicy.html" aria-current="page">Zawodnicy <span>Profile</span></a>
+          <a href="zawodnicy.html">Zawodnicy <span>Profile</span></a>
           <a href="turnieje.html">Turnieje <span>Grupy i drabinki</span></a>
-          <a href="kalendarz.html">Kalendarz <span>Terminy meczów</span></a>
+          <a href="kalendarz.html" aria-current="page">Kalendarz <span>Terminy meczów</span></a>
           <a href="zasady.html">Zasady <span>Fair play</span></a>
           <a href="partnerzy.html">Partnerzy <span>Współpraca</span></a>
         </div>
       </div>
       <a class="nav-link" href="klasyfikacje.html">Wyniki</a>
-      <div class="nav-group">
-        <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="nav-media">Media</button>
-        <div class="nav-menu nav-menu-compact" id="nav-media">
-          <a href="media.html#aktualnosci">Aktualności</a>
-          <a href="media.html#galeria">Galeria</a>
-          <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a>
-          <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a>
-        </div>
-      </div>
       <a class="nav-link" href="kontakt.html">Kontakt</a>
       <a class="nav-cta" href="index.html#newsletter">Dołącz</a>
     </nav>
   </header>
 
-  <main class="container">
-    <section class="page-intro">
-      <span class="eyebrow">Zawodnicy</span>
-      <h2>Osoby, kluby i drużyny</h2>
-      <p>Każdy zawodnik ma klub bazowy, może być przypisany do konkretnych drużyn i może startować w kilku dyscyplinach.</p>
-    </section>
+  <main class="container" id="calendar-view"></main>
 
-    <section class="players-section">
-      <div class="players-grid"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer"><p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p></footer>
+  <footer class="site-footer">
+    <p>&copy; 2026 Liga LGBT. <a href="admin.html">Admin</a></p>
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="competition-model.js"></script>
