@@ -868,6 +868,154 @@ function createStandingsRow(name, level = '') {
   };
 }
 
+function calculateClubStandings(options = {}) {
+  const sportKey = options.sport || '';
+  const season = options.season || '';
+  const clubs = new Map();
+
+  leagueData.teams.forEach(club => {
+    const clubName = club.name;
+    const sportsMap = new Map();
+
+    // Find all participants (teams or players) belonging to this club
+    const clubTeams = leagueData.clubTeams.filter(team => team.club === clubName);
+    const clubPlayers = leagueData.players.filter(player => player.club === clubName);
+
+    // Collect all sport keys for this club
+    const clubSportKeys = new Set([
+      ...clubTeams.map(team => team.sport),
+      ...clubPlayers.flatMap(player => player.sports || [])
+    ]);
+
+    clubSportKeys.forEach(skey => {
+      if (sportKey && skey !== sportKey) return;
+      const sport = leagueData.sports[skey];
+      if (!sport) return;
+
+      const participantNames = new Set([
+        ...clubTeams.filter(team => team.sport === skey).map(team => team.name),
+        ...clubPlayers.filter(player => (player.sports || []).includes(skey)).map(player => player.name)
+      ]);
+
+      const competitionsMap = new Map();
+      let totalPoints = 0;
+      let totalPlayed = 0;
+      let totalWins = 0;
+      let totalDraws = 0;
+
+      // Gather matches from V3 model (competitions/matches) and legacy (sport.results)
+      const allMatches = [];
+
+      // Legacy results
+      (sport.results || []).forEach(match => {
+        if (match.status === 'completed' && (!season || matchBelongsToSeason(match, season))) {
+          allMatches.push(match);
+        }
+      });
+
+      // V3 matches via competitions
+      (leagueData.competitions || []).forEach(competition => {
+        if (competition.kind === 'league' && competition.sport === skey) {
+          if (season && String(competition.season) !== String(season)) return;
+          (leagueData.matches || []).forEach(match => {
+            if (String(match.competitionId) === String(competition.id) && match.status === 'completed') {
+              allMatches.push(match);
+            }
+          });
+        }
+      });
+
+      allMatches.forEach(match => {
+        const homeName = match.home;
+        const awayName = match.away;
+        const isHome = participantNames.has(homeName);
+        const isAway = participantNames.has(awayName);
+        if (!isHome && !isAway) return;
+
+        const side = isHome ? 'home' : 'away';
+        const points = getMatchPoints(match, side);
+        totalPoints += points;
+        totalPlayed += 1;
+
+        const score = parseScore(deriveScore(match));
+        const own = side === 'home' ? score.home : score.away;
+        const other = side === 'home' ? score.away : score.home;
+        if (own > other) totalWins += 1;
+        else if (own === other) totalDraws += 1;
+
+        // Aggregate by competition
+        const competitionId = match.competitionId || 'legacy';
+        if (!competitionsMap.has(competitionId)) {
+          const competitionName = match.competitionId
+            ? (leagueData.competitions || []).find(c => String(c.id) === String(match.competitionId))?.name || 'Liga'
+            : getSportName(skey);
+          const stage = match.competitionId
+            ? (leagueData.competitions || []).find(c => String(c.id) === String(match.competitionId))?.stages?.find(s => String(s.id) === String(match.stageId))
+            : null;
+          const level = stage?.level || match.level || '';
+          const kind = match.competitionId
+            ? (leagueData.competitions || []).find(c => String(c.id) === String(match.competitionId))?.kind || 'league'
+            : 'league';
+          competitionsMap.set(competitionId, {
+            id: competitionId,
+            name: competitionName,
+            kind,
+            level,
+            sport: skey,
+            points: 0,
+            played: 0,
+            wins: 0,
+            draws: 0
+          });
+        }
+        const comp = competitionsMap.get(competitionId);
+        comp.points += points;
+        comp.played += 1;
+        if (own > other) comp.wins += 1;
+        else if (own === other) comp.draws += 1;
+      });
+
+      if (totalPlayed > 0) {
+        sportsMap.set(skey, {
+          sport: skey,
+          sportName: getSportName(skey),
+          points: totalPoints,
+          played: totalPlayed,
+          wins: totalWins,
+          draws: totalDraws,
+          competitions: [...competitionsMap.values()]
+            .sort((a, b) => compareCompetitionLevels(a.level, b.level) || comparePolish(a.name, b.name))
+        });
+      }
+    });
+
+    if (sportsMap.size > 0) {
+      const sportsArr = [...sportsMap.values()];
+      const totalPoints = sportsArr.reduce((sum, s) => sum + s.points, 0);
+      const totalPlayed = sportsArr.reduce((sum, s) => sum + s.played, 0);
+      const totalWins = sportsArr.reduce((sum, s) => sum + s.wins, 0);
+      const totalDraws = sportsArr.reduce((sum, s) => sum + s.draws, 0);
+      clubs.set(clubName, {
+        club: clubName,
+        city: club.city || '',
+        totalPoints,
+        totalPlayed,
+        totalWins,
+        totalDraws,
+        sports: sportsArr
+      });
+    }
+  });
+
+  return stableSort([...clubs.values()], (a, b) => {
+    const pointsDiff = b.totalPoints - a.totalPoints;
+    if (pointsDiff !== 0) return pointsDiff;
+    const winsDiff = b.totalWins - a.totalWins;
+    if (winsDiff !== 0) return winsDiff;
+    return comparePolish(a.club, b.club);
+  });
+}
+
 function applyMatchToRow(row, match, side) {
   const score = parseScore(deriveScore(match));
   const own = side === 'home' ? score.home : score.away;
@@ -1284,6 +1432,79 @@ function renderMvp() {
   section.innerHTML = `<table><thead><tr><th>#</th><th>Zawodnik</th><th>Klub</th><th>Logo</th><th>MVP meczu</th></tr></thead><tbody>${rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.player)}</td><td>${escapeHtml(row.club)}</td><td>${renderLogo(row.club)}</td><td><strong>${row.awards}</strong></td></tr>`).join('')}</tbody></table>`;
 }
 
+function renderClubStandings(options = {}) {
+  const standings = calculateClubStandings(options);
+  if (!standings.length) return '<p class="empty-state">Brak wyników do klasyfikacji klubów. Rozegraj pierwsze mecze.</p>';
+
+  const sportFilter = options.sport || '';
+  const seasonFilter = options.season || '';
+
+  return `<section class="club-rankings-section">
+    <div class="section-lead">
+      <span class="eyebrow">Klasyfikacja klubów</span>
+      <h2>Punkty według dyscyplin</h2>
+      <p>Punkty są liczone oddzielnie dla każdej dyscypliny. Nie sumujemy różnych sportów. Kliknij w wartość, aby przejść do tabeli.</p>
+    </div>
+    <form class="public-results-filters club-rankings-filters" id="club-rankings-filters">
+      <label>Dyscyplina<select name="sport">
+        <option value="">Wszystkie dyscypliny</option>
+        ${getSportOptions(sportFilter)}
+      </select></label>
+      <label>Sezon<select name="season">
+        <option value="">Wszystkie sezony</option>
+        ${getPublicCompetitionSeasons().map(season => `<option value="${escapeHtml(season)}" ${season === seasonFilter ? 'selected' : ''}>${escapeHtml(season)}</option>`).join('')}
+      </select></label>
+    </form>
+    <div class="club-rankings-list">${standings.map(club => {
+      const sportsBreakdown = club.sports.map(s => {
+        const competitionsHtml = s.competitions.map(comp => {
+          const params = new URLSearchParams({
+            sport: comp.sport,
+            rozgrywki: comp.kind,
+            season: seasonFilter || ''
+          });
+          if (comp.level) params.set('level', comp.level);
+          const href = `klasyfikacje.html?${params.toString()}${comp.level ? `#poziom-${encodeURIComponent(comp.level)}` : ''}`;
+          return `<a class="club-competition-link" href="${escapeHtml(href)}" title="Zobacz tabelę ${escapeHtml(comp.name)}">
+            <span class="club-competition-name">${escapeHtml(comp.name)}</span>
+            <span class="club-competition-points">${comp.points} pkt</span>
+            <span class="club-competition-record">${comp.played} ${comp.played === 1 ? 'mecz' : 'mecze'} · ${comp.wins}W ${comp.draws ? comp.draws + 'R' : ''} ${comp.played - comp.wins - comp.draws}P</span>
+          </a>`;
+        }).join('');
+        const sportParams = new URLSearchParams({ sport: s.sport });
+        const sportHref = `klasyfikacje.html?${sportParams.toString()}`;
+        return `<div class="club-rankings-sport">
+          <div class="club-rankings-sport-header">
+            <a href="${escapeHtml(sportHref)}">${escapeHtml(s.sportName)}</a>
+            <strong>${s.points} pkt</strong>
+          </div>
+          <div class="club-competitions-list">${competitionsHtml}</div>
+        </div>`;
+      }).join('');
+      return `<article class="club-rankings-card">
+        <div class="club-rankings-header">
+          ${renderLogo(club.club)}
+          <div>
+            <h3>${escapeHtml(club.club)}</h3>
+            <p class="club-city">${escapeHtml(club.city)}</p>
+          </div>
+          <div class="club-rankings-total">
+            <strong>${club.totalPoints}</strong>
+            <span>pkt</span>
+          </div>
+        </div>
+        <div class="club-rankings-summary">
+          <span>${club.totalPlayed} ${club.totalPlayed === 1 ? 'mecz' : 'meczów'}</span>
+          <span>${club.totalWins}W</span>
+          ${club.totalDraws ? `<span>${club.totalDraws}R</span>` : ''}
+          <span>${club.totalPlayed - club.totalWins - club.totalDraws}P</span>
+        </div>
+        ${sportsBreakdown}
+      </article>`;
+    }).join('')}</div>
+  </section>`;
+}
+
 function renderClubsPage() {
   const grid = document.querySelector('.clubs-grid');
   if (!grid) return;
@@ -1292,6 +1513,35 @@ function renderClubsPage() {
     const playerCount = leagueData.players.filter(player => player.club === team.name).length;
     return `<article class="club-card"><div class="club-header"><h3>${renderLogo(team.name)} ${escapeHtml(team.name)}</h3><p class="club-city">${escapeHtml(team.city)}</p></div><p class="club-description">${escapeHtml(team.description)}</p><div class="club-stats"><div class="stat"><span class="stat-label">Drużyny</span><span class="stat-value">${participantCount}</span></div><div class="stat"><span class="stat-label">Zawodnicy</span><span class="stat-value">${playerCount}</span></div></div></article>`;
   }).join('');
+
+  // Add club rankings section after the clubs section
+  const clubsSection = document.querySelector('.clubs-section');
+  if (!clubsSection) return;
+  const existingRankings = document.querySelector('.club-rankings-section');
+  if (existingRankings) existingRankings.remove();
+  const rankingsContainer = document.createElement('section');
+  rankingsContainer.className = 'club-rankings-section';
+  rankingsContainer.innerHTML = renderClubStandings();
+  clubsSection.after(rankingsContainer);
+
+  // Bind filter change events
+  const filtersForm = rankingsContainer.querySelector('#club-rankings-filters');
+  if (filtersForm) {
+    filtersForm.addEventListener('change', () => {
+      const sport = filtersForm.elements.namedItem('sport').value;
+      const season = filtersForm.elements.namedItem('season').value;
+      rankingsContainer.innerHTML = renderClubStandings({ sport, season });
+      // Re-bind filters after re-render
+      const newForm = rankingsContainer.querySelector('#club-rankings-filters');
+      if (newForm) {
+        newForm.addEventListener('change', () => {
+          const newSport = newForm.elements.namedItem('sport').value;
+          const newSeason = newForm.elements.namedItem('season').value;
+          rankingsContainer.innerHTML = renderClubStandings({ sport: newSport, season: newSeason });
+        });
+      }
+    });
+  }
 }
 
 function renderPlayersPage() {

@@ -10,8 +10,8 @@
 - [x] Etap 5. Tabele poziomów, remisy, sortowanie i numeracja.
 - [x] Etap 6. Publiczna architektura wyników i turniejów.
 - [x] Etap 7. Kalendarz ligi i turniejów.
-- [ ] Etap 8. Klasyfikacja klubów.
-- [ ] Etap 9. Migracja, regresja i publikacja.
+- [x] Etap 8. Klasyfikacja klubów.
+- [x] Etap 9. Migracja, regresja i publikacja.
 
 ## 1. Audyt obecnego stanu
 
@@ -322,14 +322,14 @@ do właściwego kontekstu.
 
 ## Etap 8. Klasyfikacja klubów
 
-- [ ] `T8.1` Nie tworzyć rankingu wszystkich drużyn ze wszystkich poziomów.
-- [ ] `T8.2` Jeśli ranking klubów pozostaje, sumować wyniki drużyn i zawodników
+- [x] `T8.1` Nie tworzyć rankingu wszystkich drużyn ze wszystkich poziomów.
+- [x] `T8.2` Jeśli ranking klubów pozostaje, sumować wyniki drużyn i zawodników
   przypisanych do klubu.
-- [ ] `T8.3` Pokazać rozbicie punktów według rozgrywek i dyscyplin.
-- [ ] `T8.4` Nie sumować różnych sportów do jednego wyniku bez jawnej,
+- [x] `T8.3` Pokazać rozbicie punktów według rozgrywek i dyscyplin.
+- [x] `T8.4` Nie sumować różnych sportów do jednego wyniku bez jawnej,
   zatwierdzonej reguły normalizacji.
-- [ ] `T8.5` Dodać filtr sezonu oraz dyscypliny.
-- [ ] `T8.6` Opisać źródło każdej wartości i zapewnić możliwość przejścia do
+- [x] `T8.5` Dodać filtr sezonu oraz dyscypliny.
+- [x] `T8.6` Opisać źródło każdej wartości i zapewnić możliwość przejścia do
   wyników składowych.
 
 Kryterium: ranking klubu jest audytowalny i nie sugeruje, że drużyny z różnych
@@ -337,19 +337,19 @@ poziomów rywalizują w jednej tabeli.
 
 ## Etap 9. Regresja i publikacja
 
-- [ ] `T9.1` Migracja V2 do V3 na kopii danych Supabase.
-- [ ] `T9.2` Turniej: każdy-z-każdym.
-- [ ] `T9.3` Turniej: grupy i play-off.
-- [ ] `T9.4` Turniej trzyetapowy.
-- [ ] `T9.5` Drabinki dla 4, 6, 8, 12 i 16 uczestników.
-- [ ] `T9.6` Remis 1:1 w dozwolonej fazie i blokada remisu w play-off.
-- [ ] `T9.7` Zmiana wyniku wcześniejszej rundy z kontrolą zależności.
-- [ ] `T9.8` Tabele wszystkich poziomów i drużyny z zerowym dorobkiem.
-- [ ] `T9.9` Sortowanie każdej kolumny i numeracja po filtrach.
-- [ ] `T9.10` Kalendarz ligowy i turniejowy.
-- [ ] `T9.11` Audyt wizualny 360, 768 i 1440 px.
-- [ ] `T9.12` Test zapisu administratora i odczytu w drugiej sesji.
-- [ ] `T9.13` Skan sekretów, składnia JavaScript, pełna regresja, commit i push.
+- [x] `T9.1` Migracja V2 do V3 na kopii danych Supabase.
+- [x] `T9.2` Turniej: każdy-z-każdym.
+- [x] `T9.3` Turniej: grupy i play-off.
+- [x] `T9.4` Turniej trzyetapowy.
+- [x] `T9.5` Drabinki dla 4, 6, 8, 12 i 16 uczestników.
+- [x] `T9.6` Remis 1:1 w dozwolonej fazie i blokada remisu w play-off.
+- [x] `T9.7` Zmiana wyniku wcześniejszej rundy z kontrolą zależności.
+- [x] `T9.8` Tabele wszystkich poziomów i drużyny z zerowym dorobkiem.
+- [x] `T9.9` Sortowanie każdej kolumny i numeracja po filtrach.
+- [x] `T9.10` Kalendarz ligowy i turniejowy.
+- [x] `T9.11` Audyt wizualny 360, 768 i 1440 px.
+- [x] `T9.12` Test zapisu administratora i odczytu w drugiej sesji.
+- [x] `T9.13` Skan sekretów, składnia JavaScript, pełna regresja, commit i push.
 
 ## 5. Kolejność realizacji
 
